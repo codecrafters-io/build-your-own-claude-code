@@ -30,22 +30,19 @@ To add support for the `Bash` tool:
 
 1. Advertise the `Bash` tool in your request's `tools` array, specifying the function's name, description, and parameters.
 2. When you detect a `Bash` tool call in the LLM's response, extract the arguments.
-3. Run the given command in the bash and print the result.
+3. Run the given command in the bash and append the result of the tool call in the subsequent request.
 
 ### Tests
 
-- The tester will create some random files in a directory.
+- The tester will create multiple random files in a directory and an index file.
 
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "<Prompt specifying to print the names of all files inside the directory in a sorted alphabetical order>"
-file1.txt
-file2.txt
-file3.txt
-file4.txt
+$ ./your_program.sh -p "Overwrite the contents of /path/to/index.txt with the names of all files in /path/to/directory. Write only the file names, one per line, sorted alphabetically."
 ```
-- The tester will assert that your program outputs the file names, one per line, in an alphabetical order.
+
+- The tester will assert that the index file contains the sorted file names, one per line.
 
 ### Notes
 

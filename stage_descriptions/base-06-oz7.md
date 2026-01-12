@@ -33,18 +33,18 @@ Here is an example of the `Write` tool's specification:
 To add support for the `Write` tool:
 
 1. Advertise the `Write` tool in your request's `tools` array, specifying the function's name, description, and parameters.
-2. When you detect a `Write` tool call in the LLM's response, extract the arguments.
-3. Create the file if it does not exist, or overwrite the file if it already exists, with the specified content.
+2. When you detect `Write` tool calls in the LLM's response, extract the arguments for each tool call.
+3. For each tool call, create the file if it does not exist, or overwrite the file if it already exists, with the specified content
 
 ### Tests
 
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "<Prompt specifing a random contents and a random file path to write to>"
+$ ./your_program.sh -p "<Prompt specifying random contents and random file paths to write to multiple files>"
 ```
 
-- The tester will assert that:
+- For each of the specified files, the tester will assert that:
   - If the file doesn't exist, the file is created with the specified content.
   - If the file exists, the original contents of the file is over-written with the specified content.
 
@@ -56,6 +56,4 @@ $ ./your_program.sh -p "<Prompt specifing a random contents and a random file pa
   - `write_file`
   - `WriteFile`, etc.
 
-- The tester will only check the existence of the file with its contents, and not the output of your program. You are free to set the return value of the `Write` tool be whatever you deem fit.
-
-- You don't need to send the tool result back to the LLM yet. We'll implement the conversational loop in later stages.
+- The tester will only check the existence of the files with their contents, and not the output of your program.

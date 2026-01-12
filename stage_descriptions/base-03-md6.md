@@ -1,8 +1,8 @@
 In this stage, you'll add support for detecting tool calls from the LLM's response, and executing the `Read` tool call.
 
-### Executing Tool Calls
+### Executing `Read` tool call
 
-When the LLM decides to use a tool, the response message will contain a `tool_calls` array.
+When the LLM decides to use a tool, the response message will contain a `tool_calls` array. In this stage, you'll only execute a single `Read` tool call.
 
 Here is an example of the response structure:
 
@@ -33,7 +33,7 @@ Here is an example of the response structure:
 
 The description of the fields are:
 
-- `tool_calls`: When it is present, the `content` field is typically null or an empty string.
+- `tool_calls`: The array of tool calls to make.
 - Each tool call has:
   - `id`: A unique identifier for this tool call
   - `type`: The type of tool call (always `"function"` for function tools)
@@ -64,6 +64,8 @@ $ ./your_program.sh -p "<Prompt asking the LLM to print the contents of the file
 
 ### Notes
 
-- For this stage, you only need to print the result of the tool call execution. You don't need to send the tool result back to the LLM yet. We'll implement the conversational loop in the later stages.
+- For this stage, you only need to print the result of the tool call. You don't need to send the result back to the LLM. We'll get to implementing the conversational loop in the later stages.
+
+- For this stage, you only need to print the result of the first tool call. The tester will only tests against prompts that will result in one tool call in the response from the LLM. We'll get to handling multiple tool calls in the next stage.
 
 - [OpenRouter API Specification](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request) (OpenRouter's API is compatible with OpenAI's format)

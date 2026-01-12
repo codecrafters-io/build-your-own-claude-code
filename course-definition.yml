@@ -43,41 +43,41 @@ stages:
   - slug: "aq1"
     name: "Advertise Read Tool"
     difficulty: easy
-    description_md: |-
     marketing_md: |-
       In this stage, you'll add support for advertising the `Read` tool to the LLM.
 
   - slug: "md6"
     name: "Execute Read Tool"
     difficulty: easy
-    description_md: |-
     marketing_md: |-
       In this stage, you'll add support for detecting tool calls from the LLM's response, and executing the `Read` tool call.
+
+  - slug: "yp5"
+    name: "Multiple Read Tool Calls"
+    difficulty: easy
+    marketing_md: |-
+      In this stage, you'll add support for handling multiple tool calls.
+
+  - slug: "ff2"
+    name: "Conversational Loop"
+    difficulty: medium
+    marketing_md: |-
+      In this stage, you'll add support for the conversational loop.
 
   - slug: "oz7"
     name: "Write Tool"
     difficulty: easy
-    description_md: |-
     marketing_md: |-
       In this stage, you'll add support for the `Write` tool.
 
   - slug: "bp2"
     name: "Edit Tool"
     difficulty: easy
-    description_md: |-
     marketing_md: |-
       In this stage, you'll add support for the `Edit` tool.
 
   - slug: "oq5"
     name: "Bash Tool"
     difficulty: easy
-    description_md: |-
     marketing_md: |-
       In this stage, you'll add support for the `Bash` tool.
-
-  - slug: "ff2"
-    name: "Conversational Loop"
-    difficulty: medium
-    description_md: |-
-    marketing_md: |-
-      In this stage, you'll add support for conversational loop, using the results from previous tool calls to inform LLM about subsequent actions.
