@@ -30,7 +30,7 @@ To add support for the `Bash` tool:
 
 1. Advertise the `Bash` tool in your request's `tools` array, specifying the function's name, description, and parameters.
 2. When you detect a `Bash` tool call in the LLM's response, extract the arguments.
-3. Run the given command in the bash and append the result of the tool call in the subsequent request.
+3. Run the given command in bash and append the result of the tool call in the subsequent request.
 
 ### Tests
 
@@ -52,4 +52,4 @@ $ ./your_program.sh -p "Overwrite the contents of /path/to/index.txt with the na
   - `RunBashCommand`
   - `run_bash_command`, etc.
 
-- You can directly print the tool call's result without sending it back to the LLM. We'll get to implementing the conversational loop in the later stages.
+- The result of the Bash tool call should be sent back to the LLM as part of the conversational loop (which was implemented in stage 5).

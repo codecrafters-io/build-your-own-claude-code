@@ -38,7 +38,8 @@ To add support for the `Edit` tool:
 
 1. Advertise the `Edit` tool in your request's `tools` array, specifying the function's name, description, and parameters.
 2. When you detect `Edit` tool calls in the LLM's response, extract the arguments for each tool call.
-3. For each tool call, in the given file, replace the first occurence of the `old_string` with the `new_string`.
+3. For each tool call, in the given file, replace the first occurrence of the `old_string` with the `new_string`.
+4. The result of each tool call should be sent back to the LLM as part of the conversational loop (which was implemented in stage 5)
 
 ### Tests
 
@@ -60,4 +61,4 @@ $ ./your_program.sh -p "<Prompt specifying file paths, old strings and new strin
   - `replace_string`
   - `Replace`, etc.
 
-- The tester will only check if the `old_string` was replaced with the `new_string` in each file. You are free to set the return value of the `Edit` tool be whatever you deem fit.
+- The tester will only check if the `old_string` was replaced with the `new_string` in each file. You are free to set the return value of the `Edit` tool to be whatever you deem fit.

@@ -16,7 +16,7 @@ The tester will execute your program like this:
 $ ./your_program.sh -p "<Prompt asking the LLM to print the contents of multiple files, one after another>"
 ```
 
-- The tester will assert that the output matches the exact contents of the specified files, concatenated.
+- The tester will assert that the output matches the exact contents of the specified files, concatenated together. The order of concatenation does not matter.
 
 ### Notes
 

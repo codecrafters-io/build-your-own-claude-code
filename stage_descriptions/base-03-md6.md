@@ -31,7 +31,7 @@ Here is an example of the response structure:
 }
 ```
 
-The description of the fields are:
+The descriptions of the fields are:
 
 - `tool_calls`: The array of tool calls to make.
 - Each tool call has:
@@ -43,11 +43,11 @@ The description of the fields are:
 
 When you detect a `tool_calls` array in the response:
 
-1. **Extract the tool call**: Get the first tool call from `message.tool_calls[0]`.
-2. **Parse the function name**: Read `function.name` to determine which tool to execute.
-3. **Parse the arguments**: Parse `function.arguments` to get the parameters.
-4. **Execute the tool**: Call the appropriate tool function with the parsed arguments.
-5. **Output the result**: Print the tool execution result to stdout.
+1. Extract the tool call: Get the first tool call from `message.tool_calls[0]`.
+2. Parse the function name: Read `function.name` to determine which tool to execute.
+3. Parse the arguments: Parse `function.arguments` to get the parameters.
+4. Execute the tool: Call the appropriate tool function with the parsed arguments.
+5. Output the result: Print the tool execution result to stdout.
 
 ### Tests
 
@@ -60,12 +60,12 @@ $ ./your_program.sh -p "<Prompt asking the LLM to print the contents of the file
 <file contents>
 ```
 
-- The tester will assert that the output matches the exact contents of the file.
+The tester will assert that the output matches the exact contents of the file.
 
 ### Notes
 
-- For this stage, you only need to print the result of the tool call. You don't need to send the result back to the LLM. We'll get to implementing the conversational loop in the later stages.
+- For this stage, you only need to print the result of the first tool call. The tester will only test against prompts that will result in one tool call in the response from the LLM. We'll get to handling multiple tool calls in the next stage.
 
-- For this stage, you only need to print the result of the first tool call. The tester will only tests against prompts that will result in one tool call in the response from the LLM. We'll get to handling multiple tool calls in the next stage.
+- For this stage, you only need to print the result of the tool call. You don't need to send the result back to the LLM. We'll get to implementing the conversational loop in the later stages.
 
 - [OpenRouter API Specification](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request) (OpenRouter's API is compatible with OpenAI's format)

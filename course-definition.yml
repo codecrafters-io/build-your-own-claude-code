@@ -44,7 +44,7 @@ stages:
     name: "Advertise Read Tool"
     difficulty: easy
     marketing_md: |-
-      In this stage, you'll add support for advertising the `Read` tool to the LLM.
+      In this stage, you'll add support for advertising the `Read` tool in the request.
 
   - slug: "md6"
     name: "Execute Read Tool"
