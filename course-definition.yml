@@ -3,9 +3,12 @@ name: "Build your own Claude Code"
 short_name: "Claude Code"
 release_status: "alpha"
 description_md: |-
-  TODO: Add description
+  Claude Code is an AI coding assistant that uses Large Language Models (LLMs) to understand code and perform actions through tool calls. In this challenge, you'll build your own Claude Code from scratch by implementing an LLM-powered coding assistant.
+
+  Along the way you'll learn about HTTP RESTful APIs, OpenAI-compatible tool calling, conversational loops, and how to integrate multiple tools into an AI assistant.
+  
 short_description_md: |-
-  TODO: Add short description
+  Build an AI coding assistant with LLM tool calling
 
 completion_percentage: 15
 
@@ -16,8 +19,8 @@ languages:
 
 marketing:
   difficulty: medium
-  sample_extension_idea_title: "TODO"
-  sample_extension_idea_description: "A description for my course extension idea"
+  sample_extension_idea_title: "Add a WebFetch Tool"
+  sample_extension_idea_description: "Implement a WebFetch tool that allows the LLM to fetch content from URLs. This tool would take a URL as a parameter, make an HTTP request, and return the response body, enabling the AI assistant to retrieve information from the web."
   testimonials:
     - author_name: "Ananthalakshmi Sankar"
       author_description: "Automation Engineer at Apple"
