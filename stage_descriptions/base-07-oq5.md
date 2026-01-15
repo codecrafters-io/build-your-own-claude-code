@@ -53,4 +53,4 @@ $ ./your_program.sh -p "List all the JSON files inside `/path/to/dir` one per li
   - `RunBashCommand`
   - `run_bash_command`, etc.
 
-- The result of the Bash tool call should be sent back to the LLM as part of the conversational loop (which was implemented in stage 5).
+- The result of the Bash tool call should be sent back to the LLM as part of the agent loop (which was implemented in stage 5).

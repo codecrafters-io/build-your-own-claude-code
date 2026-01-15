@@ -5,7 +5,7 @@ release_status: "alpha"
 description_md: |-
   Claude Code is an AI coding assistant that uses Large Language Models (LLMs) to understand code and perform actions through tool calls. In this challenge, you'll build your own Claude Code from scratch by implementing an LLM-powered coding assistant.
 
-  Along the way you'll learn about HTTP RESTful APIs, OpenAI-compatible tool calling, conversational loops, and how to integrate multiple tools into an AI assistant.
+  Along the way you'll learn about HTTP RESTful APIs, OpenAI-compatible tool calling, agent loop, and how to integrate multiple tools into an AI assistant.
   
 short_description_md: |-
   Build an AI coding assistant with LLM tool calling
