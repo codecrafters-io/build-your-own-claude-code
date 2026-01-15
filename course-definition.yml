@@ -55,17 +55,11 @@ stages:
     marketing_md: |-
       In this stage, you'll add support for detecting tool calls from the LLM's response, and executing the `Read` tool call.
 
-  - slug: "yp5"
-    name: "Multiple Read Tool Calls"
-    difficulty: easy
-    marketing_md: |-
-      In this stage, you'll add support for handling multiple tool calls.
-
   - slug: "ff2"
-    name: "Conversational Loop"
+    name: "Agent Loop"
     difficulty: medium
     marketing_md: |-
-      In this stage, you'll add support for the conversational loop.
+      In this stage, you'll add support for the agent loop and handling multiple tool calls.
 
   - slug: "oz7"
     name: "Write Tool"

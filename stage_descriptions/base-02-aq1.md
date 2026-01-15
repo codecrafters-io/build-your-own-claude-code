@@ -43,7 +43,7 @@ The descriptions of the fields are:
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "<Prompt asking to print the count of available tools in the request>"
+$ ./your_program.sh -p "Print ONLY the count of tools available to you in this request in number. No backticks either."
 1
 ```
 

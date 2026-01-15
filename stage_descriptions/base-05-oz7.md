@@ -42,12 +42,10 @@ To add support for the `Write` tool:
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "<Prompt specifying random contents and random file paths to write to multiple files>"
+$ ./your_program.sh -p "Create a README.md file with contents 'My simple project'."
 ```
 
-- For each of the specified files, the tester will assert that:
-  - If the file doesn't exist, the file is created with the specified content.
-  - If the file exists, the original contents of the file are overwritten with the specified content.
+- The tester will assert that `README.md` is created containing the project name and description.
 
 ### Notes
 

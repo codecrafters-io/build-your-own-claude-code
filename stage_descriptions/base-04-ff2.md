@@ -1,11 +1,13 @@
-In this stage, you'll add support for the conversational loop.
+In this stage, you'll add support for the agent loop.
 
-### The Conversational Loop
+### The Agent Loop
 
-The conversational loop repeatedly sends messages to the LLM and handles tool calls as needed, until the final result is received. Here is a pseudocode example of the conversational loop.
+The agent loop repeatedly sends messages to the LLM and handles tool calls as needed, until the final result is received. When the LLM decides to use tools, the response message will contain a `tool_calls` array. All the tool calls listed in the array should be executed, and their results should be sent back to the LLM.
+
+Here is a pseudocode example of the agent loop:
 
 ```python
-def conversational_loop(initial_prompt: str) -> str:
+def agent_loop(initial_prompt):
     messages = [{"role": "user", "content": initial_prompt}]
     
     while True:
@@ -34,9 +36,9 @@ When a tool call is executed, the result is sent back to the LLM by adding a mes
     // First prompt - Appended to the 'messages' array
     {
       "role": "user",
-      "content": "Read the contents of /path/to/master.txt"
+      "content": "Read the contents of /path/to/file1.txt and /path/to/file2.txt"
     },
-    // The assistant (LLM) requested a tool call after the first request (which contained only prompt)
+    // The assistant (LLM) requested multiple tool calls
     // This is also appended to the 'messages' array
     {
       "role": "assistant",
@@ -47,16 +49,29 @@ When a tool call is executed, the result is sent back to the LLM by adding a mes
           "type": "function",
           "function": {
             "name": "Read",
-            "arguments": "{\"file_path\": \"/path/to/master.txt\"}"
+            "arguments": "{\"file_path\": \"/path/to/file1.txt\"}"
+          }
+        },
+        {
+          "id": "call_xyz789",
+          "type": "function",
+          "function": {
+            "name": "Read",
+            "arguments": "{\"file_path\": \"/path/to/file2.txt\"}"
           }
         }
       ]
     },
-    // The tool call resulted in a result, which must be appended to the 'messages' array
+    // Each tool call result must be appended as a separate message
     {
       "role": "tool",
       "tool_call_id": "call_abc123",
-      "content": "<file contents here>"
+      "content": "<file1 contents here>"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_xyz789",
+      "content": "<file2 contents here>"
     }
   ],
   "tools": [...]
@@ -72,18 +87,17 @@ Messages should be appended to the conversation history (e.g., user prompt → a
 
 ### Tests
 
-- The tester will create multiple files, each with random contents.
-- The tester will create two index files. These files will each contain the path of one randomly selected file created earlier.
+- The tester will create a file `manifest.txt` containing two file paths, one per line.
 
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Read the contents of /path/to/index1.txt and /path/to/index2.txt. Each file contains a file path. Read those files and print their contents, one after another."
-<contents of the referenced files>
+$ ./your_program.sh -p "Read manifest.txt and print ONLY the contents of both files in order they appear in manifest. No backticks either."
+<contents of both files in order>
 ```
 
-- Extract the file names from the first two files.
-- Print the contents of the files whose names were extracted, one after another.
+- Read `manifest.txt` to get the file paths.
+- Read both files and print their contents in the order they appear in the manifest.
 
 ### Notes
 

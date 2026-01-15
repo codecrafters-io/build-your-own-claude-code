@@ -34,15 +34,16 @@ To add support for the `Bash` tool:
 
 ### Tests
 
-- The tester will create multiple random files in a directory and an index file.
+- The tester will create multiple files inside a directory `/path/to/dir`.
 
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Overwrite the contents of /path/to/index.txt with the names of all files in /path/to/directory. Write only the file names, one per line, sorted alphabetically."
+$ ./your_program.sh -p "List all the JSON files inside `/path/to/dir` one per line. List only basenames in sorted alphabetical order. Nothing else. No backticks either."
+
 ```
 
-- The tester will assert that the index file contains the sorted file names, one per line.
+- The tester will assert that the output consists of the basenames of all JSON files inside `/path/to/dir`, sorted alphabetically, with one filename per line.
 
 ### Notes
 

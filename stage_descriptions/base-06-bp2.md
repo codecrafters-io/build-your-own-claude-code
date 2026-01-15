@@ -43,15 +43,15 @@ To add support for the `Edit` tool:
 
 ### Tests
 
-- The tester will create files with random contents
+- The tester will create a file `config.txt` containing incorrect port number.
 
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "<Prompt specifying file paths, old strings and new strings to replace with for multiple files>"
+$ ./your_program.sh -p "Change the port in config.txt to 3000"
 ```
 
-- For each of the specified files, the tester will assert that the file was modified correctly.
+- The tester will assert that `config.txt` contains the port number 3000. 
 
 ### Notes
 
