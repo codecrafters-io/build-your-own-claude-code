@@ -29,9 +29,6 @@ def fatal(message):
 
 
 def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!", file=sys.stderr)
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", required=True, help="Prompt to send to LLM")
     args = parser.parse_args()
@@ -44,17 +41,16 @@ def main():
     if not base_url:
         fatal("OPENROUTER_BASE_URL environment variable is not set")
 
-    # TODO: Uncomment the code below to pass the first stage
-    # client = OpenAI(
-    #     api_key=api_key,
-    #     base_url=base_url,
-    # )
-    #
-    # try:
-    #     content = call_llm(client, args.p)
-    #     print(content)
-    # except Exception as e:
-    #     fatal(str(e))
+    client = OpenAI(
+        api_key=api_key,
+        base_url=base_url,
+    )
+
+    try:
+        content = call_llm(client, args.p)
+        print(content)
+    except Exception as e:
+        fatal(str(e))
 
 
 if __name__ == "__main__":

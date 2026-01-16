@@ -12,24 +12,20 @@ use async_openai::{
 
 #[tokio::main]
 async fn main() {
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
-    eprintln!("Logs from your program will appear here!");
+    let prompt = get_prompt();
+    let api_key = get_env("OPENROUTER_API_KEY");
+    let base_url = get_env("OPENROUTER_BASE_URL");
 
-    // TODO: Uncomment the code below to pass the first stage
-    // let prompt = get_prompt();
-    // let api_key = get_env("OPENROUTER_API_KEY");
-    // let base_url = get_env("OPENROUTER_BASE_URL");
-    //
-    // let config = OpenAIConfig::new()
-    //     .with_api_key(api_key)
-    //     .with_api_base(base_url);
-    //
-    // let client = Client::with_config(config);
-    //
-    // match call_llm(&client, &prompt).await {
-    //     Ok(content) => println!("{}", content),
-    //     Err(e) => fatal(&format!("{}", e)),
-    // }
+    let config = OpenAIConfig::new()
+        .with_api_key(api_key)
+        .with_api_base(base_url);
+
+    let client = Client::with_config(config);
+
+    match call_llm(&client, &prompt).await {
+        Ok(content) => println!("{}", content),
+        Err(e) => fatal(&format!("{}", e)),
+    }
 }
 
 fn get_prompt() -> String {
