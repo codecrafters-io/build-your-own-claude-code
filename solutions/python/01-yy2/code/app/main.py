@@ -6,9 +6,6 @@ from openai import OpenAI
 
 
 def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!", file=sys.stderr)
-
     # Get the prompt from the -p flag
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", required=True, help="Prompt to send to LLM")
@@ -39,11 +36,10 @@ def main():
         ]
     )
 
-    # TODO: Uncomment the code below to pass the first stage
-    # # Check if we got a response
-    # if len(chat_completion.choices) == 0:
-    #     print("error: no choices in response", file=sys.stderr)
-    #     sys.exit(1)
+    # Check if we got a response
+    if len(chat_completion.choices) == 0:
+        print("error: no choices in response", file=sys.stderr)
+        sys.exit(1)
     
     # # Print the response content
     # content = chat_completion.choices[0].message.content
