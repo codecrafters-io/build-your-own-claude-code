@@ -75,5 +75,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	// fmt.Print(content)
+	fmt.Print(content)
 }
