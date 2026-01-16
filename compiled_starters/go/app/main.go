@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
-	fmt.Println("Logs from your program will appear here!")
+	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
 
 	var prompt string
 	flag.StringVar(&prompt, "p", "", "Prompt to send to LLM")
