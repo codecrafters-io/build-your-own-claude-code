@@ -42,7 +42,7 @@
  	client := openai.NewClient(
 @@ -49,35 +46,34 @@
  		openai.ChatCompletionNewParams{
- 			Model: "openai/gpt-4o-mini",
+ 			Model: "anthropic/claude-haiku-4.5",
  			Messages: []openai.ChatCompletionMessageParamUnion{
  				{
  					OfUser: &openai.ChatCompletionUserMessageParam{
