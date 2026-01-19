@@ -11,10 +11,6 @@ concurrency:
 
 jobs:
   test_course_definition:
-    env:
-      OPENROUTER_BASE_URL: ${{ vars.OPENROUTER_BASE_URL }}
-      OPENROUTER_API_KEY: ${{ vars.OPENROUTER_API_KEY }}
-
     uses: codecrafters-io/course-sdk/.github/workflows/test-course-definition.yml@main
     with:
       sdkRef: main
