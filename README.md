@@ -1,6 +1,6 @@
-# build-your-own-<fill_in_course_slug>
+# build-your-own-claude-code
 
-Content for the "<fill_in_course_name>" challenge
+Content for the "Build your own Claude Code" challenge
 
 ## Setup
 
