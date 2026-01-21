@@ -4,7 +4,6 @@ import sys
 
 from openai import OpenAI
 
-
 def main():
     # Get the prompt from the -p flag
     parser = argparse.ArgumentParser()

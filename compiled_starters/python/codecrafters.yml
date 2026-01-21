@@ -4,8 +4,8 @@
 # unless you really need them.
 debug: false
 
-# Use this to change the Rust version used to run your code
+# Use this to change the Python version used to run your code
 # on Codecrafters.
 #
-# Available versions: rust-1.70
-language_pack: rust-1.70
+# Available versions: python-3.14
+buildpack: python-3.14
