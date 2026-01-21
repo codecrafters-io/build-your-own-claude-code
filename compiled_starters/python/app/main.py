@@ -32,7 +32,7 @@ def main():
 
     # Make the API request
     chat_completion = client.chat.completions.create(
-        model="openai/gpt-4o-mini",
+        model="anthropic/claude-haiku-4.5",
         messages=[
             {"role": "user", "content": args.p}
         ]
