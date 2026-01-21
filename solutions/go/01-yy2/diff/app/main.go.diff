@@ -40,7 +40,7 @@
 
  	// Create OpenAI client configured for OpenRouter
  	client := openai.NewClient(
-@@ -49,35 +46,34 @@
+@@ -49,34 +46,33 @@
  		openai.ChatCompletionNewParams{
  			Model: "anthropic/claude-haiku-4.5",
  			Messages: []openai.ChatCompletionMessageParamUnion{
@@ -73,12 +73,12 @@
 -	// 	fmt.Fprintf(os.Stderr, "error: empty content in response\n")
 -	// 	os.Exit(1)
 -	// }
+-	// fmt.Print(content)
 +	// Print the response content
 +	content := chatCompletion.Choices[0].Message.Content
 +	if content == "" {
 +		fmt.Fprintf(os.Stderr, "error: empty content in response\n")
 +		os.Exit(1)
 +	}
-
- 	// fmt.Print(content)
++	fmt.Print(content)
  }

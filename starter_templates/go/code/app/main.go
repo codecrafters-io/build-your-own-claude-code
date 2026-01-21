@@ -78,6 +78,5 @@ func main() {
 	// 	fmt.Fprintf(os.Stderr, "error: empty content in response\n")
 	// 	os.Exit(1)
 	// }
-
 	// fmt.Print(content)
 }
