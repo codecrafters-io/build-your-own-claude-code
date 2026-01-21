@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7-labs
 FROM oven/bun:1.2-alpine
 
-ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="package.json,bun.lockb"
+ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="package.json,package-lock.json"
 
 WORKDIR /app
 
