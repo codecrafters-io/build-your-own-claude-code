@@ -14,6 +14,7 @@ completion_percentage: 15
 
 languages:
   - slug: "go"
+  - slug: "javascript"
 
 marketing:
   difficulty: medium
