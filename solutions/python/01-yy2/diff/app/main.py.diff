@@ -1,4 +1,4 @@
-@@ -1,57 +1,53 @@
+@@ -1,55 +1,51 @@
  import argparse
  import os
  import sys
@@ -44,18 +44,22 @@
 -    # if len(chat_completion.choices) == 0:
 -    #     print("error: no choices in response", file=sys.stderr)
 -    #     sys.exit(1)
+-    # # Print the response content
+-    # content = chat_completion.choices[0].message.content
+-    # if not content:
+-    #     print("error: empty content in response", file=sys.stderr)
+-    #     sys.exit(1)
+-    # print(content, end="")
 +    # Check if we got a response
 +    if len(chat_completion.choices) == 0:
 +        print("error: no choices in response", file=sys.stderr)
 +        sys.exit(1)
-     
-     # # Print the response content
-     # content = chat_completion.choices[0].message.content
-     # if not content:
-     #     print("error: empty content in response", file=sys.stderr)
-     #     sys.exit(1)
-     
-     # print(content, end="")
++    # Print the response content
++    content = chat_completion.choices[0].message.content
++    if not content:
++        print("error: empty content in response", file=sys.stderr)
++        sys.exit(1)
++    print(content, end="")
 
 
  if __name__ == "__main__":
