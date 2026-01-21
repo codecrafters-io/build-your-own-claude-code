@@ -41,7 +41,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "openai", specifier = ">=1.0.0" }]
+requires-dist = [{ name = "openai", specifier = ">=2.15.0" }]
 
 [[package]]
 name = "colorama"

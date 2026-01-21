@@ -30,15 +30,14 @@ def main():
         base_url=base_url,
     )
 
-    # Make the API request
-    chat_completion = client.chat.completions.create(
-        model="anthropic/claude-haiku-4.5",
-        messages=[
-            {"role": "user", "content": args.p}
-        ]
-    )
-
     # TODO: Uncomment the code below to pass the first stage
+    # # Make the API request
+    # chat_completion = client.chat.completions.create(
+    #     model="anthropic/claude-haiku-4.5",
+    #     messages=[
+    #         {"role": "user", "content": args.p}
+    #     ]
+    # )
     # # Check if we got a response
     # if len(chat_completion.choices) == 0:
     #     print("error: no choices in response", file=sys.stderr)

@@ -34,7 +34,6 @@ def main():
             {"role": "user", "content": args.p}
         ]
     )
-
     # Check if we got a response
     if len(chat_completion.choices) == 0:
         print("error: no choices in response", file=sys.stderr)
