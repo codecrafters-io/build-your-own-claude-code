@@ -14,13 +14,5 @@ WORKDIR /app
 # .git & README.md are unique per-repository. We ignore them on first copy to prevent cache misses
 COPY --exclude=.git --exclude=README.md . /app
 
-RUN ls /
-RUN echo "----"
-RUN ls /app
-
 # Force environment creation
 RUN uv sync
-
-RUN ls /
-RUN echo "----"
-RUN ls /app

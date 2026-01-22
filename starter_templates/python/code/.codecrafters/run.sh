@@ -8,4 +8,5 @@
 
 set -e # Exit on failure
 
+export UV_WORKING_DIR="$(dirname "$0")"
 exec uv run --quiet -m app.main "$@"
