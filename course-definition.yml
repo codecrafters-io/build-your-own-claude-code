@@ -3,7 +3,7 @@ name: "Build your own Claude Code"
 short_name: "Claude Code"
 release_status: "alpha"
 description_md: |-
-  Claude Code is a terminal-based AI coding assistant that uses Large Language Models (LLMs) to understand code and autonomously perform tasks such as editing files and running commands. In this challenge, you'll build your own Claude Code from scratch by implementing an LLM-powered coding assistant.
+  Claude Code is a terminal-based AI coding assistant that uses Large Language Models (LLMs) to understand code and complete programming tasks. In this challenge, you'll build your own Claude Code that is capable of editing files, running commands, and iterating until the task is done.
 
   Along the way, you'll learn about LLM APIs, tool calling, agent loops, and how to integrate multiple tools into an AI assistant.
   
@@ -46,9 +46,9 @@ marketing:
         As your code gets more complex, you'll be forced to structure and refactor it to avoid regressions and make adding new features easier.
     - question_markdown: "Why should I build such a project?"
       answer_markdown: |-
-        The industry is shifting from simple chatbots to agent software that can autonomously perform tasks. Building your own version of Claude Code is the best way to understand this shift.
+        The industry is shifting from simple chatbots to AI agents that can autonomously perform tasks. Building your own version of Claude Code is the best way to understand this shift.
         If you've ever wondered how tools like GitHub Copilot or Cursor actually read your codebase and apply changes, this challenge reveals the magic.
-        Beyond technical depth, there's something uniquely satisfying about understanding a tool used by millions of developers every day. You'll come out of it as a more confident and interesting developer.
+        Beyond technical depth, there's something uniquely satisfying about understanding an AI tool used by millions of developers every day. You'll come out of it as a more confident and interesting developer.
     - question_markdown: "What are the pre-requisites for this challenge?"
       answer_markdown: |-
         You should be comfortable writing code in any one language and using Git. You don't need any prior experience with LLMs or machine learning.
