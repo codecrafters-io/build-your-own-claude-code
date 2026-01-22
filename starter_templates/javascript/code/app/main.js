@@ -1,5 +1,21 @@
 import OpenAI from "openai";
 
+
+async function makeChatCompletion(client, prompt) {
+    try {
+        const response = await client.chat.completions.create({
+            model: "anthropic/claude-haiku-4.5",
+            messages: [{ role: "user", content: prompt }],
+        });
+        return response.choices?.[0]?.message?.content;
+    } catch (error) {
+        console.error(`error: ${error}`);
+        process.exit(1);
+    }
+    return null;
+}
+
+
 async function main() {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     console.error("Logs from your program will appear here!");
@@ -7,7 +23,6 @@ async function main() {
     // Get the prompt from the -p flag
     const args = process.argv;
     let prompt;
-    
     for (let i = 0; i < args.length; i++) {
         if (args[i] === "-p" && i + 1 < args.length) {
             prompt = args[i + 1];
@@ -21,54 +36,17 @@ async function main() {
 
     // Get API key and base URL from environment variables
     const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-        console.error("error: OPENROUTER_API_KEY environment variable is not set");
-        process.exit(1);
-    }
-
     const baseURL = process.env.OPENROUTER_BASE_URL;
-    if (!baseURL) {
-        console.error("error: OPENROUTER_BASE_URL environment variable is not set");
+    if (!apiKey || !baseURL) {
+        console.error("error: OPENROUTER_API_KEY or OPENROUTER_BASE_URL not set");
         process.exit(1);
     }
 
-    // Create OpenAI client configured for OpenRouter
-    const client = new OpenAI({
-        apiKey: apiKey,
-        baseURL: baseURL,
-    });
-
-    // Make the API request
-    let chatCompletion;
-    try {
-        chatCompletion = await client.chat.completions.create({
-            model: "anthropic/claude-haiku-4.5",
-            messages: [
-                {
-                    role: "user",
-                    content: prompt,
-                },
-            ],
-        });
-    } catch (error) {
-        console.error(`error: ${error}`);
-        process.exit(1);
-    }
-
-    // Check if we got a response
-    if (!chatCompletion.choices || chatCompletion.choices.length === 0) {
-        console.error("error: no choices in response");
-        process.exit(1);
-    }
+    const client = new OpenAI({ apiKey, baseURL });
 
     // TODO: Uncomment the code below to pass the first stage
-    // Print the response content
-    // const content = chatCompletion.choices[0].message.content;
-    // if (!content) {
-    //     console.error("error: empty content in response");
-    //     process.exit(1);
-    // }
-    // process.stdout.write(content);
+    // const result = await makeChatCompletion(client, prompt);
+    // process.stdout.write(result);
 }
 
 main();

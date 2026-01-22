@@ -11,3 +11,7 @@ COPY --exclude=.git --exclude=README.md . /app
 
 # Install deps
 RUN npm ci
+
+# If the node_modules directory exists, move it to /app-cached
+RUN mkdir -p /app-cached
+RUN if [ -d "/app/node_modules" ]; then mv /app/node_modules /app-cached; fi
