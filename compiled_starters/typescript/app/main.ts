@@ -12,8 +12,6 @@ async function makeChatCompletion(client: OpenAI, prompt: string): Promise<strin
         console.error(`error: ${error}`);
         process.exit(1);
     }
-
-    return null;
 }
 
 async function main(): Promise<void> {
