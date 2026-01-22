@@ -11,9 +11,9 @@ concurrency:
 
 jobs:
   test_course_definition:
-    uses: codecrafters-io/course-sdk/.github/workflows/test-course-definition.yml@secret-expt
+    uses: codecrafters-io/course-sdk/.github/workflows/test-course-definition.yml@main
     with:
-      sdkRef: secret-expt
+      sdkRef: main
     permissions:
       contents: read
       checks: write
