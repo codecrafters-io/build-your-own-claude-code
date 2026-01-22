@@ -39,9 +39,9 @@ marketing:
         In the first 7 stages, you'll learn:
         * How to communicate with LLMs (using REST APIs)
         * How tool calling works under the hood (how JSON schemas turn into actions)
-        * How to implement an agent loop
+        * What an agent loop is and how to implement it
         * How to safely execute system commands and file edits
-        * How to manage conversation history and context windows
+        * Managing conversation history and context windows
         In the advanced stages, you'll discover AI concepts, such as integrating the Model Context Protocol (MCP), connecting to LSP servers for better code understanding, building interactive TUIs, and adding web search capabilities.
         As your code gets more complex, you'll be forced to structure and refactor it to avoid regressions and make adding new features easier.
     - question_markdown: "Why should I build such a project?"
