@@ -4,8 +4,8 @@
 # unless you really need them.
 debug: false
 
-# Use this to change the Go version used to run your code
+# Use this to change the {{language_name}} version used to run your code
 # on Codecrafters.
 #
-# Available versions: go-1.25
-buildpack: go-1.25
+# Available versions: {{buildpack_with_version}}
+buildpack: {{buildpack_with_version}}
