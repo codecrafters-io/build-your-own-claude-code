@@ -8,5 +8,5 @@
 
 set -e # Exit on failure
 
-UV_WORKING_DIR="$(dirname "$0")" \
+UV_PROJECT="$(dirname "$0")" \
 exec uv run --quiet -m app.main "$@"
