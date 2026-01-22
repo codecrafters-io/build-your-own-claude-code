@@ -1,4 +1,4 @@
-@@ -1,56 +1,52 @@
+@@ -1,53 +1,49 @@
  import OpenAI, { ChatCompletionRequestMessage } from "openai";
 
  async function makeChatCompletion(client: OpenAI, prompt: string): Promise<string | null> {
@@ -13,8 +13,6 @@
          console.error(`error: ${error}`);
          process.exit(1);
      }
-
-     return null;
  }
 
  async function main(): Promise<void> {
@@ -53,7 +51,6 @@
 -    // process.stdout.write(result ?? "");
 +    const result: string | null = await makeChatCompletion(client, prompt);
 +    process.stdout.write(result ?? "");
-
  }
 
  main();
