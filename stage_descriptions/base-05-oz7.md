@@ -1,4 +1,4 @@
-In this stage, you'll add support for the `Write` tool.
+In this stage, you'll add support for the `Write` tool that writes content to files.
 
 ### The `Write` Tool
 

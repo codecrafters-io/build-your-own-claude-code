@@ -51,12 +51,12 @@ When you detect a `tool_calls` array in the response:
 
 ### Tests
 
-The tester will create a random file `/path/to/main.py`.
+The tester will create a random file, eg. `apple.py`.
 
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Print ONLY the contents of the file `/path/to/main.py`. No backticks either."
+$ ./your_program.sh -p "What is the content of `apple.py`? Print exact file contents without backticks."
 <file contents>
 ```
 
@@ -64,8 +64,8 @@ The tester will assert that the output matches the exact contents of the file.
 
 ### Notes
 
-- For this stage, you only need to print the result of the first tool call. The tester will only test against prompts that will result in one tool call in the response from the LLM. We'll get to handling multiple tool calls in the next stage.
+- For this stage, you only need to print the result of the first tool call. The tester will only test against prompts that will result in one tool call in the response from the LLM. We'll get to handling multiple tool calls in later stages.
 
-- For this stage, you only need to print the result of the tool call. You don't need to send the result back to the LLM. We'll get to implementing the agent loop in the next stage.
+- For this stage, you only need to print the result of the tool call. You don't need to send the result back to the LLM. We'll get to implementing the agent loop in later stagrs.
 
 - [OpenRouter API Specification](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request) (OpenRouter's API is compatible with OpenAI's format)

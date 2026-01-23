@@ -1,4 +1,4 @@
-In this stage, you'll add support for the `Bash` tool.
+In this stage, you'll add support for the `Bash` tool that executes bash commands.
 
 ### The Bash Tool
 
@@ -34,16 +34,22 @@ To add support for the `Bash` tool:
 
 ### Tests
 
-- The tester will create multiple files inside a directory `/path/to/dir`.
+The tester will create three files:
+  - `app/main.js` - Main project file
+  - `README.md` - The current readme file
+  - `README_old.md` - An old readme file
 
-The tester will execute your program like this:
+The tester will then execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "List all the JSON files inside `/path/to/dir` one per line. List only basenames in sorted alphabetical order. Nothing else. No backticks either."
-
+$ ./your_program.sh -p "Delete the old readme file."
 ```
 
-- The tester will assert that the output consists of the basenames of all JSON files inside `/path/to/dir`, sorted alphabetically, with one filename per line.
+The tester will assert that:
+  - `README_old.md` has been deleted (no longer exists)
+  - `app/main.js` remains intact with its original contents
+  - `README.md` remains intact with its original contents
+  - Your program responds with "Deleted README_old.md" and exits with code 0.
 
 ### Notes
 
@@ -53,4 +59,4 @@ $ ./your_program.sh -p "List all the JSON files inside `/path/to/dir` one per li
   - `RunBashCommand`
   - `run_bash_command`, etc.
 
-- The result of the Bash tool call should be sent back to the LLM as part of the agent loop (which was implemented in stage 5).
+- The result of the Bash tool call should be sent back to the LLM as part of the agent loop (which was implemented in earlier stages).

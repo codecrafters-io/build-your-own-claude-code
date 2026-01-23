@@ -77,7 +77,7 @@ stages:
     name: "Communicate with LLM"
     difficulty: very_easy
     marketing_md: |-
-      Claude Code uses HTTP RESTful API to communicate with the Large Language Model (LLM). In this stage, you'll communicate with the provided LLM using an [OpenAI-compatible API](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
+      In this stage, you'll implement communication with the provided LLM using an [OpenAI-compatible API](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
 
   - slug: "aq1"
     name: "Advertise Read Tool"
@@ -101,16 +101,16 @@ stages:
     name: "Write Tool"
     difficulty: easy
     marketing_md: |-
-      In this stage, you'll add support for the `Write` tool.
+      In this stage, you'll add support for the `Write` tool that writes content to files.
 
   - slug: "bp2"
-    name: "Edit Tool"
+    name: "Glob Tool"
     difficulty: easy
     marketing_md: |-
-      In this stage, you'll add support for the `Edit` tool.
+      In this stage, you'll add support for the `Glob` tool that searches for file using glob patterns.
 
   - slug: "oq5"
     name: "Bash Tool"
     difficulty: easy
     marketing_md: |-
-      In this stage, you'll add support for the `Bash` tool.
+      In this stage, you'll add support for the `Bash` tool that executes bash commands.
