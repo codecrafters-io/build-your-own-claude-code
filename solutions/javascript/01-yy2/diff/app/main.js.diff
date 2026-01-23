@@ -1,4 +1,4 @@
-@@ -1,40 +1,36 @@
+@@ -1,39 +1,35 @@
  import OpenAI from "openai";
 
  async function main() {
@@ -16,8 +16,7 @@
      throw new Error("OPENROUTER_BASE_URL is not set");
    }
    if (flag !== "-p" || !prompt) {
-     console.error("error: -p flag is required");
-     process.exit(1);
+     throw new Error("error: -p flag is required");
    }
 
    const client = new OpenAI({
