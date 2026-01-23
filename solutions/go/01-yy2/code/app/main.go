@@ -25,9 +25,21 @@ func main() {
 		panic("Prompt must not be empty")
 	}
 
+	apiKey := os.Getenv("OPENROUTER_API_KEY")
+	if apiKey == "" {
+		fmt.Fprintln(os.Stderr, "error: OPENROUTER_API_KEY environment variable is not set")
+		os.Exit(1)
+	}
+
+	baseURL := os.Getenv("OPENROUTER_BASE_URL")
+	if baseURL == "" {
+		fmt.Fprintln(os.Stderr, "error: OPENROUTER_BASE_URL environment variable is not set")
+		os.Exit(1)
+	}
+
 	client := openai.NewClient(
-		option.WithAPIKey(os.Getenv("OPENROUTER_API_KEY")),
-		option.WithBaseURL(os.Getenv("OPENROUTER_BASE_URL")),
+		option.WithAPIKey(apiKey),
+		option.WithBaseURL(baseURL),
 	)
 	resp, err := client.Chat.Completions.New(context.Background(),
 		openai.ChatCompletionNewParams{
