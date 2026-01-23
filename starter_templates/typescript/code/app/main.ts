@@ -9,10 +9,12 @@ async function main() {
     const baseURL = process.env.OPENROUTER_BASE_URL;
 
     if (!apiKey) {
-        throw new Error("OPENROUTER_API_KEY is not set")
+        console.error("error: OPENROUTER_API_KEY environment variable is not set");
+        process.exit(1);
     }
     if (!baseURL) {
-        throw new Error("OPENROUTER_BASE_URL is not set")
+        console.error("error: OPENROUTER_BASE_URL environment variable is not set");
+        process.exit(1);
     }
     if (flag !== "-p" || !prompt) {
         console.error("error: -p flag is required");
@@ -30,11 +32,15 @@ async function main() {
     });
 
     if (!response.choices || response.choices.length === 0) {
-        throw new Error("no choices in response");
+        console.error("error: no choices in response");
+        process.exit(1);
     }
 
     // TODO: Uncomment the lines below to pass the first stage
     // console.log(response.choices[0].message.content);
 }
 
-main();
+main().catch(err => {
+    console.error(`error: ${err.message}`);
+    process.exit(1);
+});
