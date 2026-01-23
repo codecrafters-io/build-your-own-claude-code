@@ -57,3 +57,5 @@ The tester will assert that:
   - `glob`
   - `GlobPattern`
   - `GlobSearch`, etc.
+
+- The tester will only check the files' contents and exit code, and not the output of your program.

@@ -60,3 +60,5 @@ The tester will assert that:
   - `run_bash_command`, etc.
 
 - The result of the Bash tool call should be sent back to the LLM as part of the agent loop (which was implemented in earlier stages).
+
+- The tester will only check the exit code, and if the specified file was deleted, but not the output of your program.

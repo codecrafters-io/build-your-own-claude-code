@@ -61,4 +61,4 @@ The tester will assert that:
   - `write_file`
   - `WriteFile`, etc.
 
-- The tester will only check the files' contents, and not the output of your program.
+- The tester will only check the file's contents and exit code, and not the output of your program.
