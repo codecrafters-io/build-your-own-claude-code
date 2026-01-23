@@ -22,7 +22,14 @@ def main():
         model="anthropic/claude-haiku-4.5",
         messages=[{"role": "user", "content": args.p}],
     )
-    print(chat.choices[0].message.content, end="")
+    if not chat.choices:
+        print("error: no choices in response", file=sys.stderr)
+        sys.exit(1)
+    content = chat.choices[0].message.content
+    if not content:
+        print("error: empty content in response", file=sys.stderr)
+        sys.exit(1)
+    print(content, end="")
 
 if __name__ == "__main__":
     main()
