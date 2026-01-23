@@ -1,4 +1,4 @@
-@@ -1,34 +1,30 @@
+@@ -1,36 +1,32 @@
  import argparse, os, sys
  from openai import OpenAI
 
@@ -14,30 +14,25 @@
      base_url = os.getenv("OPENROUTER_BASE_URL")
 
      if not api_key:
-         print("error: OPENROUTER_API_KEY is not set", file=sys.stderr)
-         sys.exit(1)
+         raise RuntimeError("OPENROUTER_API_KEY is not set")
 
      if not base_url:
-         print("error: OPENROUTER_BASE_URL is not set", file=sys.stderr)
-         sys.exit(1)
+         raise RuntimeError("OPENROUTER_BASE_URL is not set")
+         
 
--    # TODO: Uncomment the following lines to pass the first stage
--    # client = OpenAI(api_key=api_key, base_url=base_url)
--    # chat = client.chat.completions.create(
--    #     model="anthropic/claude-haiku-4.5",
--    #     messages=[{"role": "user", "content": args.p}],
--    # )
--    # if not chat.choices or len(chat.choices) == 0:
--    #     raise RuntimeError("no choices in response")
--    # print(chat.choices[0].message.content, end="")
-+    client = OpenAI(api_key=api_key, base_url=base_url)
-+    chat = client.chat.completions.create(
-+        model="anthropic/claude-haiku-4.5",
-+        messages=[{"role": "user", "content": args.p}],
-+    )
-+    if not chat.choices or len(chat.choices) == 0:
-+        raise RuntimeError("no choices in response")
-+    print(chat.choices[0].message.content, end="")
+     client = OpenAI(api_key=api_key, base_url=base_url)
+
+     chat = client.chat.completions.create(
+         model="anthropic/claude-haiku-4.5",
+         messages=[{"role": "user", "content": args.p}],
+     )
+
+     if not chat.choices or len(chat.choices) == 0:
+         raise RuntimeError("no choices in response")
+
+-    # TODO: Uncomment the following line to pass the first stage
+-    # print(chat.choices[0].message.content)
++    print(chat.choices[0].message.content)
 
  if __name__ == "__main__":
      main()
