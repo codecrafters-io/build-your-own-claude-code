@@ -42,14 +42,14 @@ The tester will create three files:
 The tester will then execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Delete the old readme file."
+$ ./your_program.sh -p "Delete the old readme file. Always respond with `Deleted README_old.md`"
 ```
 
 The tester will assert that:
   - `README_old.md` has been deleted (no longer exists)
   - `app/main.js` remains intact with its original contents
   - `README.md` remains intact with its original contents
-  - Your program responds with "Deleted README_old.md" and exits with code 0.
+  - Your program exits with code 0.
 
 ### Notes
 
@@ -60,3 +60,5 @@ The tester will assert that:
   - `run_bash_command`, etc.
 
 - The result of the Bash tool call should be sent back to the LLM as part of the agent loop (which was implemented in earlier stages).
+
+- The tester will only check the exit code, and if the specified file was deleted, but not the output of your program.

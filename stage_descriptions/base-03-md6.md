@@ -60,7 +60,9 @@ $ ./your_program.sh -p "What is the content of `apple.py`? Print exact file cont
 <file contents>
 ```
 
-The tester will assert that the output matches the exact contents of the file.
+The tester will assert that:
+  - The output matches the exact contents of the file.
+  - Your program exits with exit code 0.
 
 ### Notes
 

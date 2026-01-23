@@ -35,17 +35,23 @@ To add support for the `Write` tool:
 1. Advertise the `Write` tool in your request's `tools` array, specifying the function's name, description, and parameters.
 2. When you detect `Write` tool calls in the LLM's response, extract the arguments for each tool call.
 3. For each tool call, create the file if it does not exist, or overwrite the file if it already exists, with the specified content.
-4. The result of each tool call should be sent back to the LLM as part of the agent loop (which was implemented in stage 5)
+4. The result of each tool call should be sent back to the LLM as part of the agent loop (which was implemented in earlier stages).
 
 ### Tests
 
-The tester will execute your program like this:
+The tester will create the following:
+  - `README.md` - Contains instructions for the project
+  - `app/` directory - Required for the project
+
+The tester will then execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Create a README.md file with contents 'My simple project'."
+$ ./your_program.sh -p "Read README.md and create the required file. File should have 1 line. Reply with `Created the file`"
 ```
 
-- The tester will assert that `README.md` is created containing the project name and description.
+The tester will assert that:
+  - The required file is created.
+  - Your program exits with exit code 0.
 
 ### Notes
 
@@ -55,4 +61,4 @@ $ ./your_program.sh -p "Create a README.md file with contents 'My simple project
   - `write_file`
   - `WriteFile`, etc.
 
-- The tester will only check the files' contents, and not the output of your program.
+- The tester will only check the file's contents and exit code, and not the output of your program.

@@ -47,7 +47,9 @@ $ ./your_program.sh -p "How many tools are available to you in this request? Num
 1
 ```
 
-The tester will assert that the output is a positive number.
+The tester will assert that:
+  - The output is a positive number.
+  - Your program exits with exit code 0.
 
 ### Notes
 
