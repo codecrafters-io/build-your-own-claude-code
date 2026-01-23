@@ -51,12 +51,12 @@ When you detect a `tool_calls` array in the response:
 
 ### Tests
 
-The tester will create a random file `/path/to/main.py`.
+The tester will create a random file, eg. `apple.py`.
 
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Print ONLY the contents of the file `/path/to/main.py`. No backticks either."
+$ ./your_program.sh -p "What is the content of `apple.py`? Print exact file contents without backticks."
 <file contents>
 ```
 

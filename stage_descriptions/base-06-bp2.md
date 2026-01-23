@@ -43,15 +43,21 @@ To add support for the `Edit` tool:
 
 ### Tests
 
-- The tester will create a file `config.txt` containing incorrect port number.
+The tester will create two Python test files in the `app` directory:
+  - `app/test_arithmetic.py` - contains a buggy assertion for the `add` function
+  - `app/test_geometry.py` - contains a buggy assertion for the `area_of_square` function
+  - `app/main.py` containing the correct implementations of these functions.
 
 The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Change the port in config.txt to 3000"
+$ ./your_program.sh -p "Fix all bugs in files in `app` that start with `test`. Respond with `Fixed all bugs`"
 ```
 
-- The tester will assert that `config.txt` contains the port number 3000. 
+The tester will assert that:
+  - `app/test_arithmetic.py` contains the corrected assertion: `assert add(1, 1) == 2` (changed from `== 3`)
+  - `app/test_geometry.py` contains the corrected assertion: `assert area_of_square(5) == 25` (changed from `== 55`)
+  - Your program responds with `Fixed all bugs` and exits with code 0.
 
 ### Notes
 

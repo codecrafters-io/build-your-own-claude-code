@@ -39,13 +39,22 @@ To add support for the `Write` tool:
 
 ### Tests
 
-The tester will execute your program like this:
+The tester will create a simple python project structured as follows:
+
+- `README.md`
+- `app/`
+
+The `README.md` will contain what the project should do and the file it should contain.
+
+The tester will then run your program like this:
 
 ```bash
-$ ./your_program.sh -p "Create a README.md file with contents 'My simple project'."
+$ ./your_program.sh -p "Read README.md and create the required file. File should have 1 line. Reply with `Created the file`"
 ```
 
-- The tester will assert that `README.md` is created containing the project name and description.
+The tester will assert that:
+  - The required file is created
+  - Your program responds with `Created the file` and exits with code 0.
 
 ### Notes
 

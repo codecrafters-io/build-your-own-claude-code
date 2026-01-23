@@ -87,17 +87,23 @@ Messages should be appended to the conversation history (e.g., user prompt → a
 
 ### Tests
 
-- The tester will create a file `manifest.txt` containing two file paths, one per line.
+The tester will create a simple python project dealing with information about a chemical. 
 
-The tester will execute your program like this:
+The files will be:
+  - `README.md`
+  - `app/main.py`
+  - `app/helper.py`
+
+The name of `main.py` and `helper.py` will be randomized.
+
+The tester will then execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Read manifest.txt and print ONLY the contents of both files in order they appear in manifest. No backticks either."
-<contents of both files in order>
+$ ./your_program.sh -p "Use README.md to determine the chemical expiry period in months. Number only."
+<Exact expiry period of the chemical in months>
 ```
 
-- Read `manifest.txt` to get the file paths.
-- Read both files and print their contents in the order they appear in the manifest.
+The tester will assert that the output is the expiry period of the chemical in months as found in the project.
 
 ### Notes
 
