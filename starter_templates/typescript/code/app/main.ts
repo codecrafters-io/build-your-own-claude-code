@@ -18,16 +18,11 @@ async function main() {
     //     apiKey: process.env.OPENROUTER_API_KEY,
     //     baseURL: process.env.OPENROUTER_BASE_URL,
     // });
-    // try {
-    //     const response = await client.chat.completions.create({
-    //         model: "anthropic/claude-haiku-4.5",
-    //         messages: [{ role: "user", content: process.argv[3] }],
-    //     });
-    //     process.stdout.write(response.choices[0]?.message?.content ?? "");
-    // } catch (error) {
-    //     console.error(error);
-    //     process.exit(1);
-    // }    
+    // const response = await client.chat.completions.create({
+    //     model: "anthropic/claude-haiku-4.5",
+    //     messages: [{ role: "user", content: process.argv[3] }],
+    // });
+    // process.stdout.write(response.choices[0]?.message?.content ?? "");
 }
 
 main();
