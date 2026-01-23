@@ -24,6 +24,10 @@ func main() {
 	flag.StringVar(&prompt, "p", "", "Prompt to send to LLM")
 	flag.Parse()
 
+	if prompt == "" {
+		panic("Prompt must not be empty")
+	}
+
 	// TODO: Uncomment the lines below to pass the first stage
 	// client := openai.NewClient(
 	// 	option.WithAPIKey(os.Getenv("OPENROUTER_API_KEY")),
@@ -46,6 +50,9 @@ func main() {
 	// if err != nil {
 	// 	fmt.Fprintf(os.Stderr, "error: %v\n", err)
 	// 	os.Exit(1)
+	// }
+	// if len(resp.Choices) == 0 {
+	// 	panic("no choices in response")
 	// }
 	// fmt.Print(resp.Choices[0].Message.Content)
 }
