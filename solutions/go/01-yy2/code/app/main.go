@@ -10,12 +10,6 @@ import (
 	"github.com/openai/openai-go/v3/option"
 )
 
-// Ensures gofmt does not remove the 'context', 'openai', and 'openai/option' import
-// Feel free to remove this
-var _ = context.Background
-var _ = openai.NewClient
-var _ = option.WithAPIKey
-
 func main() {
 	var prompt string
 	flag.StringVar(&prompt, "p", "", "Prompt to send to LLM")
@@ -58,5 +52,6 @@ func main() {
 	if len(resp.Choices) == 0 {
 		panic("No choices in response")
 	}
+
 	fmt.Print(resp.Choices[0].Message.Content)
 }
