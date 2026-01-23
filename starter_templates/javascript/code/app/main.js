@@ -9,8 +9,12 @@ async function main() {
         console.error("error: OPENROUTER_API_KEY or OPENROUTER_BASE_URL not set");
         process.exit(1);
     }
-    if (flag !== "-p" || !prompt) {
+    if (flag !== "-p") {
         console.error("error: -p flag is required");
+        process.exit(1);
+    }
+    if (!prompt) {
+        console.error("error: prompt value is required");
         process.exit(1);
     }
 
