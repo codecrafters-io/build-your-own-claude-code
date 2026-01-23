@@ -20,7 +20,16 @@ async function main() {
           model: "anthropic/claude-haiku-4.5",
           messages: [{ role: "user", content: process.argv[3] }],
       });
-      process.stdout.write(response.choices[0]?.message?.content ?? "");
+      if (!response.choices || response.choices.length === 0) {
+          console.error("error: no choices in response");
+          process.exit(1);
+      }
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+          console.error("error: empty content in response");
+          process.exit(1);
+      }
+      process.stdout.write(content);
   } catch (error) {
       console.error(error);
       process.exit(1);
