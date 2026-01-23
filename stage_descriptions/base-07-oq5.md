@@ -42,7 +42,7 @@ The tester will create three files:
 The tester will then execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Delete the old readme file."
+$ ./your_program.sh -p "Delete the old readme file. Respond with `Deleted README_old.md`"
 ```
 
 The tester will assert that:
