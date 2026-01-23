@@ -89,12 +89,9 @@ Messages should be appended to the conversation history (e.g., user prompt → a
 
 The tester will create a simple python project dealing with information about a chemical. 
 
-The files will be:
+The project will include:
   - `README.md`
-  - `app/main.py`
-  - `app/helper.py`
-
-The name of `main.py` and `helper.py` will be randomized.
+  - Two Python files in the `app/` directory with randomized names.
 
 The tester will then execute your program like this:
 

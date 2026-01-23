@@ -4,7 +4,7 @@ In this stage, you'll add support for advertising the `Read` tool in the request
 
 Tools are functions that the LLM can request Claude Code to call to perform specific actions. By advertising tools in the request, Claude Code tells the LLM what capabilities are available to it.
 
-Claude Code has access to many powerful tools including Read, Write, Edit, Bash, Grep, and more (see [Tools available to Claude Code](https://code.claude.com/docs/en/settings#tools-available-to-claude)).
+Claude Code has access to many powerful tools including Read, Write, Glob, Bash, Grep, and more (see [Tools available to Claude Code](https://code.claude.com/docs/en/settings#tools-available-to-claude)).
 
 For this stage, you'll only need to advertise the `Read` tool, which allows the LLM to ask Claude Code to read file contents.
 
@@ -57,6 +57,6 @@ The tester will assert that the output is a positive number.
   - `read_file`
   - `ReadFile`, etc.
 
-- In this stage, you'll only need to advertise the availability of the `Read` tool in your request. We'll get to tool call execution in the next stage.
+- In this stage, you'll only need to advertise the availability of the `Read` tool in your request. We'll get to tool call execution in later stages.
 
 - [OpenRouter API Specification for Tools](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request#request.body.tools)

@@ -59,4 +59,4 @@ The tester will assert that:
   - `RunBashCommand`
   - `run_bash_command`, etc.
 
-- The result of the Bash tool call should be sent back to the LLM as part of the agent loop (which was implemented in stage 5).
+- The result of the Bash tool call should be sent back to the LLM as part of the agent loop (which was implemented in earlier stages).
