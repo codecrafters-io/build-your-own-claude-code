@@ -52,6 +52,11 @@ func main() {
 	if len(resp.Choices) == 0 {
 		panic("No choices in response")
 	}
+	content := resp.Choices[0].Message.Content
+	if content == "" {
+		fmt.Fprintf(os.Stderr, "error: empty content in response\n")
+		os.Exit(1)
+	}
 
-	fmt.Print(resp.Choices[0].Message.Content)
+	fmt.Print(content)
 }
