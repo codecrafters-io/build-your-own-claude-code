@@ -15,8 +15,7 @@ async function main() {
         throw new Error("OPENROUTER_BASE_URL is not set")
     }
     if (flag !== "-p" || !prompt) {
-        console.error("error: -p flag is required");
-        process.exit(1);
+        throw new Error("error: -p flag is required");
     }
 
     const client = new OpenAI({
