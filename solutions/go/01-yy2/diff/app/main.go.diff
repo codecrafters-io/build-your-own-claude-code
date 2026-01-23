@@ -61,7 +61,7 @@
 -	// 	os.Exit(1)
 -	// }
 -	// if len(resp.Choices) == 0 {
--	// 	panic("no choices in response")
+-	// 	panic("No choices in response")
 -	// }
 -	// fmt.Print(resp.Choices[0].Message.Content)
 +	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
@@ -84,7 +84,7 @@
 +		os.Exit(1)
 +	}
 +	if len(resp.Choices) == 0 {
-+		panic("no choices in response")
++		panic("No choices in response")
 +	}
 +	fmt.Print(resp.Choices[0].Message.Content)
  }

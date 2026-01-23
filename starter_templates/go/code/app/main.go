@@ -60,7 +60,7 @@ func main() {
 	// 	os.Exit(1)
 	// }
 	// if len(resp.Choices) == 0 {
-	// 	panic("no choices in response")
+	// 	panic("No choices in response")
 	// }
 	// fmt.Print(resp.Choices[0].Message.Content)
 }
