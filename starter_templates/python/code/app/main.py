@@ -11,8 +11,13 @@ def main():
 
     api_key = os.getenv("OPENROUTER_API_KEY")
     base_url = os.getenv("OPENROUTER_BASE_URL")
-    if not api_key or not base_url:
-        print("error: OPENROUTER_API_KEY or OPENROUTER_BASE_URL not set", file=sys.stderr)
+
+    if not api_key:
+        print("error: OPENROUTER_API_KEY is not set", file=sys.stderr)
+        sys.exit(1)
+
+    if not base_url:
+        print("error: OPENROUTER_BASE_URL is not set", file=sys.stderr)
         sys.exit(1)
 
     # TODO: Uncomment the following lines to pass the first stage
