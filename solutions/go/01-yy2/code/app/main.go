@@ -10,39 +10,22 @@ import (
 	"github.com/openai/openai-go/v3/option"
 )
 
+// Ensures gofmt does not remove the 'context', 'openai', and 'openai/option' import
+// Feel free to remove this
+var _ = context.Background
+var _ = openai.NewClient
+var _ = option.WithAPIKey
+
 func main() {
-	// Get the prompt from the -p flag
 	var prompt string
 	flag.StringVar(&prompt, "p", "", "Prompt to send to LLM")
 	flag.Parse()
 
-	if prompt == "" {
-		fmt.Fprintf(os.Stderr, "error: -p flag is required\n")
-		os.Exit(1)
-	}
-
-	// Get API key and base URL from environment variables
-	apiKey := os.Getenv("OPENROUTER_API_KEY")
-	if apiKey == "" {
-		fmt.Fprintf(os.Stderr, "error: OPENROUTER_API_KEY environment variable is not set\n")
-		os.Exit(1)
-	}
-
-	baseURL := os.Getenv("OPENROUTER_BASE_URL")
-	if baseURL == "" {
-		fmt.Fprintf(os.Stderr, "error: OPENROUTER_BASE_URL environment variable is not set\n")
-		os.Exit(1)
-	}
-
-	// Create OpenAI client configured for OpenRouter
 	client := openai.NewClient(
-		option.WithAPIKey(apiKey),
-		option.WithBaseURL(baseURL),
+		option.WithAPIKey(os.Getenv("OPENROUTER_API_KEY")),
+		option.WithBaseURL(os.Getenv("OPENROUTER_BASE_URL")),
 	)
-
-	// Make the API request
-	chatCompletion, err := client.Chat.Completions.New(
-		context.Background(),
+	resp, err := client.Chat.Completions.New(context.Background(),
 		openai.ChatCompletionNewParams{
 			Model: "anthropic/claude-haiku-4.5",
 			Messages: []openai.ChatCompletionMessageParamUnion{
@@ -56,23 +39,9 @@ func main() {
 			},
 		},
 	)
-
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
-
-	// Check if we got a response
-	if len(chatCompletion.Choices) == 0 {
-		fmt.Fprintf(os.Stderr, "error: no choices in response\n")
-		os.Exit(1)
-	}
-
-	// Print the response content
-	content := chatCompletion.Choices[0].Message.Content
-	if content == "" {
-		fmt.Fprintf(os.Stderr, "error: empty content in response\n")
-		os.Exit(1)
-	}
-	fmt.Print(content)
+	fmt.Print(resp.Choices[0].Message.Content)
 }
