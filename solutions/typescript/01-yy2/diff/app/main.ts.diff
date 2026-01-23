@@ -1,4 +1,4 @@
-@@ -1,29 +1,25 @@
+@@ -1,32 +1,28 @@
  import OpenAI from "openai";
 
  async function main() {
@@ -24,7 +24,10 @@
 -    //     model: "anthropic/claude-haiku-4.5",
 -    //     messages: [{ role: "user", content: prompt }],
 -    // });
--    // console.log(response.choices[0]?.message?.content ?? "");
+-    // if (!response.choices || response.choices.length === 0) {
+-    //     throw new Error("no choices in response");
+-    // }
+-    // console.log(response.choices[0].message.content);
 +    const client = new OpenAI({
 +        apiKey: process.env.OPENROUTER_API_KEY,
 +        baseURL: process.env.OPENROUTER_BASE_URL,
@@ -33,7 +36,10 @@
 +        model: "anthropic/claude-haiku-4.5",
 +        messages: [{ role: "user", content: prompt }],
 +    });
-+    console.log(response.choices[0]?.message?.content ?? "");
++    if (!response.choices || response.choices.length === 0) {
++        throw new Error("no choices in response");
++    }
++    console.log(response.choices[0].message.content);
  }
 
  main();

@@ -23,7 +23,10 @@ async function main() {
     //     model: "anthropic/claude-haiku-4.5",
     //     messages: [{ role: "user", content: prompt }],
     // });
-    // console.log(response.choices[0]?.message?.content ?? "");
+    // if (!response.choices || response.choices.length === 0) {
+    //     throw new Error("no choices in response");
+    // }
+    // console.log(response.choices[0].message.content);
 }
 
 main();
