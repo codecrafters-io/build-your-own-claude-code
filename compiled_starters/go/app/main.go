@@ -28,11 +28,19 @@ func main() {
 		panic("Prompt must not be empty")
 	}
 
+	apiKey := os.Getenv("OPENROUTER_API_KEY")
+	baseUrl := os.Getenv("OPENROUTER_BASE_URL")
+
+	if apiKey == "" {
+		panic("Env variable OPENROUTER_API_KEY not found")
+	}
+
+	if baseUrl == "" {
+		panic("Env variable OPENROUTER_BASE_URL not found")
+	}
+
 	// TODO: Uncomment the lines below to pass the first stage
-	// client := openai.NewClient(
-	// 	option.WithAPIKey(os.Getenv("OPENROUTER_API_KEY")),
-	// 	option.WithBaseURL(os.Getenv("OPENROUTER_BASE_URL")),
-	// )
+	// client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
 	// resp, err := client.Chat.Completions.New(context.Background(),
 	// 	openai.ChatCompletionNewParams{
 	// 		Model: "anthropic/claude-haiku-4.5",
