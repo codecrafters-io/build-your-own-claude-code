@@ -56,6 +56,6 @@ func main() {
 		panic("No choices in response")
 	}
 
-	// TODO: Uncomment the lines below to pass the first stage
+	// TODO: Uncomment the line below to pass the first stage
 	// fmt.Print(resp.Choices[0].Message.Content)
 }
