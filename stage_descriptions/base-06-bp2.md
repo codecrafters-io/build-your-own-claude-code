@@ -37,7 +37,7 @@ To add support for the `Glob` tool:
 The tester will create the following files in the `app` directory:
   - `test_arithmetic.py` - Contains a buggy assertion for the `add` function
   - `test_geometry.py` - Contains a buggy assertion for the `area_of_square` function
-  - `main.py` Contains the correct implementations of these functions.
+  - `main.py` - Contains the correct implementations of these functions.
 
 The tester will execute your program like this:
 
