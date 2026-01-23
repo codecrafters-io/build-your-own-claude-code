@@ -1,4 +1,4 @@
-In this stage, you'll add support for the `Bash` tool.
+In this stage, you'll add support for the `Bash` tool that executes bash commands.
 
 ### The Bash Tool
 

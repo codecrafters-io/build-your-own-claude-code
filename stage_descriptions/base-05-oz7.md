@@ -1,4 +1,4 @@
-In this stage, you'll add support for the `Write` tool.
+In this stage, you'll add support for the `Write` tool that writes content to files.
 
 ### The `Write` Tool
 
@@ -35,26 +35,17 @@ To add support for the `Write` tool:
 1. Advertise the `Write` tool in your request's `tools` array, specifying the function's name, description, and parameters.
 2. When you detect `Write` tool calls in the LLM's response, extract the arguments for each tool call.
 3. For each tool call, create the file if it does not exist, or overwrite the file if it already exists, with the specified content.
-4. The result of each tool call should be sent back to the LLM as part of the agent loop (which was implemented in earlier stages)
+4. The result of each tool call should be sent back to the LLM as part of the agent loop (which was implemented in stage 5)
 
 ### Tests
 
-The tester will create a simple python project structured as follows:
-
-- `README.md`
-- `app/`
-
-The `README.md` will contain what the project should do and the file it should contain.
-
-The tester will then run your program like this:
+The tester will execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Read README.md and create the required file. File should have 1 line. Reply with `Created the file`"
+$ ./your_program.sh -p "Create a README.md file with contents 'My simple project'."
 ```
 
-The tester will assert that:
-  - The required file is created
-  - Your program responds with `Created the file` and exits with code 0.
+- The tester will assert that `README.md` is created containing the project name and description.
 
 ### Notes
 
@@ -63,3 +54,5 @@ The tester will assert that:
   - `write`
   - `write_file`
   - `WriteFile`, etc.
+
+- The tester will only check the files' contents, and not the output of your program.

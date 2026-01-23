@@ -1,4 +1,4 @@
-In this stage, you'll add support for the `Glob` tool.
+In this stage, you'll add support for the `Glob` tool that searches for file using glob patterns.
 
 ### The `Glob` Tool
 
@@ -30,7 +30,7 @@ To add support for the `Glob` tool:
 1. Advertise the `Glob` tool in your request's `tools` array, specifying the function's name, description, and parameters.
 2. When you detect `Glob` tool calls in the LLM's response, extract the arguments for each tool call.
 3. For each tool call, search for the files using the specified pattern.
-4. The result of each tool call should be sent back to the LLM as part of the agent loop (which was implemented in stage 5)
+4. The result of each tool call should be sent back to the LLM as part of the agent loop (which was implemented in earlier stages).
 
 ### Tests
 

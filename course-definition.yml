@@ -100,16 +100,16 @@ stages:
     name: "Write Tool"
     difficulty: easy
     marketing_md: |-
-      In this stage, you'll add support for the `Write` tool.
+      In this stage, you'll add support for the `Write` tool that writes content to files.
 
   - slug: "bp2"
     name: "Glob Tool"
     difficulty: easy
     marketing_md: |-
-      In this stage, you'll add support for the `Glob` tool.
+      In this stage, you'll add support for the `Glob` tool that searches for file using glob patterns.
 
   - slug: "oq5"
     name: "Bash Tool"
     difficulty: easy
     marketing_md: |-
-      In this stage, you'll add support for the `Bash` tool.
+      In this stage, you'll add support for the `Bash` tool that executes bash commands.
