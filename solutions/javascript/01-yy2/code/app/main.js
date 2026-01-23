@@ -1,46 +1,30 @@
 import OpenAI from "openai";
 
-async function makeChatCompletion(client, prompt) {
-  try {
-    const response = await client.chat.completions.create({
-      model: "anthropic/claude-haiku-4.5",
-      messages: [{ role: "user", content: prompt }],
-    });
-    return response.choices?.[0]?.message?.content;
-  } catch (error) {
-    console.error(`error: ${error}`);
-    process.exit(1);
-  }
-  return null;
-}
-
 async function main() {
-  // Get the prompt from the -p flag
-  const args = process.argv;
-  let prompt;
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === "-p" && i + 1 < args.length) {
-      prompt = args[i + 1];
-      break;
-    }
-  }
-  if (!prompt) {
-    console.error("error: -p flag is required");
-    process.exit(1);
-  }
-
-  // Get API key and base URL from environment variables
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  const baseURL = process.env.OPENROUTER_BASE_URL;
-  if (!apiKey || !baseURL) {
+  if (!process.env.OPENROUTER_API_KEY || !process.env.OPENROUTER_BASE_URL) {
     console.error("error: OPENROUTER_API_KEY or OPENROUTER_BASE_URL not set");
     process.exit(1);
   }
 
-  const client = new OpenAI({ apiKey, baseURL });
+  if (process.argv[2] !== "-p" || !process.argv[3]) {
+    console.error("error: -p flag is required");
+    process.exit(1);
+  }
 
-  const result = await makeChatCompletion(client, prompt);
-  process.stdout.write(result);
+  const client = new OpenAI({
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: process.env.OPENROUTER_BASE_URL,
+  });
+  try {
+      const response = await client.chat.completions.create({
+          model: "anthropic/claude-haiku-4.5",
+          messages: [{ role: "user", content: process.argv[3] }],
+      });
+      process.stdout.write(response.choices[0]?.message?.content ?? "");
+  } catch (error) {
+      console.error(error);
+      process.exit(1);
+  }
 }
 
 main();
