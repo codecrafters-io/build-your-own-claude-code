@@ -13,8 +13,12 @@ async function main() {
         console.error("error: OPENROUTER_BASE_URL not set");
         process.exit(1);
     }
-    if (flag !== "-p" || !prompt) {
+    if (flag !== "-p") {
         console.error("error: -p flag is required");
+        process.exit(1);
+    }
+    if (!prompt) {
+        console.error("error: prompt value is required");
         process.exit(1);
     }
 
@@ -29,7 +33,15 @@ async function main() {
     if (!response.choices || response.choices.length === 0) {
         throw new Error("no choices in response");
     }
-    console.log(response.choices[0].message.content);
+    const content = response.choices[0].message.content;
+    if (!content) {
+        console.error("error: empty content in response");
+        process.exit(1);
+    }
+    process.stdout.write(content);
 }
 
-main();
+main().catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+});

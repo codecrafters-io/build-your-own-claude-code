@@ -1,4 +1,4 @@
-@@ -1,39 +1,35 @@
+@@ -1,48 +1,44 @@
  import OpenAI from "openai";
 
  async function main() {
@@ -17,8 +17,12 @@
          console.error("error: OPENROUTER_BASE_URL not set");
          process.exit(1);
      }
-     if (flag !== "-p" || !prompt) {
+     if (flag !== "-p") {
          console.error("error: -p flag is required");
+         process.exit(1);
+     }
+     if (!prompt) {
+         console.error("error: prompt value is required");
          process.exit(1);
      }
 
@@ -34,7 +38,12 @@
 -    // if (!response.choices || response.choices.length === 0) {
 -    //     throw new Error("no choices in response");
 -    // }
--    // console.log(response.choices[0].message.content);
+-    // const content = response.choices[0].message.content;
+-    // if (!content) {
+-    //     console.error("error: empty content in response");
+-    //     process.exit(1);
+-    // }
+-    // process.stdout.write(content);
 +    const client = new OpenAI({
 +        apiKey: apiKey,
 +        baseURL: baseURL,
@@ -46,7 +55,16 @@
 +    if (!response.choices || response.choices.length === 0) {
 +        throw new Error("no choices in response");
 +    }
-+    console.log(response.choices[0].message.content);
++    const content = response.choices[0].message.content;
++    if (!content) {
++        console.error("error: empty content in response");
++        process.exit(1);
++    }
++    process.stdout.write(content);
  }
 
- main();
+-main();
++main().catch((error) => {
++    console.error(error.message);
++    process.exit(1);
++});
