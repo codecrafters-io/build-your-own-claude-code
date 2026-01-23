@@ -23,7 +23,7 @@ def main():
         messages=[{"role": "user", "content": args.p}],
     )
 
-    if not chat.choices or len(chat.choices) == 0:
+    if not chat.choices:
         raise RuntimeError("no choices in response")
 
     print(chat.choices[0].message.content)
