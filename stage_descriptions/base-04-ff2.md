@@ -100,7 +100,9 @@ $ ./your_program.sh -p "Use README.md to determine the chemical expiry period in
 <Exact expiry period of the chemical in months>
 ```
 
-The tester will assert that the output is the expiry period of the chemical in months as found in the project.
+The tester will assert that:
+  - The output is the expiry period of the chemical in months as found in the project.
+  - Your program exits with exit code 0.
 
 ### Notes
 
