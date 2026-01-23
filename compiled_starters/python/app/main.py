@@ -26,7 +26,7 @@ def main():
     #     model="anthropic/claude-haiku-4.5",
     #     messages=[{"role": "user", "content": args.p}],
     # )
-    # if not chat.choices or len(chat.choices) == 0:
+    # if not chat.choices:
     #     raise RuntimeError("no choices in response")
     # print(chat.choices[0].message.content, end="")
 
