@@ -11,7 +11,7 @@ set -e # Exit on failure
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 exec uv run \
-  --project "$SCRIPT_DIR" \
+  --project "$SCRIPT_DIR/.." \
   --quiet \
   -m app.main \
   "$@"
