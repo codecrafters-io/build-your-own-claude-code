@@ -8,5 +8,10 @@
 
 set -e # Exit on failure
 
-UV_WORKING_DIR="$(dirname "$0")" \
-exec uv run --quiet -m app.main "$@"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+exec uv run \
+  --project "$SCRIPT_DIR" \
+  --quiet \
+  -m app.main \
+  "$@"
