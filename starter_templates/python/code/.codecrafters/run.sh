@@ -10,7 +10,7 @@ set -e # Exit on failure
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-exec uv run \
+PYTHONSAFEPATH=1 PYTHONPATH="$SCRIPT_DIR" exec uv run \
   --project "$SCRIPT_DIR" \
   --quiet \
   -m app.main \
