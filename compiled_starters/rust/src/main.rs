@@ -24,9 +24,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let raw_base_url =
         env::var("OPENROUTER_BASE_URL").map_err(|_| "OPENROUTER_BASE_URL not set")?;
 
-    // TODO: Will remove this after https://github.com/codecrafters-io/claude-code-tester/pull/10 has been tested
-    let base_url = raw_base_url.trim_end_matches('/');
-
     let config = OpenAIConfig::new()
         .with_api_key(api_key)
         .with_api_base(base_url);
