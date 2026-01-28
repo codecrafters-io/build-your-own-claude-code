@@ -1,7 +1,7 @@
 use async_openai::{
+    Client,
     config::OpenAIConfig,
     types::{ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs},
-    Client,
 };
 use std::{env, error::Error, process};
 
@@ -11,14 +11,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Parse 'prompt' argument
     let prompt = if args.len() > 2 && args[1] == "-p" {
-        args[2].clone() 
+        args[2].clone()
     } else {
         println!("Expected usage: -p \"Your prompt\"");
         process::exit(1);
     };
 
     let api_key = env::var("OPENROUTER_API_KEY").map_err(|_| "OPENROUTER_API_KEY not set")?;
-    let raw_base_url = env::var("OPENROUTER_BASE_URL").map_err(|_| "OPENROUTER_BASE_URL not set")?;
+    let raw_base_url =
+        env::var("OPENROUTER_BASE_URL").map_err(|_| "OPENROUTER_BASE_URL not set")?;
 
     // TODO: Will remove this after https://github.com/codecrafters-io/claude-code-tester/pull/10 has been tested
     let base_url = raw_base_url.trim_end_matches('/');
@@ -30,13 +31,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let client = Client::with_config(config);
 
     let request = CreateChatCompletionRequestArgs::default()
-        .model("anthropic/claude-haiku-4.5") 
-        .messages([
-            ChatCompletionRequestUserMessageArgs::default()
-                .content(prompt)
-                .build()?
-                .into(),
-        ])
+        .model("anthropic/claude-haiku-4.5")
+        .messages([ChatCompletionRequestUserMessageArgs::default()
+            .content(prompt)
+            .build()?
+            .into()])
         .build()?;
 
     let response = client.chat().create(request).await?;
