@@ -44,8 +44,8 @@
 
      let response = client.chat().create(request).await?;
 
-     let _ = response;
-
+-    let _ = response;
+-
 -    // TODO: Uncomment the lines below to pass the first stage
 -    // if let Some(choice) = response.choices.first() {
 -    //     println!("{}", choice.message.content.as_deref().unwrap_or_default());

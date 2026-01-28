@@ -40,8 +40,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let response = client.chat().create(request).await?;
 
-    let _ = response;
-
     if let Some(choice) = response.choices.first() {
         println!("{}", choice.message.content.as_deref().unwrap_or_default());
     }
