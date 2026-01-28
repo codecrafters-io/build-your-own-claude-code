@@ -11,9 +11,10 @@ concurrency:
 
 jobs:
   test_course_definition:
-    uses: codecrafters-io/course-sdk/.github/workflows/test-course-definition.yml@main
+    # TODO: Will re-use main after 'https://github.com/codecrafters-io/course-sdk/pull/70' has been merged
+    uses: codecrafters-io/course-sdk/.github/workflows/test-course-definition.yml@upgrade-rust-tools-version
     with:
-      sdkRef: main
+      sdkRef: upgrade-rust-tools-version
     permissions:
       contents: read
       checks: write

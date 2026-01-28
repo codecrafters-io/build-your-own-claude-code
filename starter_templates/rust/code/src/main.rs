@@ -43,6 +43,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let response = client.chat().create(request).await?;
 
+    // This is to force compilation without using this variable
+    // Feel free to remove this line
     let _ = response;
 
     // TODO: Uncomment the lines below to pass the first stage

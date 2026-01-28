@@ -1,4 +1,4 @@
-@@ -1,54 +1,50 @@
+@@ -1,56 +1,52 @@
  use async_openai::{
      Client,
      config::OpenAIConfig,
@@ -44,6 +44,8 @@
 
      let response = client.chat().create(request).await?;
 
+     // This is to force compilation without using this variable
+     // Feel free to remove this line
      let _ = response;
 
 -    // TODO: Uncomment the lines below to pass the first stage
