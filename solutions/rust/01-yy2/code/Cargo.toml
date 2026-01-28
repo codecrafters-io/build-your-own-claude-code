@@ -1,0 +1,13 @@
+[package]
+name = "codecrafters-claude-code"
+version = "0.1.0"
+authors = ["Codecrafters <hello@codecrafters.io>"]
+edition = "2024"
+rust-version = "1.92"
+
+[dependencies]
+anyhow = "1.0.68"                                # error handling
+bytes = "1.3.0"                                  # helps manage buffers
+thiserror = "1.0.38"                             # error handling
+tokio = { version = "1", features = ["full"] }
+async-openai = "0.21"
