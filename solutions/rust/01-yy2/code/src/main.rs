@@ -18,8 +18,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let api_key = env::var("OPENROUTER_API_KEY").map_err(|_| "OPENROUTER_API_KEY not set")?;
-    let base_url =
-        env::var("OPENROUTER_BASE_URL").map_err(|_| "OPENROUTER_BASE_URL not set")?;
+    let base_url = env::var("OPENROUTER_BASE_URL").map_err(|_| "OPENROUTER_BASE_URL not set")?;
 
     let config = OpenAIConfig::new()
         .with_api_key(api_key)
