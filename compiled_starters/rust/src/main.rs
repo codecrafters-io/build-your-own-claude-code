@@ -18,12 +18,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     
     let base_url = env::var("OPENROUTER_BASE_URL").unwrap_or_else(|_| {
-        eprintln!("Missing OPENROUTER_BASE_URL");
+        eprintln!("OPENROUTER_BASE_URL is not set");
         process::exit(1);
     });
     
     let api_key = env::var("OPENROUTER_API_KEY").unwrap_or_else(|_| {
-        eprintln!("Missing OPENROUTER_API_KEY");
+        eprintln!("OPENROUTER_API_KEY is not set");
         process::exit(1);
     });
     
