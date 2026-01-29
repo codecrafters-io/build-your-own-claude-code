@@ -1,53 +1,61 @@
-@@ -1,49 +1,45 @@
- use async_openai::{
-     Client,
-     config::OpenAIConfig,
-     types::{ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs},
- };
- use std::{env, error::Error, process};
+@@ -1,56 +1,52 @@
+ use async_openai::{Client, config::OpenAIConfig};
+ use clap::Parser;
+ use serde_json::{json, Value};
+ use std::{env, process};
+
+ #[derive(Parser)]
+ #[command(author, version, about)]
+ struct Args {
+     #[arg(short = 'p', long)]
+     prompt: String,
+ }
 
  #[tokio::main]
- async fn main() -> Result<(), Box<dyn Error>> {
+ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 -    // You can use print statements as follows for debugging, they'll be visible when running tests.
 -    eprintln!("Logs from your program will appear here!");
--
-     let args: Vec<String> = env::args().collect();
-
-     // Parse 'prompt' argument
-     let prompt = if args.len() > 2 && args[1] == "-p" {
-         args[2].clone()
-     } else {
-         println!("Expected usage: -p \"Your prompt\"");
+-    
+     let args = Args::parse();
+     
+     let base_url = env::var("OPENROUTER_BASE_URL").unwrap_or_else(|_| {
+         eprintln!("Missing OPENROUTER_BASE_URL");
          process::exit(1);
-     };
-
-     let api_key = env::var("OPENROUTER_API_KEY").map_err(|_| "OPENROUTER_API_KEY not set")?;
-     let base_url = env::var("OPENROUTER_BASE_URL").map_err(|_| "OPENROUTER_BASE_URL not set")?;
-
+     });
+     
+     let api_key = env::var("OPENROUTER_API_KEY").unwrap_or_else(|_| {
+         eprintln!("Missing OPENROUTER_API_KEY");
+         process::exit(1);
+     });
+     
      let config = OpenAIConfig::new()
-         .with_api_key(api_key)
-         .with_api_base(base_url);
-
+         .with_api_base(base_url)
+         .with_api_key(api_key);
+     
      let client = Client::with_config(config);
-
-     let request = CreateChatCompletionRequestArgs::default()
-         .model("anthropic/claude-haiku-4.5")
-         .messages([ChatCompletionRequestUserMessageArgs::default()
-             .content(prompt)
-             .build()?
-             .into()])
-         .build()?;
-
+     
      #[allow(unused_variables)]
-     let response = client.chat().create(request).await?;
-
+     let response: Value = client
+         .chat()
+         .create_byot(json!({
+             "messages": [
+                 {
+                     "role": "user",
+                     "content": args.prompt
+                 }
+             ],
+             "model": "anthropic/claude-haiku-4.5"
+         }))
+         .await?;
+     
 -    // TODO: Uncomment the lines below to pass the first stage
--    // if let Some(choice) = response.choices.first() {
--    //     println!("{}", choice.message.content.as_deref().unwrap_or_default());
+-    // if let Some(content) = response["choices"][0]["message"]["content"].as_str() {
+-    //     println!("{}", content);
 -    // }
-+    if let Some(choice) = response.choices.first() {
-+        println!("{}", choice.message.content.as_deref().unwrap_or_default());
++    if let Some(content) = response["choices"][0]["message"]["content"].as_str() {
++        println!("{}", content);
 +    }
-
+     
      Ok(())
  }
+\ No newline at end of file
