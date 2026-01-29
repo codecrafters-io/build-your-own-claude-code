@@ -37,11 +37,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .into()])
         .build()?;
 
+    #[allow(unused_variables)]
     let response = client.chat().create(request).await?;
-
-    // This is to force compilation without using this variable
-    // Feel free to remove this line
-    let _ = response;
 
     // TODO: Uncomment the lines below to pass the first stage
     // if let Some(choice) = response.choices.first() {
