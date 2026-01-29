@@ -34,7 +34,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .into()])
         .build()?;
 
-    #[allow(unused_variables)]
     let response = client.chat().create(request).await?;
 
     if let Some(choice) = response.choices.first() {

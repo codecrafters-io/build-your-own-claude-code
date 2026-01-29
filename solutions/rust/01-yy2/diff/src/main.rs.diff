@@ -36,9 +36,9 @@
              .content(prompt)
              .build()?
              .into()])
-         .build()?;
+        .build()?;
 
-     #[allow(unused_variables)]
+-    #[allow(unused_variables)]
      let response = client.chat().create(request).await?;
 
 -    // TODO: Uncomment the lines below to pass the first stage
