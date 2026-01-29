@@ -1,18 +1,20 @@
 In this stage, you'll add support for advertising the `Read` tool in the request.
 
+### Tools
+
+Tools are functions that an LLM can request to perform specific actions, like reading files or running commands.
+
+By default, LLMs do not have access to a user's environment (e.g., their filesystem or terminal). Claude Code uses several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (such as `Read`, `Write`, and `Bash`) that enable the LLM to understand and modify the user's codebase.
+
 ### Advertising Tools
 
-Tools are functions in a program that an LLM can request to perform specific actions.
-
-By default, LLMs do not have access to external systems (e.g., a user's filesystem or terminal). By “advertising” tools in the request, you can provide a list of capabilities the LLM can use to interact with these external systems.
-
-Claude Code uses several [powerful tools](https://code.claude.com/docs/en/settings#tools-available-to-claude), such as `Read`, `Write`, and `Glob`, to understand and modify the user's codebase.
+To make tools available to the LLM, you need to advertise them in your API request. This allows the model to request these tools from your program when needed.
 
 For this stage, you only need to advertise the `Read` tool.
 
 ### The `Read` Tool
 
-The `Read` tool allows the LLM to read a file's contents.
+The `Read` tool lets the LLM request a file's contents.
 
 Here is an example of the `Read` tool's specification:
 
@@ -36,7 +38,7 @@ Here is an example of the `Read` tool's specification:
 }
 ```
 
-The structure consists of the following fields:
+This structure consists of the following fields:
 - `type`: The type of tool (always `"function"` for tools)
 - `function`: Contains the function definition
   - `name`: The name of the function (e.g., "Read")
@@ -45,7 +47,7 @@ The structure consists of the following fields:
     - `properties`: Defines each parameter (in this case, just `file_path`)
     - `required`: Lists which parameters are mandatory
    
-You can advertise the `Read` tool by including its spec in the `tools` array of your API request.
+You can advertise the `Read` tool by including its specification in the `tools` array of your API request.
 
 ### Tests
 
