@@ -4,7 +4,7 @@ In this stage, you'll add support for advertising the `Read` tool in the request
 
 Tools are functions in a program that an LLM can request to perform specific actions.
 
-By default, LLMs do not have access to external systems (e.g., a user's filesystem or terminal). When you “advertise” tools in your API request, you provide a list of functions the LLM can use to interact with these systems.
+By default, LLMs do not have access to external systems (e.g., a user's filesystem or terminal). By “advertising” tools in the request, you can provide a list of capabilities the LLM can use to interact with these external systems.
 
 Claude Code uses several [powerful tools](https://code.claude.com/docs/en/settings#tools-available-to-claude), such as `Read`, `Write`, and `Glob`, to understand and modify the user's codebase.
 
