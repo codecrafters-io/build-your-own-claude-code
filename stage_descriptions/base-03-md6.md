@@ -40,7 +40,7 @@ The key fields you need to handle are:
     - `name`: The name of the function to call (e.g., `"Read"`)
     - `arguments`: A JSON string containing the function parameters
    
-In this stage, you'll execute a single `Read` tool call.
+For this stage, you'll execute a single `Read` tool call.
 
 ### Executing the `Read` Tool
 
