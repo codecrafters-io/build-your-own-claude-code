@@ -2,7 +2,7 @@ In this stage, you'll add support for the `Bash` tool.
 
 ### The `Bash` Tool
 
-The `Bash` tool enables the LLM to run shell commands. This is the most powerful tool because it gives the LLM direct access to the command line to perform actions like deleting files, creating directories, or running scripts.
+The `Bash` tool enables the LLM to run shell commands. It gives the LLM direct access to the command line to perform actions like deleting files, creating directories, or running scripts.
 
 You'll need to advertise the `Bash` tool in your request and execute it when the LLM requests it.
 
