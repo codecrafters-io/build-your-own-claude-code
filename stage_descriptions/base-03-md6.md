@@ -2,7 +2,7 @@ In this stage, you'll add support for detecting tool calls from the LLM's respon
 
 ### Tool Calls
 
-When the LLM decides to use a tool, the response message will contain a `tool_calls` array. In this stage, you'll only execute a single `Read` tool call.
+When the LLM decides to use a tool, the response message will contain a `tool_calls` array. In this stage, you'll execute a single `Read` tool call.
 
 Here's what a response with a tool call looks like:
 
@@ -42,7 +42,7 @@ The key fields you need to handle are:
 
 When you detect a `tool_calls` array in the response:
 
-1. **Extract the tool call**: Access the first choice, then get the first tool call from its message.
+1. **Extract the tool call**: Get the message from the first choice, then extract the first tool call from the `tool_calls` array.
 2. **Parse the function name**: Read the function name to determine which tool to execute.
 3. **Parse the arguments**: Parse the function arguments as a JSON string to get the parameters.
 4. **Execute the tool**: Your program must perform the action requested. For the `Read` tool, use your language's file system library to read the file at the requested `file_path`.
