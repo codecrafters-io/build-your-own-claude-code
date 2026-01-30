@@ -1,10 +1,10 @@
-In this stage, you'll add support for detecting tool calls from the LLM's response and executing the `Read` tool call.
+In this stage, you'll add support for detecting tool calls and executing the `Read` tool call.
 
 ### Tool Calls
 
-When the LLM decides to use a tool, the response message will contain a `tool_calls` array. In this stage, you'll execute a single `Read` tool call.
+When the LLM decides to use a tool, the response message will contain a `tool_calls` array. 
 
-Here's what a response with a tool call looks like:
+Here's what the response looks like:
 
 ```json
 {
@@ -39,6 +39,10 @@ The key fields you need to handle are:
   - `function`: Contains the function details:
     - `name`: The name of the function to call (e.g., `"Read"`)
     - `arguments`: A JSON string containing the function parameters
+   
+In this stage, you'll execute a single `Read` tool call.
+
+### Executing the `Read` Tool
 
 When you detect a `tool_calls` array in the response:
 
@@ -59,7 +63,7 @@ $ ./your_program.sh -p "What is the content of apple.py? Print exact file conten
 
 The tester will verify that:
 - The output matches the exact contents of the file
-- Your program exits with exit code `0`
+- Your program exits with code `0`
 
 ### Notes
 
