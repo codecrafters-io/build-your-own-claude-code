@@ -11,6 +11,7 @@ For this stage, you'll implement an agent loop that repeatedly sends messages to
 Here's how to implement the agent loop:
 
 1. **Initialize the conversation**: You already have an initial conversation history: the `messages` array with the user's prompt. Now you need to store this array so it can persist across iterations, since the loop will continuously append new messages to it:
+   
     ```json
     [
       { "role": "system", "content": "You are a helpful coding assistant..." },
@@ -36,7 +37,8 @@ Here's how to implement the agent loop:
       ]
     }
     ```
-5. **Check for tool calls**: Check the LLM's response to see if it's requesting to use any tools. If there are tool calls, execute each requested tool, then add their result to your `messages` array. Each tool result must have a `role` of `"tool"`, reference its corresponding `tool_call_id`, and contain the output of the tool call as its `content`:
+   
+4. **Check for tool calls**: Check the LLM's response to see if it's requesting to use any tools. If there are tool calls, execute each requested tool, then add their result to your `messages` array. Each tool result must have a `role` of `"tool"`, reference its corresponding `tool_call_id`, and contain the output of the tool call as its `content`:
 
    ```json
     {
@@ -45,7 +47,8 @@ Here's how to implement the agent loop:
       "content": "main.py\nREADME.md\ntest.py"
     }
     ```
-7. **Repeat until complete**: Continue the loop until the LLM responds without requesting any tools (when `tool_calls` is missing or empty). At this point, print the final message `content` to stdout and exit.
+   
+5. **Repeat until complete**: Continue the loop until the LLM responds without requesting any tools (when `tool_calls` is missing or empty). At this point, print the final message `content` to stdout and exit.
 
 ### Tests
 
