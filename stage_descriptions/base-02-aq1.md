@@ -4,11 +4,15 @@ In this stage, you'll add support for advertising the `Read` tool in the request
 
 Tools are functions that an LLM can request to perform specific actions, like reading files or running commands.
 
-By default, LLMs do not have access to a user's environment (e.g., their filesystem or terminal). Claude Code uses several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (such as `Read`, `Write`, and `Bash`) that enable the LLM to understand and modify the user's codebase.
+By default, LLMs do not have access to a user's environment, such as their filesystem or terminal. To solve this, Claude Code uses several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (such as `Read`, `Write`, and `Bash`) that enable the LLM to understand and modify the user's codebase.
+
+For this stage, you need to advertise the `Read` tool, which lets the LLM read a file's contents.
 
 ### Advertising Tools
 
-To make tools accessible to the LLM, you need to advertise them in the `tools` field of your API request body.
+Advertising tools tells the LLM which tools are available and what arguments they accept.
+
+To advertise a tool, you must include its specification in the `tools` array of your request body.
 
 ```json
 {
@@ -18,11 +22,7 @@ To make tools accessible to the LLM, you need to advertise them in the `tools` f
 }
 ```
 
-This allows the model to request these tools from your program when needed.
-
-For this stage, you only need to advertise the `Read` tool, which lets the LLM request a file's contents.
-
-Here is an example of the `Read` tool's specification:
+For this stage, the `tools` array should include the `Read` tool specification:
 
 ```json
 {
@@ -52,8 +52,6 @@ The structure consists of the following fields:
   - `parameters`: A JSON schema describing the function's parameters
     - `properties`: Defines each parameter (in this case, just `file_path`)
     - `required`: Lists which parameters are mandatory
-   
-You can advertise the `Read` tool by adding its specification to the `tools` array.
 
 ### Tests
 
