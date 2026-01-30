@@ -25,6 +25,7 @@ func main() {
 	if apiKey == "" {
 		panic("Env variable OPENROUTER_API_KEY not found")
 	}
+
 	if baseUrl == "" {
 		panic("Env variable OPENROUTER_BASE_URL not found")
 	}
