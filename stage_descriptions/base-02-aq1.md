@@ -8,7 +8,17 @@ By default, LLMs do not have access to a user's environment (e.g., their filesys
 
 ### Advertising Tools
 
-To make tools available to the LLM, you need to advertise them in your API request body. This allows the model to request these tools from your program when needed.
+To make tools accessible to the LLM, you need to advertise them in the `tools` field of your API request body.
+
+```json
+{
+  "model": "...",
+  "messages": [...],
+  "tools": [...]    
+}
+```
+
+This allows the model to request these tools from your program when needed.
 
 For this stage, you only need to advertise the `Read` tool, which lets the LLM request a file's contents.
 
@@ -43,15 +53,7 @@ The structure consists of the following fields:
     - `properties`: Defines each parameter (in this case, just `file_path`)
     - `required`: Lists which parameters are mandatory
    
-You can advertise the `Read` tool by adding its specification to a `tools` array in your API request body.
-
-```json
-{
-  "model": "...",
-  "messages": [...],
-  "tools": [...]    
-}
-```
+You can advertise the `Read` tool by adding its specification to the `tools` array.
 
 ### Tests
 
