@@ -4,7 +4,7 @@ In this stage, you'll add support for advertising the `Read` tool in the request
 
 Tools are functions that an LLM can request to perform specific actions, like reading files or running commands.
 
-By default, LLMs cannot access a user's environment, such as their filesystem or terminal. To solve this, Claude Code provides several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (such as `Read`, `Write`, and `Bash`) that enable the LLM to understand and modify the user's codebase.
+By default, LLMs cannot access a user's environment, such as their filesystem or terminal. To solve this, Claude Code provides several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (like `Read`, `Write`, and `Bash`) that enable the LLM to understand and modify the user's codebase.
 
 For this stage, you need to advertise the `Read` tool, which lets the LLM read a file's contents.
 
