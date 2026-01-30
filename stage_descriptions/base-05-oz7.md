@@ -2,7 +2,7 @@ In this stage, you'll add support for the `Write` tool that writes content to fi
 
 ### The `Write` Tool
 
-The `Write` tool enables the LLM to write content to files. You'll need to advertise this tool in your request and implement its execution when the LLM requests it.
+The `Write` tool enables the LLM to write content to files. You'll need to advertise this tool in your request and execute it when the LLM requests it.
 
 Here is an example of the `Write` tool's specification:
 
@@ -49,13 +49,13 @@ The tester will then execute your program like this:
 $ ./your_program.sh -p "Read README.md and create the required file. File should have 1 line. Reply with `Created the file`"
 ```
 
-The tester will assert that:
+The tester will verify that:
   - The required file is created.
   - Your program exits with exit code 0.
 
 ### Notes
 
-- The tester will only perform end-to-end tests. You are free to choose the name of the tool and its arguments. For example, any of the following names are valid:
+- The tester will only perform end-to-end tests. You are free to choose the name of the tool and its arguments. For example, any of the following names is valid:
   - `Write`
   - `write`
   - `write_file`
