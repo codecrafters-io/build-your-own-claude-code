@@ -1,0 +1,55 @@
+hints:
+  - title_markdown: "How do I advertise tools to the LLM?"
+    body_markdown: |-
+      Use the `Tools` parameter in the [`New()`](https://pkg.go.dev/github.com/openai/openai-go/v3#ChatCompletionService.New) method:
+
+      ```go
+      resp, err := client.Chat.Completions.New(context.Background(),
+        openai.ChatCompletionNewParams{
+          Model: "anthropic/claude-haiku-4.5",
+          Messages: []openai.ChatCompletionMessageParamUnion{
+            // ... your messages
+          },
+          Tools: []openai.ChatCompletionToolUnionParam{
+            // Add your tool specifications here
+          },
+        },
+      )
+      ```
+
+      The `Tools` parameter accepts a slice of tool specifications that tell the LLM which functions are available.
+
+  - title_markdown: "How do I add the `Read` tool to the request?"
+    body_markdown: |-
+      Use the [`ChatCompletionFunctionTool()`](https://pkg.go.dev/github.com/openai/openai-go/v3#ChatCompletionFunctionTool) helper to add the tool specification:
+
+      ```go
+      resp, err := client.Chat.Completions.New(context.Background(),
+        openai.ChatCompletionNewParams{
+          Model: "anthropic/claude-haiku-4.5",
+          Messages: []openai.ChatCompletionMessageParamUnion{
+            // ... your messages
+          },
+          Tools: []openai.ChatCompletionToolUnionParam{
+            openai.ChatCompletionFunctionTool(openai.FunctionDefinitionParam{
+              Name:        "Read",
+              Description: openai.String("Read and return the contents of a file"),
+              Parameters: openai.FunctionParameters{
+                "type": "object",
+                "properties": map[string]any{
+                  "file_path": map[string]any{
+                    "type":        "string",
+                    "description": "The path to the file to read",
+                  },
+                },
+                "required": []string{"file_path"},
+              },
+            }),
+          },
+        },
+      )
+      ```
+
+      - Use `ChatCompletionFunctionTool()` to create a function tool parameter.
+      - Use `openai.String()` to wrap the description as a pointer.
+      - The `Parameters` field uses `openai.FunctionParameters` (a map type) to describe the function's arguments in JSON Schema format.
