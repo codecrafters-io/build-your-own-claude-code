@@ -41,7 +41,7 @@
  						},
  					},
  				},
- 			},
++			},
 +			Tools: []openai.ChatCompletionToolUnionParam{
 +				openai.ChatCompletionFunctionTool(openai.FunctionDefinitionParam{
 +					Name:        "Read",
@@ -57,7 +57,7 @@
 +						"required": []string{"file_path"},
 +					},
 +				}),
-+		  },
+ 			},
  		},
  	)
  	if err != nil {

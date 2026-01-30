@@ -57,7 +57,7 @@ func main() {
 						"required": []string{"file_path"},
 					},
 				}),
-		  },
+			},
 		},
 	)
 	if err != nil {
