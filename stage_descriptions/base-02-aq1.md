@@ -10,7 +10,7 @@ For this stage, you need to advertise the `Read` tool, which lets the LLM read a
 
 ### Advertising Tools
 
-Advertising tools tells the LLM which tools are available and what arguments they accept.
+Advertising tools lets the LLM know which tools are available and what arguments they accept.
 
 To advertise a tool, you must include its specification in the `tools` array of your request body.
 
