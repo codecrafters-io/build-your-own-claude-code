@@ -1,4 +1,4 @@
-import argparse, os, sys
+import argparse, os
 from openai import OpenAI
 
 def main():

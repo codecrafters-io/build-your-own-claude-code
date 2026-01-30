@@ -30,7 +30,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = Client::with_config(config);
 
-    #[allow(unused_variables)]
     let response: Value = client
         .chat()
         .create_byot(json!({
