@@ -17,9 +17,10 @@ Here's how to implement the agent loop:
       { "role": "user", "content": "What files are in this project?" }
     ]
     ```
+    
 2. **Enter the loop**: Start the loop with the same API request you already have (sending your `messages` and tool specifications to the LLM). The difference is that this request now sits in a loop, allowing it to run multiple times.
 3. **Record the assistant's response**: Whatever message the LLM returns, add it to your `messages` array. If the model wants to use a tool, the response will contain a `tool_calls` array:
-   ```json
+    ```json
     {
       "role": "assistant",
       "content": null,
@@ -33,15 +34,17 @@ Here's how to implement the agent loop:
         }
       ]
     }
-    ```   
+    ```
+     
 4. **Check for tool calls**: Check the LLM's response to see if it's requesting to use any tools. If there are tool calls, execute each requested tool, then add their result to your `messages` array. Each tool result must have a `role` of `"tool"`, reference its corresponding `tool_call_id`, and contain the output of the tool call as its `content`:
-   ```json
+    ```json
     {
       "role": "tool",
       "tool_call_id": "call_abc123",
       "content": "main.py\nREADME.md\ntest.py"
     }
-    ```  
+    ```
+    
 5. **Repeat until complete**: Continue the loop until the LLM responds without requesting any tools (when `tool_calls` is missing or empty). At this point, print the final message `content` to stdout and exit.
 
 ### Tests
