@@ -1,109 +1,67 @@
-In this stage, you'll add support for the agent loop.
+In this stage, you'll implement an agent loop.
 
 ### The Agent Loop
 
-The agent loop repeatedly sends messages to the LLM and handles tool calls as needed, until the final result is received. When the LLM decides to use tools, the response message will contain a `tool_calls` array. All the tool calls listed in the array should be executed, and their results should be sent back to the LLM.
+So far, your program handles a single interaction: send a prompt to the model, get a response, execute one tool if requested, and exit. 
 
-Here is a pseudocode example of the agent loop:
+This works for simple tasks, but falls short when a task requires multiple steps (e.g., "read a file and fix any bugs").
 
-```python
-def agent_loop(initial_prompt):
-    messages = [{"role": "user", "content": initial_prompt}]
-    
-    while True:
-        response = send_to_llm(messages)
-        llm_response = response["message"]
-        messages.append(llm_response)
-        
-        if llm_response.has_tool_calls():
-            for tool_call in llm_response.tool_calls:
-                tool_result = execute_tool(tool_call)
-                messages.append({
-                    "role": "tool",
-                    "content": tool_result,
-                    "tool_call_id": tool_call.id
-                })
-        else:
-            return llm_response.content
-```
+For this stage, you'll implement an agent loop that repeatedly sends messages to the LLM and handles tool calls as needed, until the final result is received. 
 
-When a tool call is executed, the result is sent back to the LLM by adding a message with `role: "tool"` to the messages array:
+Here's how to implement the agent loop:
 
-```json
-{
-  // Conversation History - Serves as a context for the LLM
-  "messages": [
-    // First prompt - Appended to the 'messages' array
-    {
-      "role": "user",
-      "content": "Read the contents of /path/to/file1.txt and /path/to/file2.txt"
-    },
-    // The assistant (LLM) requested multiple tool calls
-    // This is also appended to the 'messages' array
+1. **Initialize the conversation**: You already have an intial conversation history: the `messages` array with the user's prompt. Now you need to store this array so it can persist across iterations, since the loop will continuously append new messages to it:
+    ```json
+    [
+      { "role": "system", "content": "You are a helpful coding assistant..." },
+      { "role": "user", "content": "What files are in this project?" }
+    ]
+    ```
+
+2. **Enter the loop**: Start the loop with the same API request you already have (sending your `messages` and tool specifications to the LLM). The difference is that this request now sits inside a loop, allowing it to run multiple times.
+3. **Record the assistant's response**: Whatever message the LLM returns, add it to your `messages` array. If the model wants to use a tool, the response will contain a `tool_calls` array:
+    ```json
     {
       "role": "assistant",
       "content": null,
       "tool_calls": [
         {
           "id": "call_abc123",
-          "type": "function",
           "function": {
-            "name": "Read",
-            "arguments": "{\"file_path\": \"/path/to/file1.txt\"}"
-          }
-        },
-        {
-          "id": "call_xyz789",
-          "type": "function",
-          "function": {
-            "name": "Read",
-            "arguments": "{\"file_path\": \"/path/to/file2.txt\"}"
+            "name": "Glob",
+            "arguments": "{\"pattern\": \"*\"}"
           }
         }
       ]
-    },
-    // Each tool call result must be appended as a separate message
+    }
+    ```
+4. **Check for tool calls**: Check the LLM's response to see if it's requesting to use any tools. If there are tool calls, execute each requested tool, then add their results to your `messages` array. Each tool result must have a `role` of `"tool"`, reference its corresponding `tool_call_id`, and contain the output of the tool call as its `content`:
+    ```json
     {
       "role": "tool",
       "tool_call_id": "call_abc123",
-      "content": "<file1 contents here>"
-    },
-    {
-      "role": "tool",
-      "tool_call_id": "call_xyz789",
-      "content": "<file2 contents here>"
+      "content": "main.py\nREADME.md\ntest.py"
     }
-  ],
-  "tools": [...]
-}
-```
-
-Here are the descriptions of the fields:
-- `role`: Must be `"tool"`
-- `tool_call_id`: Must match the `id` from the tool call you're responding to
-- `content`: The result of the tool execution (e.g., file contents for Read)
-
-Messages should be appended to the conversation history (e.g., user prompt → assistant response → tool result → assistant response → tool result → ...). Stop the loop when the response has `finish_reason: "stop"` and there are no `tool_calls`. At this point, print the `content` to stdout and exit.
+    ```
+5. **Repeat until complete**: Continue the loop until the LLM responds without requesting any tools (when `tool_calls` is missing or empty). At this point, print the final message `content` to stdout and exit.
 
 ### Tests
 
-The tester will create a simple python project dealing with information about a chemical. 
-
-The project will include:
-  - `README.md`
-  - Two Python files in the `app/` directory with randomized names.
+The tester will create a Python project with:
+- `README.md`
+- Two Python files in `app/` with randomized names
 
 The tester will then execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Use README.md to determine the chemical expiry period in months. Number only."
-<Exact expiry period of the chemical in months>
+<expiry period in months>
 ```
 
-The tester will assert that:
-  - The output is the expiry period of the chemical in months as found in the project.
-  - Your program exits with exit code 0.
+The tester will verify that:
+- The output is the correct expiry period
+- Your program exits with exit code `0`
 
 ### Notes
 
-- Always check `finish_reason` and the presence of `tool_calls` to determine whether to continue the loop or stop.
+- You can also use `finish_reason: "stop"` from the first response choice as a signal to stop the loop.
