@@ -22,7 +22,7 @@ To advertise a tool, you must include its specification in the `tools` array of 
 }
 ```
 
-For this stage, the `tools` array should include the `Read` tool specification:
+For this stage, the `tools` array should include the `Read` tool's specification:
 
 ```json
 {
