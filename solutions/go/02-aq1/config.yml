@@ -19,7 +19,7 @@ hints:
 
       The `Tools` parameter accepts a slice of tool specifications that tell the LLM which functions are available.
 
-  - title_markdown: "How do I add the `Read` tool to the request?"
+  - title_markdown: "How do I add the Read tool to the request?"
     body_markdown: |-
       Use the [`ChatCompletionFunctionTool()`](https://pkg.go.dev/github.com/openai/openai-go/v3#ChatCompletionFunctionTool) helper to add the tool specification:
 
