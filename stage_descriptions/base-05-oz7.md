@@ -58,4 +58,3 @@ The tester will verify that:
 ### Notes
 
 - You can choose any reasonable name for the Write tool (e.g., `Write`, `write`, `write_file`, `WriteFile`).
-- The tester only checks that the file exists with the correct contents.
