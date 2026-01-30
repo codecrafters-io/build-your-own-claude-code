@@ -2,7 +2,7 @@ In this stage, you'll add support for the `Write` tool.
 
 ### The `Write` Tool
 
-The `Write` tool enables the LLM to write content to files. Like the `Read` tool, you need to advertise it in your request and execute it when the LLM requests it.
+The `Write` tool enables the LLM to write content to files. Like with the `Read` tool, you need to advertise the `Write` tool in your request and execute it when the LLM requests it.
 
 Here's the tool specification:
 ```json
@@ -29,7 +29,7 @@ Here's the tool specification:
 }
 ```
 
-### Executing the Write Tool
+### Executing the `Write` Tool
 
 When the LLM requests a `Write` tool call:
 
@@ -41,11 +41,11 @@ When the LLM requests a `Write` tool call:
 
 ### Tests
 
-The tester will create the following:
+The tester will create the following files:
 - `README.md` with instructions
 - `app/` directory for the project
 
-It will then execute your program like this:
+The tester will then execute your program like this:
 ```bash
 $ ./your_program.sh -p "Read README.md and create the required file. File should have 1 line. Reply with 'Created the file'"
 Created the file
