@@ -1,0 +1,47 @@
+hints:
+  - title_markdown: "How do I advertise tools to the LLM?"
+    body_markdown: |-
+      Use the `tools` property in the [`create()`](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request) request body:
+
+      ```ts
+      await client.chat.completions.create({
+        model: "anthropic/claude-haiku-4.5",
+        messages: [{ role: "user", content: prompt }],
+        tools: [
+          // Add your tool specifications here
+        ],
+      })
+      ```
+
+      The `tools` property accepts a list of tool specifications that tell the LLM which functions are available.
+  - title_markdown: "How do I add the `Read` tool to the request?"
+    body_markdown: |-
+      Include the `Read` tool's specification in the `tools` array:
+
+      ```ts
+      await client.chat.completions.create({
+        model: "anthropic/claude-haiku-4.5",
+        messages: [{ role: "user", content: prompt }],
+        tools: [{
+          type: "function",
+          function: {
+            name: "Read",
+            description: "Read and return the contents of a file",
+            parameters: {
+              type: "object",
+              properties: {
+                file_path: {
+                  type: "string",
+                  description: "The path to the file to read",
+                },
+              },
+              required: ["file_path"],
+            },
+          },
+        }],
+      })
+      ```
+
+      - The `type` field must be `"function"` for tools.
+      - The `function` object contains the name, description, and parameters schema.
+      - The `parameters` field describes the function's arguments.
