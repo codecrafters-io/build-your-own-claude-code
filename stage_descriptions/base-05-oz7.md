@@ -1,11 +1,10 @@
-In this stage, you'll add support for the `Write` tool that writes content to files.
+In this stage, you'll add support for the `Write` tool.
 
 ### The `Write` Tool
 
-The `Write` tool enables the LLM to write content to files. You'll need to advertise this tool in your request and execute it when the LLM requests it.
+The `Write` tool enables the LLM to write content to files. Like the `Read` tool, you need to advertise it in your request and execute it when the LLM requests it.
 
-Here is an example of the `Write` tool's specification:
-
+Here's the tool specification:
 ```json
 {
   "type": "function",
@@ -30,35 +29,33 @@ Here is an example of the `Write` tool's specification:
 }
 ```
 
-To add support for the `Write` tool:
+### Executing the Write Tool
 
-1. Advertise the `Write` tool in your request's `tools` array, specifying the function's name, description, and parameters.
-2. When you detect `Write` tool calls in the LLM's response, extract the arguments for each tool call.
-3. For each tool call, create the file if it does not exist, or overwrite the file if it already exists, with the specified content.
-4. The result of each tool call should be sent back to the LLM as part of the agent loop (which was implemented in earlier stages).
+When the LLM requests a `Write` tool call:
+
+1. Parse the arguments to extract the `file_path` and `content`
+2. Write the content to the file at the specified path:
+   - If the file doesn't exist, create it
+   - If the file exists, overwrite it with the new content
+3. Append the result to messages as a tool message (just like with `Read`)
 
 ### Tests
 
 The tester will create the following:
-  - `README.md` - Contains instructions for the project
-  - `app/` directory - Required for the project
+- `README.md` with instructions
+- `app/` directory for the project
 
-The tester will then execute your program like this:
-
+It will then execute your program like this:
 ```bash
-$ ./your_program.sh -p "Read README.md and create the required file. File should have 1 line. Reply with `Created the file`"
+$ ./your_program.sh -p "Read README.md and create the required file. File should have 1 line. Reply with 'Created the file'"
+Created the file
 ```
 
 The tester will verify that:
-  - The required file is created.
-  - Your program exits with exit code 0.
+- The required file is created with the correct contents
+- Your program exits with exit code `0`
 
 ### Notes
 
-- The tester will only perform end-to-end tests. You are free to choose the name of the tool and its arguments. For example, any of the following names is valid:
-  - `Write`
-  - `write`
-  - `write_file`
-  - `WriteFile`, etc.
-
-- The tester will only check the file's contents and exit code, and not the output of your program.
+- You can choose any reasonable name for the Write tool (e.g., `Write`, `write`, `write_file`, `WriteFile`).
+- The tester only checks that the file exists with the correct contents.
