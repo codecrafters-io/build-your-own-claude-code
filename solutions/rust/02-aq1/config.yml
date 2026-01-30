@@ -15,7 +15,7 @@ hints:
       ```
 
       The `tools` property accepts a list of tool specifications that tell the LLM which functions are available.
-  - title_markdown: "How do I add the `Read` tool to the request?"
+  - title_markdown: "How do I add the Read tool to the request?"
     body_markdown: |-
       Include the `Read` tool's specification in the `tools` array:
 
