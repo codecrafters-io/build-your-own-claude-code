@@ -1,14 +1,28 @@
 In this stage, you'll add support for advertising the `Read` tool in the request.
 
+### Tools
+
+Tools are functions that an LLM can request to perform specific actions, like reading files or running commands.
+
+By default, LLMs cannot access a user's environment, such as their filesystem or terminal. To solve this, Claude Code uses several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (such as `Read`, `Write`, and `Bash`) that enable the LLM to understand and modify the user's codebase.
+
+For this stage, you need to advertise the `Read` tool, which lets the LLM read a file's contents.
+
 ### Advertising Tools
 
-Tools are functions that the LLM can request Claude Code to call to perform specific actions. By advertising tools in the request, Claude Code tells the LLM what capabilities are available to it.
+Advertising tools lets the LLM know which tools are available and what arguments they accept.
 
-Claude Code has access to many powerful tools including Read, Write, Glob, Bash, Grep, and more (see [Tools available to Claude Code](https://code.claude.com/docs/en/settings#tools-available-to-claude)).
+To advertise a tool, you must include its specification in the `tools` array of your request body.
 
-For this stage, you'll only need to advertise the `Read` tool, which allows the LLM to ask Claude Code to read file contents.
+```json
+{
+  "model": "...",
+  "messages": [...],
+  "tools": [...]    
+}
+```
 
-Here is an example of the `Read` tool's specification:
+For this stage, the `tools` array should include the `Read` tool's specification:
 
 ```json
 {
@@ -30,13 +44,14 @@ Here is an example of the `Read` tool's specification:
 }
 ```
 
-The descriptions of the fields are:
-
-- `type`: The type of tool (always `function` for tools)
-- `function`: The function definition containing:
+The structure consists of the following fields:
+- `type`: The type of tool (always `"function"` for tools)
+- `function`: Contains the function definition
   - `name`: The name of the function (e.g., "Read")
-  - `description`: A description of what the function does
+  - `description`: Explains the function's purpose and helps the LLM determine when to use it.
   - `parameters`: A JSON schema describing the function's parameters
+    - `properties`: Defines each parameter (in this case, just `file_path`)
+    - `required`: Lists which parameters are mandatory
 
 ### Tests
 
@@ -47,18 +62,16 @@ $ ./your_program.sh -p "How many tools are available to you in this request? Num
 1
 ```
 
-The tester will assert that:
-  - The output is a positive number.
-  - Your program exits with exit code 0.
+The tester will verify that:
+- Your program outputs a positive number
+- Your program exits with exit code `0`
 
 ### Notes
 
-- You are free to choose the name of the tool. The tester will only perform end-to-end tests, supplying the prompt and asserting the output. For example, any of the following names are valid:
+- You can choose any reasonable name for the `Read` tool. The tester will only perform end-to-end tests by checking the LLM's response. For example, any of the following names is valid:
   - `Read`
   - `read`
   - `read_file`
   - `ReadFile`, etc.
-
-- In this stage, you'll only need to advertise the availability of the `Read` tool in your request. We'll get to tool call execution in later stages.
-
-- [OpenRouter API Specification for Tools](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request#request.body.tools)
+- For this stage, you only need to advertise the `Read` tool's availability in the request. We'll handle tool calls in later stages.
+- See the [OpenRouter API Specification for Tools](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request#request.body.tools) for the full API documentation on how to include tools in your request.
