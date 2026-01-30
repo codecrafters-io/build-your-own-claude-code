@@ -1,28 +1,30 @@
-In this stage, you'll add support for the `Glob` tool that searches for file using glob patterns.
+In this stage, you'll add support for the `Glob` tool.
 
 ### The `Glob` Tool
 
-The `Glob` tool enables the LLM to search for files using glob pattern. You'll need to advertise this tool in your request and implement its execution when the LLM requests it.
+The `Glob` tool enables the LLM to search for files using a glob pattern. You'll need to advertise this tool in your request and execute it when the LLM requests it.
 
 Here is an example of the `Glob` tool's specification:
 
 ```json
 {
-  "name": "Glob",
-  "description": "Find files based on glob patterns",
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "pattern": {
-        "type": "string",
-        "description": "The glob pattern to match files against"
+  "type": "function",
+  "function": {
+    "name": "Glob",
+    "description": "Find files based on glob patterns",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": "The glob pattern to match files against"
+        }
       },
-    },
-    "required": ["pattern"],
-    "additionalProperties": false
+      "required": ["pattern"],
+      "additionalProperties": false
+    }
   }
 }
-
 ```
 
 To add support for the `Glob` tool:
@@ -45,14 +47,14 @@ The tester will execute your program like this:
 $ ./your_program.sh -p "Fix all bugs in files in `app` that start with `test`. Respond with `Fixed all bugs`"
 ```
 
-The tester will assert that:
+The tester will verify that:
   - `app/test_arithmetic.py` contains the corrected assertion: `assert add(1, 1) == 2` (changed from `== 3`)
   - `app/test_geometry.py` contains the corrected assertion: `assert area_of_square(5) == 25` (changed from `== 55`)
   - Your program exits with code 0.
 
 ### Notes
 
-- The tester will only perform end-to-end tests. You are free to choose the name of the tool and its arguments. For example, any of the following names are valid:
+- The tester will only perform end-to-end tests. You are free to choose the name of the tool and its arguments. For example, any of the following names is valid:
   - `Glob`
   - `glob`
   - `GlobPattern`
