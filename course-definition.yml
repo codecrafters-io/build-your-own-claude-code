@@ -100,7 +100,7 @@ stages:
       In this stage, you'll add support for advertising the `Read` tool in the request.
 
   - slug: "md6"
-    name: "Implement the read tool"
+    name: "Execute the read tool"
     difficulty: easy
     marketing_md: |-
       In this stage, you'll add support for detecting tool calls from the LLM's response, and executing the `Read` tool call.
