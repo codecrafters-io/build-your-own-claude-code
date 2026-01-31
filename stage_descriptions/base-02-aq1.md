@@ -14,7 +14,7 @@ Advertising tools lets the LLM know which tools are available and what arguments
 
 To advertise a tool, you must include its specification in the `tools` array of your request body.
 
-```python
+```js
 {
   "model": "...",
   "messages": [...],
@@ -24,7 +24,7 @@ To advertise a tool, you must include its specification in the `tools` array of 
 
 For this stage, the `tools` array should include the `Read` tool's specification:
 
-```python
+```js
 {
   "type": "function",
   "function": {
