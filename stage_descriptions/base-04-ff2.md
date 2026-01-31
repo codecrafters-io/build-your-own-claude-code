@@ -13,8 +13,7 @@ Here's how to implement the agent loop:
 1. **Initialize the conversation**: You already have an initial conversation history: the `messages` array with the user's prompt. Now you need to store this array so it can persist across iterations, since the loop will continuously append new messages to it:
     ```json
     [
-      { "role": "system", "content": "You are a helpful coding assistant..." },
-      { "role": "user", "content": "What files are in this project?" }
+      { "role": "user", "content": "Summarize the README for me." }
     ]
     ```
     
@@ -28,8 +27,8 @@ Here's how to implement the agent loop:
         {
           "id": "call_abc123",
           "function": {
-            "name": "Glob",
-            "arguments": "{\"pattern\": \"*\"}"
+            "name": "Read",
+            "arguments": "{\"file_path\": \"README.md\"}"
           }
         }
       ]
@@ -41,7 +40,7 @@ Here's how to implement the agent loop:
     {
       "role": "tool",
       "tool_call_id": "call_abc123",
-      "content": "main.py\nREADME.md\ntest.py"
+      "content": "# My Project\n\nChemical expiry period: 6 months"
     }
     ```
     
