@@ -88,43 +88,43 @@ marketing:
 
 stages:
   - slug: "yy2"
-    name: "Communicate with LLM"
+    name: "Connect to the LLM"
     difficulty: very_easy
     marketing_md: |-
-      In this stage, you'll implement communication with the provided LLM using an [OpenAI-compatible API](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
+      In this stage, you'll interact with the provided LLM using an [OpenAI-compatible API](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
 
   - slug: "aq1"
-    name: "Advertise Read Tool"
+    name: "Advertise the read tool"
     difficulty: easy
     marketing_md: |-
       In this stage, you'll add support for advertising the `Read` tool in the request.
 
   - slug: "md6"
-    name: "Execute Read Tool"
+    name: "Implement the read tool"
     difficulty: easy
     marketing_md: |-
       In this stage, you'll add support for detecting tool calls from the LLM's response, and executing the `Read` tool call.
 
   - slug: "ff2"
-    name: "Agent Loop"
+    name: "Implement the agent loop"
     difficulty: medium
     marketing_md: |-
       In this stage, you'll add support for the agent loop and handling multiple tool calls.
 
   - slug: "oz7"
-    name: "Write Tool"
+    name: "Implement the write tool"
     difficulty: easy
     marketing_md: |-
       In this stage, you'll add support for the `Write` tool that writes content to files.
 
   - slug: "bp2"
-    name: "Glob Tool"
+    name: "Implement the glob tool"
     difficulty: easy
     marketing_md: |-
       In this stage, you'll add support for the `Glob` tool that searches for file using glob patterns.
 
   - slug: "oq5"
-    name: "Bash Tool"
+    name: "Implement the bash tool"
     difficulty: easy
     marketing_md: |-
       In this stage, you'll add support for the `Bash` tool that executes bash commands.
