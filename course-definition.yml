@@ -88,7 +88,7 @@ marketing:
 
 stages:
   - slug: "yy2"
-    name: "Connect to the LLM"
+    name: "Communicate with the LLM"
     difficulty: very_easy
     marketing_md: |-
       In this stage, you'll interact with the provided LLM using an [OpenAI-compatible API](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
