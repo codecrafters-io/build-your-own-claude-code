@@ -8,7 +8,7 @@ You'll need to advertise the `Bash` tool in your request and execute it when the
 
 Here is an example of the `Bash` tool's specification:
 
-```json
+```js
 {
   "type": "function",
   "function": {

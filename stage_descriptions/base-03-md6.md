@@ -6,7 +6,7 @@ When the LLM decides to use a tool, the response message will contain a `tool_ca
 
 Here's what the response looks like:
 
-```json
+```js
 {
   "choices": [
     {

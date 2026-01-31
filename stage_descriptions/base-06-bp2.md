@@ -7,7 +7,7 @@ The `Glob` tool enables the LLM to search for files using glob patterns (like `*
 You need to advertise the `Glob` tool in your request and execute it when the LLM requests it.
 
 Here's the tool specification:
-```json
+```js
 {
   "type": "function",
   "function": {
