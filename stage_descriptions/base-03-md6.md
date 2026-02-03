@@ -68,5 +68,5 @@ The tester will verify that:
 ### Notes
 
 - For this stage, you only need to print the result of the first tool call. We'll get to handling multiple tool calls in later stages.
-- You don't need to send the tool call result back to the LLM. We'll implement the full agent loop (sending results back and continuing the conversation) in later stages.
+- You don't need to send the tool call result back to the model. We'll implement the full agent loop (sending results back and continuing the conversation) in later stages.
 - For a complete reference of the response structure, see the [OpenRouter API Specification](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
