@@ -20,10 +20,10 @@
                      "content": args.prompt
                  }
              ],
-             "model": "anthropic/claude-haiku-4.5",
-         }))
-         .await?;
-
+            "model": "anthropic/claude-haiku-4.5",
+        }))
+        .await?;
+-
 -    // You can use print statements as follows for debugging, they'll be visible when running tests.
 -    eprintln!("Logs from your program will appear here!");
 -
@@ -31,9 +31,10 @@
 -    // if let Some(content) = response["choices"][0]["message"]["content"].as_str() {
 -    //     println!("{}", content);
 -    // }
++
 +    if let Some(content) = response["choices"][0]["message"]["content"].as_str() {
 +        println!("{}", content);
 +    }
 
-     Ok(())
- }
+    Ok(())
+}
