@@ -11,9 +11,6 @@ import (
 )
 
 func main() {
-	// You can use print statements as follows for debugging, they'll be visible when running tests.
-	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
-
 	var prompt string
 	flag.StringVar(&prompt, "p", "", "Prompt to send to LLM")
 	flag.Parse()
@@ -24,13 +21,12 @@ func main() {
 
 	apiKey := os.Getenv("OPENROUTER_API_KEY")
 	baseUrl := os.Getenv("OPENROUTER_BASE_URL")
+	if baseUrl == "" {
+		baseUrl = "https://openrouter.ai/api/v1"
+	}
 
 	if apiKey == "" {
 		panic("Env variable OPENROUTER_API_KEY not found")
-	}
-
-	if baseUrl == "" {
-		panic("Env variable OPENROUTER_BASE_URL not found")
 	}
 
 	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
@@ -55,6 +51,9 @@ func main() {
 	if len(resp.Choices) == 0 {
 		panic("No choices in response")
 	}
+
+	// You can use print statements as follows for debugging, they'll be visible when running tests.
+	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
 
 	// TODO: Uncomment the line below to pass the first stage
 	// fmt.Print(resp.Choices[0].Message.Content)
