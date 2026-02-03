@@ -1,22 +1,22 @@
-import argparse, os, sys
+import argparse
+import os
+import sys
+
 from openai import OpenAI
+
+API_KEY = os.getenv("OPENROUTER_API_KEY")
+BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
+
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("-p", required=True)
     args = p.parse_args()
 
-    api_key = os.getenv("OPENROUTER_API_KEY")
-    base_url = os.getenv("OPENROUTER_BASE_URL")
-
-    if not api_key:
+    if not API_KEY:
         raise RuntimeError("OPENROUTER_API_KEY is not set")
 
-    if not base_url:
-        raise RuntimeError("OPENROUTER_BASE_URL is not set")
-        
-
-    client = OpenAI(api_key=api_key, base_url=base_url)
+    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
     chat = client.chat.completions.create(
         model="anthropic/claude-haiku-4.5",
@@ -27,6 +27,7 @@ def main():
         raise RuntimeError("no choices in response")
 
     print(chat.choices[0].message.content)
+
 
 if __name__ == "__main__":
     main()

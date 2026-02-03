@@ -1,7 +1,6 @@
-@@ -18,35 +18,54 @@
-         eprintln!("OPENROUTER_BASE_URL is not set");
-         process::exit(1);
-     });
+@@ -17,34 +17,53 @@
+     let base_url = env::var("OPENROUTER_BASE_URL")
+         .unwrap_or_else(|_| "https://openrouter.ai/api/v1".to_string());
 
      let api_key = env::var("OPENROUTER_API_KEY").unwrap_or_else(|_| {
          eprintln!("OPENROUTER_API_KEY is not set");
@@ -24,8 +23,7 @@
                      "content": args.prompt
                  }
              ],
--            "model": "anthropic/claude-haiku-4.5"
-+            "model": "anthropic/claude-haiku-4.5",
+             "model": "anthropic/claude-haiku-4.5",
 +            "tools": [
 +                {
 +                    "type": "function",
