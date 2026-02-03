@@ -1,7 +1,7 @@
 slug: "claude-code"
 name: "Build your own Claude Code"
 short_name: "Claude Code"
-release_status: "alpha"
+release_status: "beta"
 description_md: |-
   Claude Code is a terminal-based AI coding assistant that uses Large Language Models (LLMs) to understand code and complete programming tasks. In this challenge, you'll build your own Claude Code that is capable of editing files, running commands, and iterating until the task is done.
 
