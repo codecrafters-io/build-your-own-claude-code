@@ -2,9 +2,9 @@ In this stage, you'll add support for the `Glob` tool.
 
 ### The `Glob` Tool
 
-The `Glob` tool enables the LLM to search for files using glob patterns (like `*.py` or `test_*.txt`). This is useful when the LLM needs to find files that match a certain pattern without knowing their exact names.
+The `Glob` tool enables the LLM to search for files using glob patterns (like `*.py` or `test_*.txt`). This is useful when the model needs to find files that match a certain pattern without knowing their exact names.
 
-You need to advertise the `Glob` tool in your request and execute it when the LLM requests it.
+You need to advertise the `Glob` tool in your request and execute it when the model requests it.
 
 Here's the tool specification:
 ```js
@@ -29,7 +29,7 @@ Here's the tool specification:
 
 ### Executing the `Glob` Tool
 
-When the LLM requests a `Glob` tool call:
+When the model requests a `Glob` tool call:
 
 1. Parse the arguments to extract the `pattern`
 2. Search for files matching the pattern using your language's glob functionality (e.g., `glob.glob()` in Python, `fs.glob()` in Node.js)
