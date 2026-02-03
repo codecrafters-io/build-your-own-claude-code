@@ -6,7 +6,7 @@ description_md: |-
   Claude Code is a terminal-based AI coding assistant that uses Large Language Models (LLMs) to understand code and complete programming tasks. In this challenge, you'll build your own Claude Code that is capable of editing files, running commands, and iterating until the task is done.
 
   Along the way, you'll learn about LLM APIs, tool calling, agent loops, and how to integrate multiple tools into an AI assistant.
-  
+
 short_description_md: |-
   Build an AI coding assistant with LLM tool calling
 
@@ -27,50 +27,50 @@ marketing:
     - question_markdown: "What exactly will I build?"
       answer_markdown: |-
         You’ll start by building the core of an AI agent:
-        
+
         * Connecting to an LLM via a REST API
         * Defining tools that the AI can use for performing tasks
         * Implementing an agent loop that lets the AI think, act, and observe results
-        
+
         At this stage, your assistant will feel alive. You’ll be able to tell it "Refactor main.py to use a class," and watch it read the file, generate a new version, and apply the edit autonomously.
-        
+
         As you progress, you’ll implement advanced features like:
-        
+
         * Interactive mode
         * ACP support
         * LCP servers
-        
+
         At the end, you'll have a GitHub repo to show off.
     - question_markdown: "What exactly will I learn?"
       answer_markdown: |-
         In the first 7 stages, you'll learn:
-        
+
         * How to communicate with LLMs (using REST APIs)
         * How tool calling works under the hood (how JSON schemas turn into actions)
         * What an agent loop is and how to implement it
         * How to safely execute system commands and file edits
         * Managing conversation history and context windows
-        
+
         In the advanced stages, you'll discover AI concepts, such as integrating the Model Context Protocol (MCP), connecting to LSP servers for better code understanding, building interactive TUIs, and adding web search capabilities.
-        
+
         As your code gets more complex, you'll be forced to structure and refactor it to avoid regressions and make adding new features easier.
     - question_markdown: "Why should I build such a project?"
       answer_markdown: |-
         The industry is shifting from simple chatbots to AI agents that can autonomously perform tasks. Building your own version of Claude Code is the best way to understand this shift.
-        
+
         If you've ever wondered how tools like GitHub Copilot or Cursor actually read your codebase and apply changes, this challenge reveals the magic.
-        
+
         Beyond technical depth, there's something uniquely satisfying about understanding an AI tool used by millions of developers every day. You'll come out of it as a more confident and interesting developer.
     - question_markdown: "What are the pre-requisites for this challenge?"
       answer_markdown: |-
         You should be comfortable writing code in any one language and using Git. You don't need any prior experience with LLMs or machine learning.
-        
+
         Most learners pick up the required concepts (e.g., agent loop) as they go.
-        
+
         What matters most is curiosity and persistence. You'll develop intuition by exploring, debugging, and discovering solutions yourself.
-        
+
         While we will make it extremely simple to get started, don't expect this to be a follow-along tutorial.
-        
+
   testimonials:
     - author_name: "Ananthalakshmi Sankar"
       author_description: "Automation Engineer at Apple"
@@ -116,12 +116,6 @@ stages:
     difficulty: easy
     marketing_md: |-
       In this stage, you'll add support for the `Write` tool that writes content to files.
-
-  - slug: "bp2"
-    name: "Implement the glob tool"
-    difficulty: easy
-    marketing_md: |-
-      In this stage, you'll add support for the `Glob` tool that searches for file using glob patterns.
 
   - slug: "oq5"
     name: "Implement the bash tool"
