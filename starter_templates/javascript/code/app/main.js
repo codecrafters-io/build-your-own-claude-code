@@ -6,13 +6,11 @@ async function main() {
 
   const [, , flag, prompt] = process.argv;
   const apiKey = process.env.OPENROUTER_API_KEY;
-  const baseURL = process.env.OPENROUTER_BASE_URL;
+  const baseURL =
+    process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
 
   if (!apiKey) {
     throw new Error("OPENROUTER_API_KEY is not set");
-  }
-  if (!baseURL) {
-    throw new Error("OPENROUTER_BASE_URL is not set");
   }
   if (flag !== "-p" || !prompt) {
     throw new Error("error: -p flag is required");

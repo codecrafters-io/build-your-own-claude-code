@@ -24,13 +24,12 @@ func main() {
 
 	apiKey := os.Getenv("OPENROUTER_API_KEY")
 	baseUrl := os.Getenv("OPENROUTER_BASE_URL")
+	if baseUrl == "" {
+		baseUrl = "https://openrouter.ai/api/v1"
+	}
 
 	if apiKey == "" {
 		panic("Env variable OPENROUTER_API_KEY not found")
-	}
-
-	if baseUrl == "" {
-		panic("Env variable OPENROUTER_BASE_URL not found")
 	}
 
 	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
