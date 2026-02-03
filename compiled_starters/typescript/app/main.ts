@@ -1,9 +1,6 @@
 import OpenAI from "openai";
 
 async function main() {
-  // You can use print statements as follows for debugging, they'll be visible when running tests.
-  console.error("Logs from your program will appear here!");
-
   const [, , flag, prompt] = process.argv;
   const apiKey = process.env.OPENROUTER_API_KEY;
   const baseURL =
@@ -29,6 +26,9 @@ async function main() {
   if (!response.choices || response.choices.length === 0) {
     throw new Error("no choices in response");
   }
+
+  // You can use print statements as follows for debugging, they'll be visible when running tests.
+  console.error("Logs from your program will appear here!");
 
   // TODO: Uncomment the lines below to pass the first stage
   // console.log(response.choices[0].message.content);
