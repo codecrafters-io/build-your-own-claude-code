@@ -8,7 +8,7 @@ description_md: |-
   Along the way, you'll learn about LLM APIs, tool calling, agent loops, and how to integrate multiple tools into an AI assistant.
 
 short_description_md: |-
-  Build an AI coding assistant with LLM tool calling
+  Learn about LLM APIs, tool calling, agent loops and more
 
 completion_percentage: 15
 
