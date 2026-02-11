@@ -1,0 +1,45 @@
+hints:
+  - title_markdown: "How do I advertise tools to the LLM?"
+    body_markdown: |-
+      Add tools to the [`ChatCompletionCreateParams`](https://github.com/openai/openai-java/blob/main/openai-java-core/src/main/kotlin/com/openai/models/chat/completions/ChatCompletionCreateParams.kt) builder:
+
+      ```java
+      ChatCompletion response = client.chat().completions().create(
+          ChatCompletionCreateParams.builder()
+              .model("anthropic/claude-haiku-4.5")
+              .addUserMessage(prompt)
+              .addFunctionTool(readToolDefinition())
+              .build());
+      ```
+
+      The `addFunctionTool(...)` call advertises function tools that the LLM can invoke.
+
+  - title_markdown: "How do I add the Read tool to the request?"
+    body_markdown: |-
+      Create a `FunctionDefinition` with a JSON schema for parameters, then pass it to `addFunctionTool(...)`:
+
+      ```java
+      private static FunctionDefinition readToolDefinition() {
+        FunctionParameters parameters = FunctionParameters.builder()
+            .putAdditionalProperty("type", JsonValue.from("object"))
+            .putAdditionalProperty(
+                "properties",
+                JsonValue.from(
+                    Map.of(
+                        "file_path",
+                        Map.of(
+                            "type", "string",
+                            "description", "The path to the file to read"))))
+            .putAdditionalProperty("required", JsonValue.from(List.of("file_path")))
+            .build();
+
+        return FunctionDefinition.builder()
+            .name("Read")
+            .description("Read and return the contents of a file")
+            .parameters(parameters)
+            .build();
+      }
+      ```
+
+      - `name` must match the tool name expected by the tester (`Read`).
+      - `parameters` should be a valid JSON Schema object.
