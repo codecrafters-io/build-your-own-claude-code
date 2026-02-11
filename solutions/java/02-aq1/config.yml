@@ -1,0 +1,52 @@
+hints:
+  - title_markdown: "How do I advertise tools to the LLM?"
+    body_markdown: |-
+      Use `addTool()` in the [`ChatCompletionCreateParams.builder()`](https://javadoc.io/doc/com.openai/openai-java/latest/com/openai/models/chat/completions/ChatCompletionCreateParams.Builder.html) call:
+
+      ```java
+      ChatCompletion response = client.chat().completions().create(
+          ChatCompletionCreateParams.builder()
+              .model("anthropic/claude-haiku-4.5")
+              .addUserMessage(prompt)
+              .addTool(/* your tool specification */)
+              .build()
+      );
+      ```
+
+      `addTool()` advertises which functions are available to the model.
+
+  - title_markdown: "How do I add the Read tool to the request?"
+    body_markdown: |-
+      Add a function tool named `Read` with a JSON schema for its `file_path` parameter:
+
+      ```java
+      .addTool(
+          ChatCompletionFunctionTool.builder()
+              .function(
+                  FunctionDefinition.builder()
+                      .name("Read")
+                      .description("Read and return the contents of a file")
+                      .parameters(
+                          FunctionParameters.builder()
+                              .putAdditionalProperty("type", JsonValue.from("object"))
+                              .putAdditionalProperty(
+                                  "properties",
+                                  JsonValue.from(Map.of(
+                                      "file_path",
+                                      Map.of(
+                                          "type", "string",
+                                          "description", "The path to the file to read"
+                                      )
+                                  ))
+                              )
+                              .putAdditionalProperty("required", JsonValue.from(List.of("file_path")))
+                              .build()
+                      )
+                      .build()
+              )
+              .build()
+      )
+      ```
+
+      - Set the function name to `Read`.
+      - Make `file_path` a required string parameter.
