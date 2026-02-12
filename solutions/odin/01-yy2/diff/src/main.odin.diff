@@ -1,0 +1,33 @@
+@@ -127,31 +127,27 @@
+ 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response)
+
+ 	res := curl_easy_perform(curl)
+ 	if res != .OK {
+ 		fmt.eprintln("Request failed")
+ 		os.exit(1)
+ 	}
+
+ 	Choice :: struct {
+ 		message: struct {
+ 			content: string,
+ 		},
+ 	}
+ 	API_Response :: struct {
+ 		choices: []Choice,
+ 	}
+
+ 	api_resp: API_Response
+ 	json.unmarshal(response.data[:], &api_resp)
+
+ 	if len(api_resp.choices) == 0 {
+ 		fmt.eprintln("No choices in response")
+ 		os.exit(1)
+ 	}
+
+-	// You can use print statements as follows for debugging, they'll be visible when running tests.
+-	fmt.eprintln("Logs from your program will appear here!")
+-
+-	// TODO: Uncomment the line below to pass the first stage
+-	// fmt.print(api_resp.choices[0].message.content)
++	fmt.print(api_resp.choices[0].message.content)
+ }
