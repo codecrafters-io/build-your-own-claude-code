@@ -48,11 +48,7 @@ let () =
        |> Lwt.bind (fun (_resp, body) -> Cohttp_lwt.Body.to_string body))
   in
 
-  (* You can use print statements as follows for debugging, they'll be visible when running tests. *)
-  Printf.eprintf "Logs from your program will appear here!\n";
-
-  (* TODO: Uncomment the lines below to pass the first stage *)
-  (* let json = Yojson.Safe.from_string _response_body in *)
-  (* let content = Yojson.Safe.Util.(json |> member "choices" |> index 0 |> member "message" |> member "content" |> to_string) in *)
-  (* print_string content; *)
+  let json = Yojson.Safe.from_string _response_body in
+  let content = Yojson.Safe.Util.(json |> member "choices" |> index 0 |> member "message" |> member "content" |> to_string) in
+  print_string content;
   ()

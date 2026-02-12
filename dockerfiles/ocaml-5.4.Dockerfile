@@ -11,6 +11,13 @@ ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="dune,dune-project,codecrafters_claude_co
 # hadolint ignore=DL3002
 USER root
 
+# Install system dependencies required by OCaml packages (crypto, TLS, etc.)
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libgmp-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install dune
 RUN opam install dune.3.21.0 --yes
 
