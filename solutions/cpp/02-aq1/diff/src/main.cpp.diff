@@ -1,0 +1,54 @@
+@@ -35,25 +35,44 @@
+ 
+     json request_body = {
+         {"model", "anthropic/claude-haiku-4.5"},
+         {"messages", json::array({
+             {{"role", "user"}, {"content", prompt}}
+-        })}
++        })},
++        {"tools", json::array({
++            {
++                {"type", "function"},
++                {"function", {
++                    {"name", "Read"},
++                    {"description", "Read and return the contents of a file"},
++                    {"parameters", {
++                        {"type", "object"},
++                        {"properties", {
++                            {"file_path", {
++                                {"type", "string"},
++                                {"description", "The path to the file to read"}
++                            }}
++                        }},
++                        {"required", json::array({"file_path"})}
++                    }}
++                }}
++            }
++        })}
+     };
+ 
+     cpr::Response response = cpr::Post(
+         cpr::Url{base_url + "/chat/completions"},
+         cpr::Header{
+             {"Authorization", "Bearer " + api_key},
+             {"Content-Type", "application/json"}
+         },
+         cpr::Body{request_body.dump()}
+     );
+ 
+     if (response.status_code != 200) {
+         std::cerr << "HTTP error: " << response.status_code << std::endl;
+         return 1;
+     }
+ 
+     json result = json::parse(response.text);
+ 
+     if (!result.contains("choices") || result["choices"].empty()) {
+         std::cerr << "No choices in response" << std::endl;
+         return 1;
+     }
+ 
+     std::cout << result["choices"][0]["message"]["content"].get<std::string>();
+ 
+     return 0;
+ }
