@@ -1,19 +1,11 @@
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-local-binds -Wno-unused-matches #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Main (main) where
 
-import Data.Aeson (Value(..), object, (.=), encode, decode)
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString.Lazy.Char8 as BLC
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import qualified Data.Text.IO as TIO
-import qualified Data.Vector as V
 import System.Environment (getArgs, lookupEnv)
 import System.IO (hPutStrLn, stderr)
 import System.Process (readProcess)
+import Data.List (isPrefixOf)
 
 main :: IO ()
 main = do
@@ -27,10 +19,7 @@ main = do
 
     let key = maybe (error "OPENROUTER_API_KEY is not set") id apiKey
         url = maybe "https://openrouter.ai/api/v1" id baseUrl
-        body = BLC.unpack $ encode $ object
-            [ "model" .= ("anthropic/claude-haiku-4.5" :: T.Text)
-            , "messages" .= [object ["role" .= ("user" :: T.Text), "content" .= T.pack prompt]]
-            ]
+        body = "{\"model\":\"anthropic/claude-haiku-4.5\",\"messages\":[{\"role\":\"user\",\"content\":" ++ encodeJsonString prompt ++ "}]}"
 
     response <- readProcess "curl"
         [ "-s", "-X", "POST"
@@ -40,16 +29,49 @@ main = do
         , "-d", body
         ] ""
 
-    let responseBS = BL.fromStrict $ TE.encodeUtf8 $ T.pack response
-        Just (Object obj) = decode responseBS
-        Just (Array choices) = KM.lookup "choices" obj
+    let content = extractContent response
 
-    if V.null choices
-      then error "No choices in response"
-      else return ()
+    case content of
+      Nothing -> error "No choices in response"
+      Just _  -> return ()
 
-    let Object choice = V.head choices
-        Just (Object msg) = KM.lookup "message" choice
-        Just (String content) = KM.lookup "content" msg
+    putStr (maybe "" id content)
 
-    TIO.putStr content
+encodeJsonString :: String -> String
+encodeJsonString s = "\"" ++ concatMap escape s ++ "\""
+  where
+    escape '"'  = "\\\""
+    escape '\\' = "\\\\"
+    escape '\n' = "\\n"
+    escape '\r' = "\\r"
+    escape '\t' = "\\t"
+    escape c    = [c]
+
+extractContent :: String -> Maybe String
+extractContent s = do
+    rest1 <- findAfter "\"choices\"" s
+    rest2 <- findAfter "\"content\"" rest1
+    rest3 <- findAfter ":" rest2
+    extractJsonStringValue (dropWhile (`elem` " \n\r\t") rest3)
+
+findAfter :: String -> String -> Maybe String
+findAfter _ [] = Nothing
+findAfter needle haystack@(_:cs)
+    | needle `isPrefixOf` haystack = Just (drop (length needle) haystack)
+    | otherwise = findAfter needle cs
+
+extractJsonStringValue :: String -> Maybe String
+extractJsonStringValue ('"':rest) = Just (go rest)
+  where
+    go ('\\':'"':xs)  = '"' : go xs
+    go ('\\':'\\':xs) = '\\' : go xs
+    go ('\\':'/':xs)  = '/' : go xs
+    go ('\\':'n':xs)  = '\n' : go xs
+    go ('\\':'r':xs)  = '\r' : go xs
+    go ('\\':'t':xs)  = '\t' : go xs
+    go ('\\':'b':xs)  = '\b' : go xs
+    go ('\\':'f':xs)  = '\f' : go xs
+    go ('"':_)        = []
+    go (x:xs)         = x : go xs
+    go []             = []
+extractJsonStringValue _ = Nothing

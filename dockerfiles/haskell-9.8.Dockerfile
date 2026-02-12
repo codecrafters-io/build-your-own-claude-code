@@ -19,10 +19,11 @@ WORKDIR /app
 COPY --exclude=.git --exclude=README.md . /app
 
 ENV STACK_ROOT=/app/.stack
-RUN stack build
-RUN stack clean codecrafters-claude-code
+RUN stack build && stack clean codecrafters-claude-code
 
-RUN mkdir /app-cached
-RUN mv .stack-work /app-cached/.stack-work
-RUN mv .stack /app-cached/.stack
-RUN rm -rf /app/app
+RUN mkdir /app-cached \
+    && mv .stack-work /app-cached/.stack-work \
+    && mv .stack /app-cached/.stack \
+    && rm -rf /app-cached/.stack/pantry \
+    && rm -rf /app-cached/.stack/programs \
+    && rm -rf /app/app
