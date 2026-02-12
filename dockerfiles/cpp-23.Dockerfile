@@ -37,4 +37,5 @@ RUN .codecrafters/compile.sh
 
 RUN mkdir -p /app-cached && \
     if [ -d "/app/vcpkg_installed" ]; then mv /app/vcpkg_installed /app-cached; fi && \
+    if [ -d "/app/build" ]; then mv /app/build /app-cached; fi && \
     rm -rf /vcpkg/buildtrees /vcpkg/downloads /vcpkg/packages /root/.cache/vcpkg
