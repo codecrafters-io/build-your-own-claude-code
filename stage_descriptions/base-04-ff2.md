@@ -2,11 +2,11 @@ In this stage, you'll implement an agent loop.
 
 ### The Agent Loop
 
-So far, your program handles a single interaction: send a prompt to the model, get a response, execute one tool if requested, and exit. 
+So far, your program handles a single interaction: send a prompt to the LLM, get a response, execute one tool if requested, and exit. 
 
 This works for simple tasks, but falls short when the task requires multiple steps (e.g., "read a file and fix any bugs").
 
-For this stage, you'll implement an agent loop that repeatedly sends messages to the LLM and handles tool calls as needed, until the final result is received. 
+For this stage, you'll implement an agent loop that repeatedly sends messages to the model and handles tool calls as needed, until the final result is received. 
 
 Here's how to implement the agent loop:
 
@@ -17,8 +17,8 @@ Here's how to implement the agent loop:
     ]
     ```
     
-2. **Enter the loop**: Start the loop with the same API request you already have (sending your `messages` and tool specifications to the LLM). The difference is that this request now sits in a loop, allowing it to run multiple times.
-3. **Record the assistant's response**: Whatever message the LLM returns, add it to your `messages` array. If the model wants to use a tool, the response will contain a `tool_calls` array:
+2. **Enter the loop**: Start the loop with the same API request you already have (sending your `messages` and tool specifications to the model). The difference is that this request now sits in a loop, allowing it to run multiple times.
+3. **Record the assistant's response**: Whatever message the model returns, add it to your `messages` array. If the model wants to use a tool, the response will contain a `tool_calls` array:
     ```js
     {
       "role": "assistant",
@@ -35,7 +35,7 @@ Here's how to implement the agent loop:
     }
     ```
      
-4. **Check for tool calls**: Check the LLM's response to see if it's requesting to use any tools. If there are tool calls, execute each requested tool, then add their result to your `messages` array. Each tool result must have a `role` of `"tool"`, reference its corresponding `tool_call_id`, and contain the output of the tool call as its `content`:
+4. **Check for tool calls**: Check the model's response to see if it's requesting to use any tools. If there are tool calls, execute each requested tool, then add their result to your `messages` array. Each tool result must have a `role` of `"tool"`, reference its corresponding `tool_call_id`, and contain the output of the tool call as its `content`:
     ```js
     {
       "role": "tool",
@@ -44,7 +44,7 @@ Here's how to implement the agent loop:
     }
     ```
     
-5. **Repeat until complete**: Continue the loop until the LLM responds without requesting any tools (when `tool_calls` is missing or empty). At this point, print the final message `content` to stdout and exit.
+5. **Repeat until complete**: Continue the loop until the model responds without requesting any tools (when `tool_calls` is missing or empty). At this point, print the final message `content` to stdout and exit.
 
 ### Tests
 

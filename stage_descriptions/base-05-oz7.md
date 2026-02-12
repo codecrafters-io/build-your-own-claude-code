@@ -2,7 +2,7 @@ In this stage, you'll add support for the `Write` tool.
 
 ### The `Write` Tool
 
-The `Write` tool enables the LLM to write content to files. Like with the `Read` tool, you need to advertise the `Write` tool in your request and execute it when the LLM requests it.
+The `Write` tool enables the LLM to write content to files. Like with the `Read` tool, you need to advertise the `Write` tool in your request and execute it when the model requests it.
 
 Here's the tool specification:
 ```js
@@ -31,7 +31,7 @@ Here's the tool specification:
 
 ### Executing the `Write` Tool
 
-When the LLM requests a `Write` tool call:
+When the model requests a `Write` tool call:
 
 1. Parse the arguments to extract the `file_path` and `content`
 2. Write the content to the file at the specified path:

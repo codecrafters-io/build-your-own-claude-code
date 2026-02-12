@@ -2,15 +2,15 @@ In this stage, you'll add support for advertising the `Read` tool in the request
 
 ### Tools
 
-Tools are functions that an LLM can request to perform specific actions, like reading files or running commands.
+Tools are functions that an LLM can use to perform specific actions, like reading files or running commands.
 
-By default, LLMs cannot access a user's environment, such as their filesystem or terminal. To solve this, Claude Code provides several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (like `Read`, `Write`, and `Bash`) that enable the LLM to understand and modify the user's codebase.
+By default, LLMs cannot access a user's environment, such as their filesystem or terminal. To solve this, Claude Code provides several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (like `Read`, `Write`, and `Bash`) that enable the model to read and modify the user's codebase.
 
-For this stage, you need to advertise the `Read` tool, which lets the LLM read a file's contents.
+For this stage, you need to advertise the `Read` tool, which lets the model read a file's contents.
 
 ### Advertising Tools
 
-Advertising tools lets the LLM know which tools are available and what arguments they accept.
+Advertising tools lets the model know which tools are available and what arguments they accept.
 
 To advertise a tool, you must include its specification in the `tools` array of your request body.
 
