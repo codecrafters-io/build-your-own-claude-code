@@ -1,7 +1,29 @@
-@@ -47,8 +47,4 @@
+@@ -27,30 +27,26 @@
+   "model"    => "anthropic/claude-haiku-4.5",
+   "messages" => [
+     {"role" => "user", "content" => prompt},
+   ],
+ }.to_json
+
+ headers = HTTP::Headers{
+   "Authorization" => "Bearer #{api_key}",
+   "Content-Type"  => "application/json",
+ }
+
+ client = HTTP::Client.new(uri)
+ response = client.post(path, headers: headers, body: body)
+
+ if response.status_code != 200
+   abort("HTTP error: #{response.status_code} #{response.body}")
+ end
+
+ parsed = JSON.parse(response.body)
+ choices = parsed["choices"]?
+
+ if choices.nil? || choices.as_a.empty?
    abort("No choices in response")
  end
- 
+
 -# You can use print statements as follows for debugging, they'll be visible when running tests.
 -STDERR.puts "Logs from your program will appear here!"
 -
