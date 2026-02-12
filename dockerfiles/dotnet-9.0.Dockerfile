@@ -7,8 +7,7 @@ WORKDIR /app
 COPY --exclude=.git --exclude=README.md . /app
 
 # This saves nuget packages to ~/.nuget
-# Combined into single RUN to avoid VFS storage driver snapshot issues with dotnet build output
-RUN dotnet build --configuration Release . \
+RUN dotnet restore \
     && echo "cd \${CODECRAFTERS_REPOSITORY_DIR} && dotnet build --configuration Release ." > /codecrafters-precompile.sh \
     && chmod +x /codecrafters-precompile.sh
 
