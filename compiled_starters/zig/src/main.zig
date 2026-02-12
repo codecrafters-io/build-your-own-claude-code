@@ -77,8 +77,7 @@ pub fn main() !void {
 
     // TODO: Uncomment the lines below to pass the first stage
     // const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
-    // const stdout: std.fs.File = .{ .handle = std.posix.STDOUT_FILENO };
-    // try stdout.writeAll(content);
+    // try std.io.getStdOut().writeAll(content);
 }
 
 fn jsonEncodeString(allocator: std.mem.Allocator, s: []const u8) ![]u8 {

@@ -1,0 +1,59 @@
+@@ -50,56 +50,52 @@
+
+     const result = try client.fetch(.{
+         .location = .{ .url = url },
+         .method = .POST,
+         .payload = body,
+         .extra_headers = &.{
+             .{ .name = "Authorization", .value = auth_header },
+             .{ .name = "Content-Type", .value = "application/json" },
+         },
+         .response_writer = &aw.writer,
+     });
+     _ = result;
+
+     // Get response body
+     const resp_body = aw.writer.buffer[0..aw.writer.end];
+
+     // Parse JSON response
+     const parsed = try std.json.parseFromSlice(std.json.Value, allocator, resp_body, .{});
+     defer parsed.deinit();
+
+     const choices = parsed.value.object.get("choices") orelse
+         @panic("No choices in response");
+     if (choices.array.items.len == 0)
+         @panic("No choices in response");
+
+-    // You can use print statements as follows for debugging, they'll be visible when running tests.
+-    std.debug.print("Logs from your program will appear here!\n", .{});
+-
+-    // TODO: Uncomment the lines below to pass the first stage
+-    // const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
+-    // try std.io.getStdOut().writeAll(content);
++    const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
++    try std.io.getStdOut().writeAll(content);
+ }
+
+ fn jsonEncodeString(allocator: std.mem.Allocator, s: []const u8) ![]u8 {
+     var buf: std.ArrayList(u8) = .empty;
+     errdefer buf.deinit(allocator);
+
+     try buf.append(allocator, '"');
+     for (s) |c| {
+         switch (c) {
+             '"' => try buf.appendSlice(allocator, "\\\""),
+             '\\' => try buf.appendSlice(allocator, "\\\\"),
+             '\n' => try buf.appendSlice(allocator, "\\n"),
+             '\r' => try buf.appendSlice(allocator, "\\r"),
+             '\t' => try buf.appendSlice(allocator, "\\t"),
+             else => {
+                 if (c < 0x20) {
+                     var tmp: [6]u8 = undefined;
+                     const escaped = std.fmt.bufPrint(&tmp, "\\u{x:0>4}", .{c}) catch unreachable;
+                     try buf.appendSlice(allocator, escaped);
+                 } else {
+                     try buf.append(allocator, c);
+                 }
+             },
+         }
+     }
