@@ -35,6 +35,6 @@ RUN sed -i '1s/^/set(VCPKG_INSTALL_OPTIONS --no-print-usage)\n/' ${VCPKG_ROOT}/s
 
 RUN .codecrafters/compile.sh
 
-RUN mkdir -p /app-cached
-RUN if [ -d "/app/vcpkg_installed" ]; then mv /app/vcpkg_installed /app-cached; fi
-RUN if [ -d "/app/build" ]; then mv /app/build /app-cached; fi
+RUN mkdir -p /app-cached && \
+    if [ -d "/app/vcpkg_installed" ]; then mv /app/vcpkg_installed /app-cached; fi && \
+    rm -rf /vcpkg/buildtrees /vcpkg/downloads /vcpkg/packages /root/.cache/vcpkg
