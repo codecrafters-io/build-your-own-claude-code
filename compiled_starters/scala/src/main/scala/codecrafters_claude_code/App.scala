@@ -1,5 +1,8 @@
 package codecrafters_claude_code
 
+import java.net.URI
+import java.net.http.{HttpClient, HttpRequest, HttpResponse}
+
 object Main {
   def main(args: Array[String]): Unit = {
     val prompt = args.sliding(2).collectFirst { case Array("-p", p) => p }
@@ -16,16 +19,20 @@ object Main {
       )
     )
 
-    val response = requests.post(
-      s"$baseUrl/chat/completions",
-      headers = Map(
-        "Authorization" -> s"Bearer $apiKey",
-        "Content-Type" -> "application/json"
-      ),
-      data = ujson.write(body)
-    )
+    val client = HttpClient.newBuilder()
+      .version(HttpClient.Version.HTTP_1_1)
+      .build()
 
-    val json = ujson.read(response.text())
+    val request = HttpRequest.newBuilder()
+      .uri(URI.create(s"$baseUrl/chat/completions"))
+      .header("Authorization", s"Bearer $apiKey")
+      .header("Content-Type", "application/json")
+      .POST(HttpRequest.BodyPublishers.ofString(ujson.write(body)))
+      .build()
+
+    val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+
+    val json = ujson.read(response.body())
     val choices = json("choices").arr
     if (choices.isEmpty) throw new RuntimeException("no choices in response")
 
