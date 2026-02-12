@@ -1,0 +1,48 @@
+hints:
+  - title_markdown: "How do I advertise tools to the LLM?"
+    body_markdown: |-
+      Add a `tools` field to the JSON payload that you send to `/chat/completions`:
+
+      ```cpp
+      nlohmann::json payload = {
+          {"model", "anthropic/claude-haiku-4.5"},
+          {"messages", nlohmann::json::array({
+              {{"role", "user"}, {"content", prompt}}
+          })},
+          {"tools", nlohmann::json::array({
+              // Add your tool specifications here
+          })},
+      };
+      ```
+
+      The `tools` field accepts a list of tool specifications that tell the LLM which functions are available.
+
+  - title_markdown: "How do I add the Read tool to the request?"
+    body_markdown: |-
+      Include the `Read` tool's specification in the `tools` array:
+
+      ```cpp
+      {"tools", nlohmann::json::array({
+          {
+              {"type", "function"},
+              {"function", {
+                  {"name", "Read"},
+                  {"description", "Read and return the contents of a file"},
+                  {"parameters", {
+                      {"type", "object"},
+                      {"properties", {
+                          {"file_path", {
+                              {"type", "string"},
+                              {"description", "The path to the file to read"}
+                          }},
+                      }},
+                      {"required", nlohmann::json::array({"file_path"})},
+                  }},
+              }},
+          },
+      })},
+      ```
+
+      - The `type` field must be `"function"` for tools.
+      - The `function` object contains the name, description, and parameters schema.
+      - The `parameters` field describes the function's arguments.

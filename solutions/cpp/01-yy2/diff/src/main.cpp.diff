@@ -1,0 +1,35 @@
+@@ -38,33 +38,29 @@
+                          {{{"role", "user"}, {"content", prompt}}})},
+     };
+
+     cpr::Response response = cpr::Post(
+         cpr::Url{base_url + "/chat/completions"},
+         cpr::Header{{"Authorization", "Bearer " + std::string(api_key_env)},
+                     {"Content-Type", "application/json"}},
+         cpr::Body{payload.dump()});
+
+     if (response.error.code != cpr::ErrorCode::OK) {
+         throw std::runtime_error(response.error.message);
+     }
+     if (response.status_code < 200 || response.status_code >= 300) {
+         throw std::runtime_error("request failed with status code " +
+                                  std::to_string(response.status_code));
+     }
+
+     nlohmann::json parsed = nlohmann::json::parse(response.text);
+     if (!parsed.contains("choices") || !parsed["choices"].is_array() ||
+         parsed["choices"].empty() || !parsed["choices"][0].contains("message") ||
+         !parsed["choices"][0]["message"].contains("content") ||
+         !parsed["choices"][0]["message"]["content"].is_string()) {
+         throw std::runtime_error("no choices in response");
+     }
+
+-    // You can use print statements as follows for debugging, they'll be visible when running tests.
+-    std::cerr << "Logs from your program will appear here!" << std::endl;
+-
+-    // TODO: Uncomment the line below to pass the first stage
+-    // std::cout << parsed["choices"][0]["message"]["content"].get<std::string>() << std::endl;
++    std::cout << parsed["choices"][0]["message"]["content"].get<std::string>() << std::endl;
+
+     return 0;
+ }
