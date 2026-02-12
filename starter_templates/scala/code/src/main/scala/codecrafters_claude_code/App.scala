@@ -40,6 +40,6 @@ object Main {
     System.err.println("Logs from your program will appear here!")
 
     // TODO: Uncomment the line below to pass the first stage
-    // print(choices(0)("message")("content").str)
+    // println(choices(0)("message")("content").str)
   }
 }

@@ -36,6 +36,6 @@ object Main {
     val choices = json("choices").arr
     if (choices.isEmpty) throw new RuntimeException("no choices in response")
 
-    print(choices(0)("message")("content").str)
+    println(choices(0)("message")("content").str)
   }
 }
