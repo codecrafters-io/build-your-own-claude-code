@@ -2,3 +2,6 @@ course-definition-tester
 
 # MacOS
 .DS_Store
+
+.env
+.env.local
