@@ -5,13 +5,13 @@ import FoundationNetworking
 
 let args = CommandLine.arguments
 guard let pIndex = args.firstIndex(of: "-p"), pIndex + 1 < args.count else {
-    fputs("error: -p flag is required\n", stderr)
+    FileHandle.standardError.write(Data("error: -p flag is required\n".utf8))
     exit(1)
 }
 let prompt = args[pIndex + 1]
 
 guard let apiKey = ProcessInfo.processInfo.environment["OPENROUTER_API_KEY"], !apiKey.isEmpty else {
-    fputs("OPENROUTER_API_KEY is not set\n", stderr)
+    FileHandle.standardError.write(Data("OPENROUTER_API_KEY is not set\n".utf8))
     exit(1)
 }
 let baseURL = ProcessInfo.processInfo.environment["OPENROUTER_BASE_URL"] ?? "https://openrouter.ai/api/v1"
@@ -37,7 +37,7 @@ URLSession.shared.dataTask(with: request) { data, _, error in
 semaphore.wait()
 
 if let error = responseError {
-    fputs("Request failed: \(error)\n", stderr)
+    FileHandle.standardError.write(Data("Request failed: \(error)\n".utf8))
     exit(1)
 }
 
@@ -47,7 +47,7 @@ guard let data = responseData,
       !choices.isEmpty,
       let message = choices[0]["message"] as? [String: Any],
       let content = message["content"] as? String else {
-    fputs("no choices in response\n", stderr)
+    FileHandle.standardError.write(Data("no choices in response\n".utf8))
     exit(1)
 }
 

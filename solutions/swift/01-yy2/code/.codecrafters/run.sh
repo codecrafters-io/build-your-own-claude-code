@@ -8,4 +8,4 @@
 
 set -e # Exit on failure
 
-exec swift run -c release --skip-build --build-path /tmp/codecrafters-build-claude-code-swift build-your-own-claude-code "$@"
+exec /tmp/codecrafters-build-claude-code-swift/release/build-your-own-claude-code "$@"

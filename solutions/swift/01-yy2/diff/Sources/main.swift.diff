@@ -10,7 +10,7 @@
  semaphore.wait()
 
  if let error = responseError {
-     fputs("Request failed: \(error)\n", stderr)
+     FileHandle.standardError.write(Data("Request failed: \(error)\n".utf8))
      exit(1)
  }
 
@@ -20,12 +20,12 @@
        !choices.isEmpty,
        let message = choices[0]["message"] as? [String: Any],
        let content = message["content"] as? String else {
-     fputs("no choices in response\n", stderr)
+     FileHandle.standardError.write(Data("no choices in response\n".utf8))
      exit(1)
  }
 
 -// You can use print statements as follows for debugging, they'll be visible when running tests.
--fputs("Logs from your program will appear here!\n", stderr)
+-FileHandle.standardError.write(Data("Logs from your program will appear here!\n".utf8))
 -
 -// TODO: Uncomment the line below to pass the first stage
 -// print(content, terminator: "")
