@@ -47,8 +47,4 @@ if (empty($data['choices'])) {
     exit(1);
 }
 
-// You can use print statements as follows for debugging, they'll be visible when running tests.
-fwrite(STDERR, "Logs from your program will appear here!\n");
-
-// TODO: Uncomment the following line to pass the first stage
-// echo $data['choices'][0]['message']['content'];
+echo $data['choices'][0]['message']['content'];

@@ -1,6 +1,0 @@
-{
-    "name": "codecrafters/claude-code",
-    "require": {
-        "openai-php/client": "^0.10"
-    }
-}
