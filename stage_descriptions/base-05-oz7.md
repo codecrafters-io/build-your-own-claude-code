@@ -2,9 +2,12 @@ In this stage, you'll add support for the `Write` tool.
 
 ### The `Write` Tool
 
-The `Write` tool enables the LLM to write content to files. Like with the `Read` tool, you need to advertise the `Write` tool in your request and execute it when the model requests it.
+The `Write` tool enables the LLM to write content to files. Like with the `Read`
+tool, you need to advertise the `Write` tool in your request and execute it when
+the model requests it.
 
 Here's the tool specification:
+
 ```js
 {
   "type": "function",
@@ -42,19 +45,23 @@ When the model requests a `Write` tool call:
 ### Tests
 
 The tester will create the following files:
+
 - `README.md` with instructions
 - `app/` directory for the project
 
 The tester will then execute your program like this:
+
 ```bash
 $ ./your_program.sh -p "Read README.md and create the required file. File should have 1 line. Reply with 'Created the file'"
 Created the file
 ```
 
 The tester will verify that:
+
 - The required file is created with the correct contents
 - Your program exits with exit code `0`
 
 ### Notes
 
-- You can choose any reasonable name for the Write tool (e.g., `Write`, `write`, `write_file`, `WriteFile`).
+- You can choose any reasonable name for the Write tool (e.g., `Write`, `write`,
+  `write_file`, `WriteFile`).
