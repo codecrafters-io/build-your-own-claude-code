@@ -1,0 +1,38 @@
+package codecrafters_claude_code
+
+object Main {
+  def main(args: Array[String]): Unit = {
+    val prompt = args.sliding(2).collectFirst { case Array("-p", p) => p }
+      .getOrElse(throw new RuntimeException("-p flag is required"))
+
+    val apiKey = sys.env.getOrElse("OPENROUTER_API_KEY",
+      throw new RuntimeException("OPENROUTER_API_KEY is not set"))
+    val baseUrl = sys.env.getOrElse("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+
+    val body = ujson.Obj(
+      "model" -> "anthropic/claude-haiku-4.5",
+      "messages" -> ujson.Arr(
+        ujson.Obj("role" -> "user", "content" -> prompt)
+      )
+    )
+
+    val response = requests.post(
+      s"$baseUrl/chat/completions",
+      headers = Map(
+        "Authorization" -> s"Bearer $apiKey",
+        "Content-Type" -> "application/json"
+      ),
+      data = ujson.write(body)
+    )
+
+    val json = ujson.read(response.text())
+    val choices = json("choices").arr
+    if (choices.isEmpty) throw new RuntimeException("no choices in response")
+
+    // You can use print statements as follows for debugging, they'll be visible when running tests.
+    System.err.println("Logs from your program will appear here!")
+
+    // TODO: Uncomment the line below to pass the first stage
+    // print(choices(0)("message")("content").str)
+  }
+}
