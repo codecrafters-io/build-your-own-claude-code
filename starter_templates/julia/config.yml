@@ -1,0 +1,3 @@
+attributes:
+  required_executable: julia (1.11)
+  user_editable_file: app/main.jl
