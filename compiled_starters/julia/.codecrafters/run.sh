@@ -8,4 +8,6 @@
 
 set -e # Exit on failure
 
-exec julia --project=. app/main.jl "$@"
+SCRIPT_DIR="$(dirname "$0")"
+
+exec julia --project="$SCRIPT_DIR" "$SCRIPT_DIR/app/main.jl" "$@"

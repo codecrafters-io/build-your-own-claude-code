@@ -12,4 +12,5 @@ set -e # Exit early if any commands fail
 #
 # - Edit this to change how your program runs locally
 # - Edit .codecrafters/run.sh to change how your program runs remotely
-exec julia --project=. app/main.jl "$@"
+SCRIPT_DIR="$(dirname "$0")"
+exec julia --project="$SCRIPT_DIR" "$SCRIPT_DIR/app/main.jl" "$@"

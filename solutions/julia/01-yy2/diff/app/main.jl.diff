@@ -1,5 +1,4 @@
-@@ -13,33 +13,29 @@
-
+@@ -14,33 +14,29 @@
      if isempty(prompt)
          error("error: -p flag is required")
      end
@@ -11,11 +10,12 @@
          error("OPENROUTER_API_KEY is not set")
      end
 
+     provider = OpenAI.OpenAIProvider(api_key=api_key, base_url=base_url)
+
      response = create_chat(
-         api_key,
+         provider,
          "anthropic/claude-haiku-4.5",
-         [Dict("role" => "user", "content" => prompt)];
-         url = base_url
+         [Dict("role" => "user", "content" => prompt)]
      )
 
      choices = response.response["choices"]
