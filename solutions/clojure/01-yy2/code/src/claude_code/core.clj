@@ -31,9 +31,5 @@
       (when (empty? choices)
         (throw (RuntimeException. "no choices in response")))
 
-      ;; You can use print statements as follows for debugging, they'll be visible when running tests.
-      (.println System/err "Logs from your program will appear here!")
-
-      ;; TODO: Uncomment the line below to pass the first stage
-      ;; (do (println (get-in (first choices) [:message :content])) (flush))
+      (do (println (get-in (first choices) [:message :content])) (flush))
       )))
