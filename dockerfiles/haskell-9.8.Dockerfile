@@ -1,6 +1,7 @@
+# syntax=docker/dockerfile:1.7-labs
 FROM haskell:9.8.4-bullseye
 
-# Ensures the container is re-built if go.mod or go.sum changes
+# Ensures the container is re-built if dependency files change
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="stack.yaml,package.yaml,stack.yaml.lock"
 
 RUN mkdir -p /etc/stack
@@ -15,8 +16,7 @@ RUN echo "system-ghc: true" >> /etc/stack/config.yaml
 WORKDIR /app
 
 # .git & README.md are unique per-repository. We ignore them on first copy to prevent cache misses
-COPY . /app/
-RUN rm -rf /app/.git /app/README.md
+COPY --exclude=.git --exclude=README.md . /app
 
 ENV STACK_ROOT=/app/.stack
 RUN stack build

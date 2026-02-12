@@ -13,10 +13,10 @@ license: BSD3
 dependencies:
   - base >= 4.19 && < 5
   - aeson
+  - http-conduit
   - bytestring
   - text
   - vector
-  - process
 
 executables:
   codecrafters-claude-code-exe:

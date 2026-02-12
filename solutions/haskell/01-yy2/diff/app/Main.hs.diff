@@ -1,0 +1,32 @@
+@@ -27,30 +27,26 @@
+         url = maybe "https://openrouter.ai/api/v1" id baseUrl
+
+     initReq <- parseRequest (url ++ "/chat/completions")
+     let req = setRequestMethod "POST"
+             $ setRequestHeader "Content-Type" ["application/json"]
+             $ setRequestHeader "Authorization" [BS.pack ("Bearer " ++ key)]
+             $ setRequestBodyLBS (encode $ object
+                 [ "model" .= ("anthropic/claude-haiku-4.5" :: T.Text)
+                 , "messages" .= [object ["role" .= ("user" :: T.Text), "content" .= T.pack prompt]]
+                 ])
+             $ initReq
+
+     response <- httpLBS req
+
+     let Just (Object obj) = decode (getResponseBody response)
+         Just (Array choices) = KM.lookup "choices" obj
+
+     if V.null choices
+       then error "No choices in response"
+       else return ()
+
+     let Object choice = V.head choices
+         Just (Object msg) = KM.lookup "message" choice
+         Just (String content) = KM.lookup "content" msg
+
+-    -- You can use print statements as follows for debugging, they'll be visible when running tests.
+-    hPutStrLn stderr "Logs from your program will appear here!"
+-
+-    -- TODO: Uncomment the line below to pass the first stage
+-    -- TIO.putStr content
++    TIO.putStr content
