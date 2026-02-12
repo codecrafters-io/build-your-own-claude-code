@@ -14,6 +14,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "codecrafter-claude-code",
     libraryDependencies ++= Seq(
+      "com.lihaoyi" %% "requests" % "0.9.0",
       "com.lihaoyi" %% "ujson" % "4.1.0"
     )
   )
