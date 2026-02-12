@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1.7-labs
 FROM silkeh/clang:19-bookworm
 
-RUN apt-get update && apt-get install -y libcurl4-openssl-dev && rm -rf /var/lib/apt/lists/*
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends libcurl4-openssl-dev && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /Odin-install
 RUN git clone --depth 1 -b dev-2025-07 https://github.com/odin-lang/Odin.git /Odin-install \
