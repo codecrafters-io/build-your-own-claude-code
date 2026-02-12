@@ -1,0 +1,10 @@
+@@ -47,8 +47,4 @@
+   abort("No choices in response")
+ end
+ 
+-# You can use print statements as follows for debugging, they'll be visible when running tests.
+-STDERR.puts "Logs from your program will appear here!"
+-
+-# TODO: Uncomment the line below to pass the first stage
+-# print choices[0]["message"]["content"]
++print choices[0]["message"]["content"]
