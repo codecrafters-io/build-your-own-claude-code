@@ -5,13 +5,15 @@ module Main (main) where
 
 import Data.Aeson (Value(..), object, (.=), encode, decode)
 import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString.Lazy.Char8 as BLC
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Text.IO as TIO
 import qualified Data.Vector as V
-import Network.HTTP.Simple
 import System.Environment (getArgs, lookupEnv)
 import System.IO (hPutStrLn, stderr)
+import System.Process (readProcess)
 
 main :: IO ()
 main = do
@@ -25,20 +27,21 @@ main = do
 
     let key = maybe (error "OPENROUTER_API_KEY is not set") id apiKey
         url = maybe "https://openrouter.ai/api/v1" id baseUrl
+        body = BLC.unpack $ encode $ object
+            [ "model" .= ("anthropic/claude-haiku-4.5" :: T.Text)
+            , "messages" .= [object ["role" .= ("user" :: T.Text), "content" .= T.pack prompt]]
+            ]
 
-    initReq <- parseRequest (url ++ "/chat/completions")
-    let req = setRequestMethod "POST"
-            $ setRequestHeader "Content-Type" ["application/json"]
-            $ setRequestHeader "Authorization" [BS.pack ("Bearer " ++ key)]
-            $ setRequestBodyLBS (encode $ object
-                [ "model" .= ("anthropic/claude-haiku-4.5" :: T.Text)
-                , "messages" .= [object ["role" .= ("user" :: T.Text), "content" .= T.pack prompt]]
-                ])
-            $ initReq
+    response <- readProcess "curl"
+        [ "-s", "-X", "POST"
+        , url ++ "/chat/completions"
+        , "-H", "Content-Type: application/json"
+        , "-H", "Authorization: Bearer " ++ key
+        , "-d", body
+        ] ""
 
-    response <- httpLBS req
-
-    let Just (Object obj) = decode (getResponseBody response)
+    let responseBS = BL.fromStrict $ TE.encodeUtf8 $ T.pack response
+        Just (Object obj) = decode responseBS
         Just (Array choices) = KM.lookup "choices" obj
 
     if V.null choices
