@@ -1,4 +1,4 @@
-@@ -50,56 +50,52 @@
+@@ -50,57 +50,53 @@
 
      const result = try client.fetch(.{
          .location = .{ .url = url },
@@ -29,9 +29,11 @@
 -
 -    // TODO: Uncomment the lines below to pass the first stage
 -    // const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
--    // try std.io.getStdOut().writeAll(content);
+-    // const stdout: std.fs.File = .{ .handle = std.posix.STDOUT_FILENO };
+-    // try stdout.writeAll(content);
 +    const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
-+    try std.io.getStdOut().writeAll(content);
++    const stdout: std.fs.File = .{ .handle = std.posix.STDOUT_FILENO };
++    try stdout.writeAll(content);
  }
 
  fn jsonEncodeString(allocator: std.mem.Allocator, s: []const u8) ![]u8 {

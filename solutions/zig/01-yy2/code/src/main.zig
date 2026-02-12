@@ -73,7 +73,8 @@ pub fn main() !void {
         @panic("No choices in response");
 
     const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
-    try std.io.getStdOut().writeAll(content);
+    const stdout: std.fs.File = .{ .handle = std.posix.STDOUT_FILENO };
+    try stdout.writeAll(content);
 }
 
 fn jsonEncodeString(allocator: std.mem.Allocator, s: []const u8) ![]u8 {
