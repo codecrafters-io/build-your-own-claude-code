@@ -60,9 +60,5 @@ pub fn main() {
   let assert Ok(choices) = json.parse(resp_body, decoder)
   let assert [content, ..] = choices
 
-  // You can use print statements as follows for debugging, they'll be visible when running tests.
-  io.println_error("Logs from your program will appear here!")
-
-  // TODO: Uncomment the following line to pass the first stage
-  // io.print(content)
+  io.print(content)
 }

@@ -1,0 +1,33 @@
+@@ -38,31 +38,27 @@
+         "messages",
+         json.preprocessed_array([
+           json.object([
+             #("role", json.string("user")),
+             #("content", json.string(prompt)),
+           ]),
+         ]),
+       ),
+     ])
+     |> json.to_string
+
+   let assert Ok(resp_body) =
+     http_post(base_url <> "/chat/completions", [
+       #("authorization", "Bearer " <> api_key),
+     ], body)
+
+   let decoder = {
+     use choices <- decode.field("choices", decode.list(
+       decode.at(["message", "content"], decode.string),
+     ))
+     decode.success(choices)
+   }
+   let assert Ok(choices) = json.parse(resp_body, decoder)
+   let assert [content, ..] = choices
+
+-  // You can use print statements as follows for debugging, they'll be visible when running tests.
+-  io.println_error("Logs from your program will appear here!")
+-
+-  // TODO: Uncomment the following line to pass the first stage
+-  // io.print(content)
++  io.print(content)
+ }
