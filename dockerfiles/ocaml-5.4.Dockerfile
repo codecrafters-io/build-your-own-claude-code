@@ -12,11 +12,13 @@ ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="dune,dune-project,codecrafters_claude_co
 USER root
 
 # Install system dependencies required by OCaml packages (crypto, TLS, etc.)
+# and clean up the opam repository to save disk space in Docker VFS layers
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libgmp-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /home/opam/opam-repository/.git
 
 # Install dune
 RUN opam install dune.3.21.0 --yes
