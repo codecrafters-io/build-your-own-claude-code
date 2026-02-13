@@ -71,8 +71,5 @@ pub fn main() !void {
     }
 
     const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
-    var out_buf: [4096]u8 = undefined;
-    var stdout = std.fs.File.stdout().writer(&out_buf);
-    try stdout.writeAll(content);
-    try stdout.flush();
+    try std.fs.File.stdout().writeAll(content);
 }
