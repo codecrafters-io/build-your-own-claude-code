@@ -1,0 +1,54 @@
+hints:
+  - title_markdown: "How do I advertise tools to the LLM?"
+    body_markdown: |-
+      Add a `tools` key to the JSON request body:
+
+      ```crystal
+      body = {
+        "model"    => "anthropic/claude-haiku-4.5",
+        "messages" => [
+          {"role" => "user", "content" => prompt},
+        ],
+        "tools" => [
+          # Add your tool specifications here
+        ],
+      }.to_json
+      ```
+
+      The `tools` key accepts an array of tool specifications that tell the LLM which functions are available.
+
+  - title_markdown: "How do I add the Read tool to the request?"
+    body_markdown: |-
+      Include the `Read` tool's specification in the `tools` array:
+
+      ```crystal
+      body = {
+        "model"    => "anthropic/claude-haiku-4.5",
+        "messages" => [
+          {"role" => "user", "content" => prompt},
+        ],
+        "tools" => [
+          {
+            "type"     => "function",
+            "function" => {
+              "name"        => "Read",
+              "description" => "Read and return the contents of a file",
+              "parameters"  => {
+                "type"       => "object",
+                "properties" => {
+                  "file_path" => {
+                    "type"        => "string",
+                    "description" => "The path to the file to read",
+                  },
+                },
+                "required" => ["file_path"],
+              },
+            },
+          },
+        ],
+      }.to_json
+      ```
+
+      - The `type` field must be `"function"` for tools.
+      - The `function` object contains the name, description, and parameters schema.
+      - The `parameters` field describes the function's arguments.
