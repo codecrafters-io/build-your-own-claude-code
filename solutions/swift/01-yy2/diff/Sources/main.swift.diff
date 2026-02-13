@@ -1,0 +1,32 @@
+@@ -29,30 +29,26 @@
+ nonisolated(unsafe) var responseData: Data?
+ nonisolated(unsafe) var responseError: (any Error)?
+
+ URLSession.shared.dataTask(with: request) { data, _, error in
+     responseData = data
+     responseError = error
+     semaphore.signal()
+ }.resume()
+ semaphore.wait()
+
+ if let error = responseError {
+     FileHandle.standardError.write(Data("Request failed: \(error)\n".utf8))
+     exit(1)
+ }
+
+ guard let data = responseData,
+       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+       let choices = json["choices"] as? [[String: Any]],
+       !choices.isEmpty,
+       let message = choices[0]["message"] as? [String: Any],
+       let content = message["content"] as? String else {
+     FileHandle.standardError.write(Data("no choices in response\n".utf8))
+     exit(1)
+ }
+
+-// You can use print statements as follows for debugging, they'll be visible when running tests.
+-FileHandle.standardError.write(Data("Logs from your program will appear here!\n".utf8))
+-
+-// TODO: Uncomment the line below to pass the first stage
+-// print(content, terminator: "")
++print(content, terminator: "")
