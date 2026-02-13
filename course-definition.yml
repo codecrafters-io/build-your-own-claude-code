@@ -18,6 +18,7 @@ languages:
   - slug: "javascript"
   - slug: "typescript"
   - slug: "rust"
+  - slug: "scala"
 
 marketing:
   difficulty: medium

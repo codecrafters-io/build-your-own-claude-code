@@ -1,0 +1,34 @@
+@@ -17,32 +17,28 @@
+
+     val body = ujson.Obj(
+       "model" -> "anthropic/claude-haiku-4.5",
+       "messages" -> ujson.Arr(
+         ujson.Obj("role" -> "user", "content" -> prompt)
+       )
+     )
+
+     val client = HttpClient.newBuilder()
+       .version(HttpClient.Version.HTTP_1_1)
+       .build()
+
+     val request = HttpRequest.newBuilder()
+       .uri(URI.create(s"$baseUrl/chat/completions"))
+       .header("Authorization", s"Bearer $apiKey")
+       .header("Content-Type", "application/json")
+       .POST(HttpRequest.BodyPublishers.ofString(ujson.write(body)))
+       .build()
+
+     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+
+     val json = ujson.read(response.body())
+     val choices = json("choices").arr
+     if (choices.isEmpty) throw new RuntimeException("no choices in response")
+
+-    // You can use print statements as follows for debugging, they'll be visible when running tests.
+-    System.err.println("Logs from your program will appear here!")
+-
+-    // TODO: Uncomment the line below to pass the first stage
+-    // println(choices(0)("message")("content").str)
++    println(choices(0)("message")("content").str)
+   }
+ }
