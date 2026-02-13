@@ -1,0 +1,32 @@
+@@ -2,30 +2,26 @@
+ require "optparse"
+
+ api_key = ENV["OPENROUTER_API_KEY"]
+ base_url = ENV.fetch("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+
+ prompt = nil
+ OptionParser.new do |opts|
+   opts.on("-p PROMPT") { |p| prompt = p }
+ end.parse!
+
+ raise "OPENROUTER_API_KEY is not set" unless api_key
+ raise "-p flag is required" unless prompt
+
+ client = OpenAI::Client.new(access_token: api_key, uri_base: base_url)
+
+ response = client.chat(
+   parameters: {
+     model: "anthropic/claude-haiku-4.5",
+     messages: [{ role: "user", content: prompt }]
+   }
+ )
+
+ choices = response.dig("choices")
+ raise "no choices in response" if choices.nil? || choices.empty?
+
+-# You can use print statements as follows for debugging, they'll be visible when running tests.
+-$stderr.puts "Logs from your program will appear here!"
+-
+-# TODO: Uncomment the following line to pass the first stage
+-# puts choices[0].dig("message", "content")
++puts choices[0].dig("message", "content")
