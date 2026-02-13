@@ -11,8 +11,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # cmake is required by vcpkg
-RUN wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.30.5/cmake-3.30.5-Linux-x86_64.tar.gz && \
-    tar -xzvf cmake-3.30.5-Linux-x86_64.tar.gz && \
+RUN wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.30.5/cmake-3.30.5-linux-x86_64.tar.gz && \
+    tar -xzvf cmake-3.30.5-linux-x86_64.tar.gz && \
     mv cmake-3.30.5-linux-x86_64/ /cmake
 
 ENV CMAKE_BIN="/cmake/bin"
