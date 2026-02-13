@@ -1,0 +1,33 @@
+@@ -21,31 +21,27 @@
+
+   if (apiKey == null || apiKey.isEmpty) {
+     throw Exception('OPENROUTER_API_KEY is not set');
+   }
+
+   final response = await http.post(
+     Uri.parse('$baseUrl/chat/completions'),
+     headers: {
+       'Content-Type': 'application/json',
+       'Authorization': 'Bearer $apiKey',
+     },
+     body: jsonEncode({
+       'model': 'anthropic/claude-haiku-4.5',
+       'messages': [
+         {'role': 'user', 'content': prompt}
+       ],
+     }),
+   );
+
+   final data = jsonDecode(response.body) as Map<String, dynamic>;
+   final choices = data['choices'] as List?;
+   if (choices == null || choices.isEmpty) {
+     throw Exception('no choices in response');
+   }
+
+-  // You can use print statements as follows for debugging, they'll be visible when running tests.
+-  stderr.writeln('Logs from your program will appear here!');
+-
+-  // TODO: Uncomment the following line to pass the first stage
+-  // print(choices[0]['message']['content']);
++  print(choices[0]['message']['content']);
+ }

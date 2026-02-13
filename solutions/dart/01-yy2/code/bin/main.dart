@@ -1,0 +1,47 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+
+void main(List<String> arguments) async {
+  String? prompt;
+  for (var i = 0; i < arguments.length; i++) {
+    if (arguments[i] == '-p' && i + 1 < arguments.length) {
+      prompt = arguments[i + 1];
+    }
+  }
+
+  if (prompt == null) {
+    throw Exception('error: -p flag is required');
+  }
+
+  final apiKey = Platform.environment['OPENROUTER_API_KEY'];
+  final baseUrl = Platform.environment['OPENROUTER_BASE_URL'] ??
+      'https://openrouter.ai/api/v1';
+
+  if (apiKey == null || apiKey.isEmpty) {
+    throw Exception('OPENROUTER_API_KEY is not set');
+  }
+
+  final response = await http.post(
+    Uri.parse('$baseUrl/chat/completions'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $apiKey',
+    },
+    body: jsonEncode({
+      'model': 'anthropic/claude-haiku-4.5',
+      'messages': [
+        {'role': 'user', 'content': prompt}
+      ],
+    }),
+  );
+
+  final data = jsonDecode(response.body) as Map<String, dynamic>;
+  final choices = data['choices'] as List?;
+  if (choices == null || choices.isEmpty) {
+    throw Exception('no choices in response');
+  }
+
+  print(choices[0]['message']['content']);
+}
