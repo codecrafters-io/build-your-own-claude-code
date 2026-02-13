@@ -1,0 +1,37 @@
+@@ -61,33 +61,29 @@
+         .extra_headers = &.{
+             .{ .name = "content-type", .value = "application/json" },
+             .{ .name = "authorization", .value = auth_value },
+         },
+     });
+     defer req.deinit();
+
+     req.transfer_encoding = .{ .content_length = body.len };
+     try req.send();
+     try req.writeAll(body);
+     try req.finish();
+     try req.wait();
+
+     // Read and parse response
+     const response_body = try req.reader().readAllAlloc(allocator, 10 * 1024 * 1024);
+     defer allocator.free(response_body);
+
+     const parsed = try std.json.parseFromSlice(std.json.Value, allocator, response_body, .{});
+     defer parsed.deinit();
+
+     const choices = parsed.value.object.get("choices") orelse @panic("No choices in response");
+     if (choices.array.items.len == 0) {
+         @panic("No choices in response");
+     }
+
+-    // You can use print statements as follows for debugging, they'll be visible when running tests.
+-    std.debug.print("Logs from your program will appear here!\n", .{});
+-
+-    // TODO: Uncomment the lines below to pass the first stage
+-    // const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
+-    // const stdout = std.io.getStdOut().writer();
+-    // try stdout.writeAll(content);
++    const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
++    const stdout = std.io.getStdOut().writer();
++    try stdout.writeAll(content);
+ }

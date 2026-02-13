@@ -24,44 +24,57 @@ pub fn main() !void {
     const base_url = std.posix.getenv("OPENROUTER_BASE_URL") orelse "https://openrouter.ai/api/v1";
 
     // Build request body
-    var body_out: std.io.Writer.Allocating = .init(allocator);
-    defer body_out.deinit();
-    var jw: std.json.Stringify = .{ .writer = &body_out.writer };
-    try jw.write(.{
-        .model = "anthropic/claude-haiku-4.5",
-        .messages = &[_]struct { role: []const u8, content: []const u8 }{
-            .{ .role = "user", .content = prompt_str },
-        },
-    });
-    const body = body_out.written();
+    var body_buf: [65536]u8 = undefined;
+    var body_stream = std.io.fixedBufferStream(&body_buf);
+    const writer = body_stream.writer();
+    var jw = std.json.writeStream(writer, .{});
+    jw.beginObject() catch @panic("JSON write failed");
+    jw.objectField("model") catch @panic("JSON write failed");
+    jw.write("anthropic/claude-haiku-4.5") catch @panic("JSON write failed");
+    jw.objectField("messages") catch @panic("JSON write failed");
+    jw.beginArray() catch @panic("JSON write failed");
+    jw.beginObject() catch @panic("JSON write failed");
+    jw.objectField("role") catch @panic("JSON write failed");
+    jw.write("user") catch @panic("JSON write failed");
+    jw.objectField("content") catch @panic("JSON write failed");
+    jw.write(prompt_str) catch @panic("JSON write failed");
+    jw.endObject() catch @panic("JSON write failed");
+    jw.endArray() catch @panic("JSON write failed");
+    jw.endObject() catch @panic("JSON write failed");
+    const body = body_stream.getWritten();
 
     // Build URL and auth header
     const url_str = try std.fmt.allocPrint(allocator, "{s}/chat/completions", .{base_url});
     defer allocator.free(url_str);
+    const uri = try std.Uri.parse(url_str);
 
     const auth_value = try std.fmt.allocPrint(allocator, "Bearer {s}", .{api_key});
     defer allocator.free(auth_value);
 
     // Make HTTP request
-    var client: std.http.Client = .{ .allocator = allocator };
+    var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
 
-    var response_out: std.io.Writer.Allocating = .init(allocator);
-    defer response_out.deinit();
-
-    _ = try client.fetch(.{
-        .location = .{ .url = url_str },
-        .method = .POST,
-        .payload = body,
+    var header_buf: [16384]u8 = undefined;
+    var req = try client.open(.POST, uri, .{
+        .server_header_buffer = &header_buf,
         .extra_headers = &.{
             .{ .name = "content-type", .value = "application/json" },
             .{ .name = "authorization", .value = auth_value },
         },
-        .response_writer = &response_out.writer,
     });
-    const response_body = response_out.written();
+    defer req.deinit();
 
-    // Parse response
+    req.transfer_encoding = .{ .content_length = body.len };
+    try req.send();
+    try req.writeAll(body);
+    try req.finish();
+    try req.wait();
+
+    // Read and parse response
+    const response_body = try req.reader().readAllAlloc(allocator, 10 * 1024 * 1024);
+    defer allocator.free(response_body);
+
     const parsed = try std.json.parseFromSlice(std.json.Value, allocator, response_body, .{});
     defer parsed.deinit();
 
@@ -75,8 +88,6 @@ pub fn main() !void {
 
     // TODO: Uncomment the lines below to pass the first stage
     // const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
-    // var out_buf: [4096]u8 = undefined;
-    // var stdout = std.fs.File.stdout().writer(&out_buf);
+    // const stdout = std.io.getStdOut().writer();
     // try stdout.writeAll(content);
-    // try stdout.flush();
 }
