@@ -1,4 +1,4 @@
-@@ -14,32 +14,28 @@
+@@ -17,32 +17,28 @@
 
      val body = ujson.Obj(
        "model" -> "anthropic/claude-haiku-4.5",

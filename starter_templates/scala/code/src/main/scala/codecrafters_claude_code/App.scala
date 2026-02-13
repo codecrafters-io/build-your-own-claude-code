@@ -1,3 +1,6 @@
+//> using scala 3.7.4
+//> using dep com.lihaoyi::ujson:4.1.0
+
 package codecrafters_claude_code
 
 import java.net.URI

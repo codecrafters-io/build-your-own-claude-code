@@ -1,16 +1,17 @@
 FROM eclipse-temurin:24-jdk-alpine
 
-ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="build.sbt,project/assembly.sbt,project/build.properties"
+ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="src/main/scala/codecrafters_claude_code/App.scala"
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache bash curl git && \
-    curl -fsSL "https://github.com/sbt/sbt/releases/download/v1.11.7/sbt-1.11.7.tgz" | tar xz -C /opt && \
-    ln -s /opt/sbt/bin/sbt /usr/local/bin/sbt
+    curl -fsSL https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux-static.gz | gzip -d > /usr/local/bin/scala-cli && \
+    chmod +x /usr/local/bin/scala-cli
 
 WORKDIR /app
 
 COPY . /app
 
-RUN .codecrafters/compile.sh
+# Pre-fetch dependencies, then clean build artifacts to keep layer small
+RUN .codecrafters/compile.sh && rm -rf .scala-build .bsp
