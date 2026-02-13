@@ -24,13 +24,6 @@ dependencies {
     implementation("com.openai:openai-java:0.39.0")
 }
 
-// Apply a specific Java toolchain to ease working on different environments.
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(24)
-    }
-}
-
 application {
     // Define the main class for the application.
     mainClass.set("AppKt")
