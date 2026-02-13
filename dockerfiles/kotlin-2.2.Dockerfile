@@ -2,6 +2,7 @@
 FROM gradle:jdk24-alpine
 
 # Install Kotlin compiler for fast recompilation (avoids full Gradle startup)
+# hadolint ignore=DL3018
 RUN apk add --no-cache bash curl unzip && \
     curl -sL "https://github.com/JetBrains/kotlin/releases/download/v2.2.0/kotlin-compiler-2.2.0.zip" -o /tmp/kotlin.zip && \
     unzip -q /tmp/kotlin.zip -d /opt/ && \
