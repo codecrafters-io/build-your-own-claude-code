@@ -18,6 +18,7 @@ languages:
   - slug: "javascript"
   - slug: "typescript"
   - slug: "rust"
+  - slug: "gleam"
 
 marketing:
   difficulty: medium
