@@ -79,7 +79,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::cout << result["choices"][0]["message"]["content"].get<std::string>();
+    auto content = result["choices"][0]["message"]["content"];
+    if (content.is_string()) {
+        std::cout << content.get<std::string>();
+    }
 
     return 0;
 }
