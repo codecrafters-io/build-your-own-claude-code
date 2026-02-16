@@ -3,7 +3,7 @@ name = "codecrafters-claude-code"
 version = "0.1.0"
 authors = ["Codecrafters <hello@codecrafters.io>"]
 edition = "2024"
-rust-version = "1.91"
+rust-version = "1.93"
 
 [dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }  # async runtime
