@@ -19,6 +19,8 @@ languages:
   - slug: "typescript"
   - slug: "rust"
   - slug: "cpp"
+  - slug: "csharp"
+  - slug: "java"
 
 marketing:
   difficulty: medium
