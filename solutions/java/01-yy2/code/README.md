@@ -1,6 +1,6 @@
 ![progress-banner](https://codecrafters.io/landing/images/default_progress_banners/claude-code.png)
 
-This is a starting point for Rust solutions to the
+This is a starting point for Java solutions to the
 ["Build Your own Claude Code" Challenge](https://codecrafters.io/challenges/claude-code).
 
 Claude Code is an AI coding assistant that uses Large Language Models (LLMs) to
@@ -16,8 +16,9 @@ calling, agent loop, and how to integrate multiple tools into an AI assistant.
 
 # Passing the first stage
 
-The entry point for your `claude-code` implementation is in `src/main.rs`. Study
-and uncomment the relevant code, and submit to pass the first stage:
+The entry point for your `claude-code` implementation is in
+`src/main/java/Main.java`. Study and uncomment the relevant code, and submit to
+pass the first stage:
 
 ```sh
 codecrafters submit
@@ -27,9 +28,8 @@ codecrafters submit
 
 Note: This section is for stages 2 and beyond.
 
-1. Ensure you have `cargo (1.93)` installed locally.
+1. Ensure you have `mvn` installed locally.
 2. Run `./your_program.sh` to run your program, which is implemented in
-   `src/main.rs`. This command compiles your Rust project, so it might be slow
-   the first time you run it. Subsequent runs will be fast.
+   `src/main/java/Main.java`.
 3. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
    output will be streamed to your terminal.

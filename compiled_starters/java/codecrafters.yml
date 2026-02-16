@@ -4,8 +4,8 @@
 # unless you really need them.
 debug: false
 
-# Use this to change the Rust version used to run your code
+# Use this to change the Java version used to run your code
 # on Codecrafters.
 #
-# Available versions: rust-1.93
-buildpack: rust-1.93
+# Available versions: java-25
+buildpack: java-25
