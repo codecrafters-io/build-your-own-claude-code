@@ -1,36 +1,36 @@
-@@ -75,34 +75,30 @@
+@@ -83,34 +83,30 @@
      if (res != CURLE_OK) {
          fprintf(stderr, "curl error: %s\n", curl_easy_strerror(res));
-         free(resp_data);
+         free(resp.data);
          return 1;
      }
-
+ 
      // Parse response
-     cJSON *json = cJSON_Parse(resp_data);
-     free(resp_data);
+     cJSON *json = cJSON_Parse(resp.data);
+     free(resp.data);
      if (!json) {
          fprintf(stderr, "Failed to parse response JSON\n");
          return 1;
      }
-
+ 
      cJSON *choices = cJSON_GetObjectItem(json, "choices");
      if (!cJSON_IsArray(choices) || cJSON_GetArraySize(choices) == 0) {
          fprintf(stderr, "no choices in response\n");
          cJSON_Delete(json);
          return 1;
      }
-
+ 
      cJSON *first = cJSON_GetArrayItem(choices, 0);
      cJSON *message = cJSON_GetObjectItem(first, "message");
      cJSON *content = cJSON_GetObjectItem(message, "content");
-
+ 
 -    // You can use print statements as follows for debugging, they'll be visible when running tests.
 -    fprintf(stderr, "Logs from your program will appear here!\n");
 -
 -    // TODO: Uncomment the line below to pass the first stage
 -    // printf("%s", cJSON_GetStringValue(content));
 +    printf("%s", cJSON_GetStringValue(content));
-
+ 
      cJSON_Delete(json);
      return 0;
  }
