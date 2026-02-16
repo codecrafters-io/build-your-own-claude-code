@@ -2,14 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <curl/curl.h>
 #include <cjson/cJSON.h>
 
 int main(int argc, char *argv[]) {
     const char *prompt = NULL;
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-p") == 0 && i + 1 < argc)
-            prompt = argv[++i];
+    int opt;
+    while ((opt = getopt(argc, argv, "p:")) != -1) {
+        if (opt == 'p') prompt = optarg;
     }
     if (!prompt) {
         fprintf(stderr, "error: -p flag is required\n");
