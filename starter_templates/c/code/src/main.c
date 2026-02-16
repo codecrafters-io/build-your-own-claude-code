@@ -82,6 +82,12 @@ int main(int argc, char *argv[]) {
     }
 
     cJSON *choices = cJSON_GetObjectItem(json, "choices");
+    if (!cJSON_IsArray(choices) || cJSON_GetArraySize(choices) == 0) {
+        fprintf(stderr, "no choices in response\n");
+        cJSON_Delete(json);
+        return 1;
+    }
+
     cJSON *first = cJSON_GetArrayItem(choices, 0);
     cJSON *message = cJSON_GetObjectItem(first, "message");
     cJSON *content = cJSON_GetObjectItem(message, "content");
