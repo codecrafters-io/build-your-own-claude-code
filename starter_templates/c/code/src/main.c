@@ -5,6 +5,10 @@
 #include <curl/curl.h>
 #include <cjson/cJSON.h>
 
+static size_t write_cb(void *ptr, size_t size, size_t nmemb, void *userdata) {
+    return fwrite(ptr, size, nmemb, (FILE *)userdata);
+}
+
 int main(int argc, char *argv[]) {
     const char *prompt = NULL;
     for (int i = 1; i < argc; i++) {
@@ -36,7 +40,7 @@ int main(int argc, char *argv[]) {
     char *body = cJSON_PrintUnformatted(req);
     cJSON_Delete(req);
 
-    // Use open_memstream so curl writes directly to a buffer (no callback needed)
+    // Use open_memstream so curl writes directly to a growable buffer
     char *resp_data = NULL;
     size_t resp_size = 0;
     FILE *resp_stream = open_memstream(&resp_data, &resp_size);
@@ -57,6 +61,7 @@ int main(int argc, char *argv[]) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, resp_stream);
 
     CURLcode res = curl_easy_perform(curl);
