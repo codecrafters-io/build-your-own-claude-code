@@ -1,13 +1,13 @@
-@@ -71,34 +71,30 @@
+@@ -77,34 +77,30 @@
+
      if (res != CURLE_OK) {
          fprintf(stderr, "curl error: %s\n", curl_easy_strerror(res));
-         free(resp_data);
+         free(resp.data);
          return 1;
      }
 
-     // Parse response
-     cJSON *json = cJSON_Parse(resp_data);
-     free(resp_data);
+     cJSON *json = cJSON_Parse(resp.data);
+     free(resp.data);
      if (!json) {
          fprintf(stderr, "Failed to parse response JSON\n");
          return 1;
