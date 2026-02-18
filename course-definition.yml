@@ -13,12 +13,16 @@ short_description_md: |-
 completion_percentage: 15
 
 languages:
+  - slug: "c"
   - slug: "go"
   - slug: "python"
   - slug: "javascript"
   - slug: "typescript"
   - slug: "rust"
   - slug: "zig"
+  - slug: "cpp"
+  - slug: "csharp"
+  - slug: "java"
 
 marketing:
   difficulty: medium

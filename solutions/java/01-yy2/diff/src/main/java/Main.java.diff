@@ -1,0 +1,34 @@
+@@ -20,32 +20,28 @@
+         String baseUrl = System.getenv("OPENROUTER_BASE_URL");
+         if (baseUrl == null || baseUrl.isEmpty()) {
+             baseUrl = "https://openrouter.ai/api/v1";
+         }
+
+         if (apiKey == null || apiKey.isEmpty()) {
+             throw new RuntimeException("OPENROUTER_API_KEY is not set");
+         }
+
+         OpenAIClient client = OpenAIOkHttpClient.builder()
+                 .apiKey(apiKey)
+                 .baseUrl(baseUrl)
+                 .build();
+
+         ChatCompletion response = client.chat().completions().create(
+                 ChatCompletionCreateParams.builder()
+                         .model("anthropic/claude-haiku-4.5")
+                         .addUserMessage(prompt)
+                         .build()
+         );
+
+         if (response.choices().isEmpty()) {
+             throw new RuntimeException("no choices in response");
+         }
+
+-        // You can use print statements as follows for debugging, they'll be visible when running tests.
+-        System.err.println("Logs from your program will appear here!");
+-
+-        // TODO: Uncomment the line below to pass the first stage
+-        // System.out.print(response.choices().get(0).message().content().orElse(""));
++        System.out.print(response.choices().get(0).message().content().orElse(""));
+     }
+ }
