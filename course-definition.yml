@@ -19,6 +19,7 @@ languages:
   - slug: "javascript"
   - slug: "typescript"
   - slug: "rust"
+  - slug: "zig"
   - slug: "cpp"
   - slug: "csharp"
   - slug: "java"
