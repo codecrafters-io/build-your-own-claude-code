@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7-labs
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine
 
 RUN apk add --no-cache --upgrade 'bash>=5.3'
 
