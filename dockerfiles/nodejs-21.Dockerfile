@@ -4,6 +4,8 @@ FROM node:21.7-alpine3.19
 # Ensures the container is re-built if dependency files change
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="package.json,package-lock.json"
 
+RUN apk add --no-cache --upgrade 'bash>=5'
+
 WORKDIR /app
 
 # .git & README.md are unique per-repository. We ignore them on first copy to prevent cache misses
