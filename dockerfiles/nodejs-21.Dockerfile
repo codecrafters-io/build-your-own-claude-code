@@ -4,7 +4,7 @@ FROM node:21.7-alpine3.19
 # Ensures the container is re-built if dependency files change
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="package.json,package-lock.json"
 
-RUN apk add --no-cache --upgrade 'bash>=5.3'
+RUN apk add --no-cache --upgrade 'bash>=5.2'
 
 WORKDIR /app
 
