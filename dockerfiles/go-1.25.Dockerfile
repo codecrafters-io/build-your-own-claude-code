@@ -4,6 +4,8 @@ FROM golang:1.25-alpine
 # Ensures the container is re-built if go.mod or go.sum changes
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="go.mod,go.sum"
 
+RUN apk add --no-cache 'bash>=5.3.9'
+
 WORKDIR /app
 
 # .git & README.md are unique per-repository. We ignore them on first copy to prevent cache misses
