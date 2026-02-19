@@ -14,12 +14,12 @@ Advertising tools lets the model know which tools are available and what argumen
 
 To advertise tools, edit the existing request in the starter code to add a `tools` array:
 
-```js
-{
-  "model": "...",
-  "messages": [...],
-  "tools": [<tool1 spec>, <tool2 spec>, ...]
-}
+```diff
+ {
+   "model": "...",
+   "messages": [...],
++  "tools": [<tool1 spec>, <tool2 spec>, ...]
+ }
 ```
 
 For this stage, the `tools` array should include the `Read` tool's specification:
