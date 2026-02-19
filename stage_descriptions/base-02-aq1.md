@@ -6,7 +6,7 @@ Tools are functions that an LLM can use to perform specific actions, like readin
 
 By default, LLMs cannot access a user's environment, such as their filesystem or terminal. To solve this, Claude Code provides several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (like `Read`, `Write`, and `Bash`) that enable the model to read and modify the user's codebase.
 
-For this stage, you only need to advertise the `Read` tool (you’ll implement it in the next stage).
+For this stage, you only need to advertise the `Read` tool (you’ll implement it in later stages).
 
 ### Advertising Tools
 
