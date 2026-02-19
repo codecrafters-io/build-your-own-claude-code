@@ -32,13 +32,14 @@ Here's what the response looks like:
 ```
 
 The key fields you need to handle are:
+
 - `choices`: The list of generated responses. For this challenge, there will always be exactly **one** choice.
 - `tool_calls`: The array of tool calls to make
-  - `id`: A unique identifier for the tool call
-  - `type`: The type of tool call (always `"function"` for tools)
-  - `function`: Contains the function details:
-    - `name`: The name of the function to call (e.g., `"Read"`)
-    - `arguments`: A JSON string containing the function parameters
+    - `id`: A unique identifier for the tool call
+    - `type`: The type of tool call (always `"function"` for tools)
+    - `function`: Contains the function details:
+        - `name`: The name of the function to call (e.g., `"Read"`)
+        - `arguments`: A JSON string containing the function parameters
    
 For this stage, you'll execute a single `Read` tool call.
 
