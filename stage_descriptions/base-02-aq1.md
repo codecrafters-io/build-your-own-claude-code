@@ -48,11 +48,11 @@ The structure consists of the following fields:
 
 - `type`: The type of tool (always `"function"` for tools)
 - `function`: Contains the function definition
-  - `name`: The name of the function (e.g., "Read")
-  - `description`: Explains the function's purpose and helps the LLM determine when to use it.
-  - `parameters`: A JSON schema describing the function's parameters
-    - `properties`: Defines each parameter (in this case, just `file_path`)
-    - `required`: Lists which parameters are mandatory
+    - `name`: The name of the function (e.g., "Read")
+    - `description`: Explains the function's purpose and helps the LLM determine when to use it.
+    - `parameters`: A JSON schema describing the function's parameters
+        - `properties`: Defines each parameter (in this case, just `file_path`)
+        - `required`: Lists which parameters are mandatory
 
 ### Tests
 
