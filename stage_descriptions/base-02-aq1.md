@@ -12,14 +12,14 @@ For this stage, you only need to advertise the `Read` tool (you’ll implement i
 
 Advertising tools lets the model know which tools are available and what arguments they accept.
 
-To advertise a tool, you must include its specification in the `tools` array of your request body.
+To advertise tools, edit the existing request in the starter code to add a `tools` array:
 
-```js
-{
-  "model": "...",
-  "messages": [...],
-  "tools": [...]
-}
+```diff
+ {
+   "model": "...",
+   "messages": [...],
++  "tools": [<tool1 spec>, <tool2 spec>, ...]
+ }
 ```
 
 For this stage, the `tools` array should include the `Read` tool's specification:
