@@ -6,7 +6,7 @@ Tools are functions that an LLM can use to perform specific actions, like readin
 
 By default, LLMs cannot access a user's environment, such as their filesystem or terminal. To solve this, Claude Code provides several [tools](https://code.claude.com/docs/en/settings#tools-available-to-claude) (like `Read`, `Write`, and `Bash`) that enable the model to read and modify the user's codebase.
 
-For this stage, you need to advertise the `Read` tool, which lets the model read a file's contents.
+For this stage, you only need to advertise the `Read` tool (you’ll implement it in the next stage).
 
 ### Advertising Tools
 
@@ -18,7 +18,7 @@ To advertise a tool, you must include its specification in the `tools` array of 
 {
   "model": "...",
   "messages": [...],
-  "tools": [...]    
+  "tools": [...]
 }
 ```
 
@@ -45,6 +45,7 @@ For this stage, the `tools` array should include the `Read` tool's specification
 ```
 
 The structure consists of the following fields:
+
 - `type`: The type of tool (always `"function"` for tools)
 - `function`: Contains the function definition
   - `name`: The name of the function (e.g., "Read")
@@ -63,6 +64,7 @@ $ ./your_program.sh -p "How many tools are available to you in this request? Num
 ```
 
 The tester will verify that:
+
 - Your program outputs a positive number
 - Your program exits with exit code `0`
 
