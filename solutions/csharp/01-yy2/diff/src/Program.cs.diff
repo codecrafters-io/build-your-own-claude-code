@@ -1,4 +1,4 @@
-@@ -19,30 +19,26 @@
+@@ -15,30 +15,26 @@
  }
 
  var apiKey = Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
