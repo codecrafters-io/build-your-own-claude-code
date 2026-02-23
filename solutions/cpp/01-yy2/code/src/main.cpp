@@ -8,18 +8,12 @@
 using json = nlohmann::json;
 
 int main(int argc, char* argv[]) {
-    std::string prompt;
-
-    for (int i = 1; i < argc; i++) {
-        if (std::string(argv[i]) == "-p" && i + 1 < argc) {
-            prompt = argv[++i];
-        }
-    }
-
-    if (prompt.empty()) {
-        std::cerr << "Prompt must not be empty" << std::endl;
+    if (argc < 3 || std::string(argv[1]) != "-p") {
+        std::cerr << "Expected first argument to be '-p'" << std::endl;
         return 1;
     }
+
+    std::string prompt = argv[2];
 
     const char* api_key_env = std::getenv("OPENROUTER_API_KEY");
     const char* base_url_env = std::getenv("OPENROUTER_BASE_URL");
