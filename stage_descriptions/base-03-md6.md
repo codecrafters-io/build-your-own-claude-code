@@ -51,11 +51,11 @@ When you detect a `tool_calls` array in the response:
 2. **Parse the function name**: Read the function name to determine which tool to execute.
 3. **Parse the arguments**: Parse the function arguments as a JSON string to get the parameters.
 4. **Execute the tool**: Your program must perform the action requested. For the `Read` tool, use your language's file system library to read the file at the requested `file_path`.
-5. **Output the result**: Print the raw file contents to stdout.
+5. **Output the result**: Print the raw file contents to stdout. (This behavior is subject to change in later stages.)
 
 ### Outputting the LLM's Response
 
-Print the LLM’s response content (`response.choices[0].message.content`) to stdout stdout ONLY when:
+Print the LLM’s response content (`response.choices[0].message.content`) to stdout ONLY when:
 
 -	No tool calls are present, and
 -	The content field is not null.
