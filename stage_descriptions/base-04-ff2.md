@@ -35,7 +35,13 @@ Here's how to implement the agent loop:
     }
     ```
      
-4. **Check for tool calls**: Check the model's response to see if it's requesting to use any tools. If there are tool calls, execute each requested tool, then add their result to your `messages` array. Each tool result must have a `role` of `"tool"`, reference its corresponding `tool_call_id`, and contain the output of the tool call as its `content`:
+4. **Execute tool calls**: Check the model's response to see if it's requesting to use any tools. If tool calls are present:
+    a. Execute each requested tool (but do not print their result to stdout).
+    b. Add each tool call result to your `messages` array. Every tool result must:
+        - Have the `role` field set to `"tool"`
+        - Reference the corresponding `tool_call_id`
+        - Include the tool call result as its `content`
+  
     ```js
     {
       "role": "tool",
@@ -65,4 +71,6 @@ The tester will verify that:
 
 ### Notes
 
+- Do not print raw file contents when executing the Read tool. This differs from the behavior in the “Execute the read tool” stage.
+- You can print intermediate debugging information to stderr. Print to stdout only when the final result is ready to be printed.
 - You can also use `finish_reason: "stop"` from the first response choice as a signal to stop the loop.
