@@ -15,6 +15,11 @@ int main(int argc, char* argv[]) {
 
     std::string prompt = argv[2];
 
+    if (prompt.empty()) {
+        std::cerr << "Prompt must not be empty" << std::endl;
+        return 1;
+    }
+
     const char* api_key_env = std::getenv("OPENROUTER_API_KEY");
     const char* base_url_env = std::getenv("OPENROUTER_BASE_URL");
 
