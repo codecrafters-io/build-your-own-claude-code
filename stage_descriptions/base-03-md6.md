@@ -53,6 +53,13 @@ When you detect a `tool_calls` array in the response:
 4. **Execute the tool**: Your program must perform the action requested. For the `Read` tool, use your language's file system library to read the file at the requested `file_path`.
 5. **Output the result**: Print the raw file contents to stdout.
 
+### Outputting the LLM's Response
+
+Print the LLM’s response content (`response.choices[0].message.content`) to stdout stdout ONLY when:
+
+-	No tool calls are present, and
+-	The content field is not null.
+
 ### Tests
 
 The tester will create a file (e.g., `apple.py`) and execute your program like this:
