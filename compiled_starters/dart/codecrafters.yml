@@ -7,5 +7,5 @@ debug: false
 # Use this to change the Dart version used to run your code
 # on Codecrafters.
 #
-# Available versions: dart-3.7
-buildpack: dart-3.7
+# Available versions: dart-3.11
+buildpack: dart-3.11

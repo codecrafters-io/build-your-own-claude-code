@@ -27,7 +27,7 @@ codecrafters submit
 
 Note: This section is for stages 2 and beyond.
 
-1. Ensure you have `dart (3.7)` installed locally.
+1. Ensure you have `dart (3.11)` installed locally.
 2. Run `./your_program.sh` to run your program, which is implemented in
    `bin/main.dart`.
 3. Run `codecrafters submit` to submit your solution to CodeCrafters. Test

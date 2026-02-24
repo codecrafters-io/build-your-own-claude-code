@@ -3,7 +3,7 @@ description: Build your own Claude Code challenge, from CodeCrafters
 version: 0.1.0
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.11.0
 
 dependencies:
   http: ^1.3.0

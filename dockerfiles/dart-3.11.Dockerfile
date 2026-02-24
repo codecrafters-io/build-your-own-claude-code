@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7-labs
-FROM dart:3.7
+FROM dart:3.11
 
 # Ensures the container is re-built if dependency files change
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="pubspec.yaml,pubspec.lock"
