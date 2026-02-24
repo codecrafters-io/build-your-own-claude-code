@@ -1,4 +1,4 @@
-@@ -20,32 +20,28 @@
+@@ -16,32 +16,28 @@
          String baseUrl = System.getenv("OPENROUTER_BASE_URL");
          if (baseUrl == null || baseUrl.isEmpty()) {
              baseUrl = "https://openrouter.ai/api/v1";

@@ -5,16 +5,12 @@ import com.openai.models.chat.completions.ChatCompletionCreateParams;
 
 public class Main {
     public static void main(String[] args) {
-        String prompt = null;
-        for (int i = 0; i < args.length; i++) {
-            if ("-p".equals(args[i]) && i + 1 < args.length) {
-                prompt = args[i + 1];
-            }
+        if (args.length < 2 || !"-p".equals(args[0])) {
+            System.err.println("Usage: program -p <prompt>");
+            System.exit(1);
         }
 
-        if (prompt == null || prompt.isEmpty()) {
-            throw new RuntimeException("error: -p flag is required");
-        }
+        String prompt = args[1];
 
         String apiKey = System.getenv("OPENROUTER_API_KEY");
         String baseUrl = System.getenv("OPENROUTER_BASE_URL");
