@@ -36,8 +36,8 @@ Here's how to implement the agent loop:
     ```
      
 4. **Execute tool calls**: Check the model's response to see if it's requesting to use any tools. If tool calls are present:
-    1. Execute each requested tool (but do not print their result to stdout).
-    2. Add each tool call result to your `messages` array. Every tool result must:
+    - a. Execute each requested tool (but do not print their result to stdout).
+    - b. Add each tool call result to your `messages` array. Every tool result must:
         - Have the `role` field set to `"tool"`
         - Reference the corresponding `tool_call_id`
         - Include the tool call result as its `content`
