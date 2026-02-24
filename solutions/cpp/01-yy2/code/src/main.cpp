@@ -8,13 +8,12 @@
 using json = nlohmann::json;
 
 int main(int argc, char* argv[]) {
-    std::string prompt;
-
-    for (int i = 1; i < argc; i++) {
-        if (std::string(argv[i]) == "-p" && i + 1 < argc) {
-            prompt = argv[++i];
-        }
+    if (argc < 3 || std::string(argv[1]) != "-p") {
+        std::cerr << "Expected first argument to be '-p'" << std::endl;
+        return 1;
     }
+
+    std::string prompt = argv[2];
 
     if (prompt.empty()) {
         std::cerr << "Prompt must not be empty" << std::endl;

@@ -1,8 +1,8 @@
-@@ -14,50 +14,69 @@
-         if (std::string(argv[i]) == "-p" && i + 1 < argc) {
-             prompt = argv[++i];
-         }
+@@ -13,50 +13,69 @@
+         return 1;
      }
+
+     std::string prompt = argv[2];
 
      if (prompt.empty()) {
          std::cerr << "Prompt must not be empty" << std::endl;
