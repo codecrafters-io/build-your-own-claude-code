@@ -2,16 +2,12 @@ using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
 
-var prompt = "";
-
-for (int i = 0; i < args.Length; i++)
+if (args.Length < 2 || args[0] != "-p")
 {
-    if (args[i] == "-p" && i + 1 < args.Length)
-    {
-        prompt = args[i + 1];
-        break;
-    }
+    throw new Exception("Usage: program -p <prompt>");
 }
+
+var prompt = args[1];
 
 if (string.IsNullOrEmpty(prompt))
 {
