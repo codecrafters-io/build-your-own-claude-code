@@ -5,20 +5,13 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Parse -p flag
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    var prompt: ?[]const u8 = null;
-    var i: usize = 1;
-    while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "-p") and i + 1 < args.len) {
-            i += 1;
-            prompt = args[i];
-        }
+    if (args.len < 3 or !std.mem.eql(u8, args[1], "-p")) {
+        @panic("Usage: main -p <prompt>");
     }
-
-    const prompt_str = prompt orelse @panic("Prompt must not be empty");
+    const prompt_str = args[2];
 
     const api_key = std.posix.getenv("OPENROUTER_API_KEY") orelse @panic("OPENROUTER_API_KEY is not set");
     const base_url = std.posix.getenv("OPENROUTER_BASE_URL") orelse "https://openrouter.ai/api/v1";
