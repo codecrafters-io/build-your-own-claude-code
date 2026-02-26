@@ -55,8 +55,6 @@ When you detect a `tool_calls` array in the response:
 
 If there is no `tool_calls` array in the response, print the message content like in previous stages.
 
-In later stages, you'll send the tool results back to the model instead of printing them directly.
-
 ### Tests
 
 The tester will create a file (e.g., `apple.py`) and execute your program like this:
@@ -67,11 +65,12 @@ $ ./your_program.sh -p "What is the content of apple.py? Print exact file conten
 ```
 
 The tester will verify that:
-- The output matches the exact contents of the file
+- When the LLM requests a `Read` tool call, the output matches the exact file contents
+- When the LLM does not request a tool call, the output is the LLM's text response
 - Your program exits with code `0`
 
 ### Notes
 
+- In later stages, you'll send the tool results back to the model (instead of printing them) as part of the "agent loop" that drives Claude Code.
 - For this stage, you only need to print the result of the first tool call. We'll get to handling multiple tool calls in later stages.
-- You don't need to send the tool call result back to the model. We'll implement the full agent loop (sending results back and continuing the conversation) in later stages.
 - For a complete reference of the response structure, see the [OpenRouter API Specification](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
