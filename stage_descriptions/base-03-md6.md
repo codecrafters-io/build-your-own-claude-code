@@ -33,7 +33,7 @@ Here's what the response looks like:
 
 The key fields you need to handle are:
 
-- `choices`: The list of generated responses. For this challenge, there will always be exactly **one** choice.
+- `choices`: The list of generated responses. For this challenge, there will always be exactly **one choice**.
 - `tool_calls`: The array of tool calls to make
     - `id`: A unique identifier for the tool call
     - `type`: The type of tool call (always `"function"` for tools)
@@ -51,14 +51,11 @@ When you detect a `tool_calls` array in the response:
 2. **Parse the function name**: Read the function name to determine which tool to execute.
 3. **Parse the arguments**: Parse the function arguments as a JSON string to get the parameters.
 4. **Execute the tool**: Your program must perform the action requested. For the `Read` tool, use your language's file system library to read the file at the requested `file_path`.
-5. **Output the result**: Print the raw file contents to stdout. (This behavior is subject to change in later stages.)
+5. **Output the result**: Print the tool execution result. For the `Read` tool, print the raw file contents to stdout.
 
-### Outputting the LLM's Response
+If there is no `tool_calls` array in the response, print the message content like in previous stages.
 
-Print the LLM’s response content (`response.choices[0].message.content`) to stdout ONLY when:
-
--	No tool calls are present, and
--	The content field is not null.
+In later stages, you'll send the tool results back to the model instead of printing them directly.
 
 ### Tests
 
