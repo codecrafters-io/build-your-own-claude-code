@@ -33,7 +33,7 @@ Here's what the response looks like:
 
 The key fields you need to handle are:
 
-- `choices`: The list of generated responses. For this challenge, there will always be exactly **one** choice.
+- `choices`: The list of generated responses. For this challenge, there will always be exactly **one choice**.
 - `tool_calls`: The array of tool calls to make
     - `id`: A unique identifier for the tool call
     - `type`: The type of tool call (always `"function"` for tools)
@@ -51,7 +51,9 @@ When you detect a `tool_calls` array in the response:
 2. **Parse the function name**: Read the function name to determine which tool to execute.
 3. **Parse the arguments**: Parse the function arguments as a JSON string to get the parameters.
 4. **Execute the tool**: Your program must perform the action requested. For the `Read` tool, use your language's file system library to read the file at the requested `file_path`.
-5. **Output the result**: Print the raw file contents to stdout.
+5. **Output the result**: Print the tool execution result. For the `Read` tool, print the raw file contents to stdout.
+
+If there is no `tool_calls` array in the response, print the message content like in previous stages.
 
 ### Tests
 
@@ -63,11 +65,12 @@ $ ./your_program.sh -p "What is the content of apple.py? Print exact file conten
 ```
 
 The tester will verify that:
-- The output matches the exact contents of the file
+- When the LLM requests a `Read` tool call, the output matches the exact file contents
+- When the LLM does not request a tool call, the output is the LLM's text response
 - Your program exits with code `0`
 
 ### Notes
 
+- In later stages, you'll send the tool results back to the model (instead of printing them) as part of the "agent loop" that drives Claude Code.
 - For this stage, you only need to print the result of the first tool call. We'll get to handling multiple tool calls in later stages.
-- You don't need to send the tool call result back to the model. We'll implement the full agent loop (sending results back and continuing the conversation) in later stages.
 - For a complete reference of the response structure, see the [OpenRouter API Specification](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
