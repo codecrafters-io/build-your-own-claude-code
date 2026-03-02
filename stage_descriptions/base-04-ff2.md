@@ -26,6 +26,7 @@ Here's how to implement the agent loop:
       "tool_calls": [
         {
           "id": "call_abc123",
+          "type": "function",
           "function": {
             "name": "Read",
             "arguments": "{\"file_path\": \"README.md\"}"
