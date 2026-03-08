@@ -1,6 +1,6 @@
 module github.com/codecrafters-io/claude-code-starter-go
 
-go 1.25
+go 1.26.0
 
 require github.com/openai/openai-go/v3 v3.16.0
 
