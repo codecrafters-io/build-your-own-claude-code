@@ -51,7 +51,7 @@ When you detect a `tool_calls` array in the response:
 2. **Parse the function name**: Read the function name to determine which tool to execute.
 3. **Parse the arguments**: Parse the function arguments as a JSON string to get the parameters.
 4. **Execute the tool**: Your program must perform the action requested. For the `Read` tool, use your language's file system library to read the file at the requested `file_path`.
-5. **Output the result**: Print the tool execution result. For the `Read` tool, print the raw file contents to stdout.
+5. **Output the result**: Print the tool execution result. For the `Read` tool, print the raw file contents directly to stdout (just the contents, with no labels or formatting).
 
 In previous stages, you printed the message content directly to stdout. Now that the model's response can include tool calls, you should **only print the message content if there's no `tool_calls` array** in the response.
 
