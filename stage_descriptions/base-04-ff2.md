@@ -8,7 +8,29 @@ This works for simple tasks, but falls short when the task requires multiple ste
 
 For this stage, you'll implement an agent loop that repeatedly sends messages to the model and handles tool calls as needed, until the final result is received. 
 
-Here's how to implement the agent loop:
+Here's the structure in pseudocode:
+
+```python
+messages = [{ role: "user", content: prompt }]
+
+loop:
+    response = call_api(messages)
+    append response message to messages
+
+    if response has no tool_calls:
+        print response.content
+        exit
+
+    for each tool_call in response.tool_calls:
+        result = execute_tool(tool_call)
+        append {
+            role: "tool",
+            tool_call_id: tool_call.id,
+            content: result
+        } to messages
+```
+
+Let's walk through each part of this loop:
 
 1. **Initialize the conversation**: You already have an initial conversation history: the `messages` array with the user's prompt. Now you need to store this array so it can persist across iterations, since the loop will continuously append new messages to it:
     ```js
