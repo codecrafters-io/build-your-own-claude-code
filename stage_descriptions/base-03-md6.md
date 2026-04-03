@@ -53,7 +53,7 @@ When you detect a `tool_calls` array in the response:
 4. **Execute the tool**: Your program must perform the action requested. For the `Read` tool, use your language's file system library to read the file at the requested `file_path`.
 5. **Output the result**: Print the tool execution result. For the `Read` tool, print the raw file contents to stdout.
 
-If there is no `tool_calls` array in the response, print the message content like in previous stages.
+In previous stages, you printed the message content directly to stdout. Now that the model's response can include tool calls, you should **only print the message content if there's no `tool_calls` array** in the response.
 
 ### Tests
 
