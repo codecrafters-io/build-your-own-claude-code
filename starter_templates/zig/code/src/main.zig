@@ -1,23 +1,24 @@
 const std = @import("std");
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+pub fn main(init: std.process.Init) !void {
+    const allocator = init.gpa;
+    const io = init.io;
 
-    const args = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, args);
+    var arg_it = try std.process.Args.Iterator.initAllocator(init.minimal.args, allocator);
+    defer arg_it.deinit();
 
-    if (args.len < 3 or !std.mem.eql(u8, args[1], "-p")) {
+    _ = arg_it.next(); // argv0
+    const flag = arg_it.next() orelse @panic("Usage: main -p <prompt>");
+    const prompt_str = arg_it.next() orelse @panic("Usage: main -p <prompt>");
+    if (!std.mem.eql(u8, flag, "-p")) {
         @panic("Usage: main -p <prompt>");
     }
-    const prompt_str = args[2];
 
-    const api_key = std.posix.getenv("OPENROUTER_API_KEY") orelse @panic("OPENROUTER_API_KEY is not set");
-    const base_url = std.posix.getenv("OPENROUTER_BASE_URL") orelse "https://openrouter.ai/api/v1";
+    const api_key = init.environ_map.get("OPENROUTER_API_KEY") orelse @panic("OPENROUTER_API_KEY is not set");
+    const base_url = init.environ_map.get("OPENROUTER_BASE_URL") orelse "https://openrouter.ai/api/v1";
 
     // Build request body
-    var body_out: std.io.Writer.Allocating = .init(allocator);
+    var body_out: std.Io.Writer.Allocating = .init(allocator);
     defer body_out.deinit();
     var jw: std.json.Stringify = .{ .writer = &body_out.writer };
     try jw.write(.{
@@ -36,10 +37,13 @@ pub fn main() !void {
     defer allocator.free(auth_value);
 
     // Make HTTP request
-    var client: std.http.Client = .{ .allocator = allocator };
+    var client: std.http.Client = .{
+        .allocator = allocator,
+        .io = io,
+    };
     defer client.deinit();
 
-    var response_out: std.io.Writer.Allocating = .init(allocator);
+    var response_out: std.Io.Writer.Allocating = .init(allocator);
     defer response_out.deinit();
 
     _ = try client.fetch(.{
@@ -68,5 +72,5 @@ pub fn main() !void {
 
     // TODO: Uncomment the lines below to pass the first stage
     // const content = choices.array.items[0].object.get("message").?.object.get("content").?.string;
-    // try std.fs.File.stdout().writeAll(content);
+    // try std.Io.File.stdout().writeStreamingAll(io, content);
 }
