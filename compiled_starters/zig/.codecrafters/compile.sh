@@ -8,4 +8,4 @@
 
 set -e # Exit on failure
 
-zig build --prefix /tmp/codecrafters-build-claude-code-zig
+zig build
