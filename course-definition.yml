@@ -96,7 +96,7 @@ stages:
     name: "Communicate with the LLM"
     difficulty: very_easy
     marketing_md: |-
-      In this stage, you'll interact with the provided LLM using an [OpenAI-compatible API](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
+      In this stage, you'll interact with the provided LLM using an [OpenAI-compatible API](https://openrouter.ai/docs/guides/community/openai-sdk).
 
   - slug: "aq1"
     name: "Advertise the read tool"

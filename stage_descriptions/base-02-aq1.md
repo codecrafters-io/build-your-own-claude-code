@@ -76,4 +76,4 @@ The tester will verify that:
   - `read_file`
   - `ReadFile`, etc.
 - For this stage, you only need to advertise the `Read` tool's availability in the request. We'll handle tool calls in later stages.
-- See the [OpenRouter API Specification for Tools](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request#request.body.tools) for the full API documentation on how to include tools in your request.
+- See the [OpenRouter API Specification for Tools](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion#body-tools) for the full API documentation on how to include tools in your request.

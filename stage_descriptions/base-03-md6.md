@@ -73,4 +73,4 @@ The tester will verify that:
 
 - In later stages, you'll send the tool results back to the model (instead of printing them) as part of the "agent loop" that drives Claude Code.
 - For this stage, you only need to print the result of the first tool call. We'll get to handling multiple tool calls in later stages.
-- For a complete reference of the response structure, see the [OpenRouter API Specification](https://openrouter.ai/docs/api/api-reference/chat/send-chat-completion-request).
+- For a complete reference of the response structure, see the [OpenRouter API Specification](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion).
