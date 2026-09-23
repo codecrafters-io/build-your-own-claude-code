@@ -91,6 +91,19 @@ marketing:
         I think the instant feedback right there in the git push is really cool.
         Didn't even know that was possible!
 
+extensions:
+  - slug: "skills"
+    name: "Skills"
+    description_markdown: |-
+      In this challenge extension, you'll add support for [Skills][agent-skills] to your Claude Code implementation.
+
+      A skill is a folder of instructions for one specific task. Your agent finds skills on disk and loads one only when it's needed.
+
+      Along the way you'll learn about [progressive disclosure][progressive-disclosure], frontmatter parsing, argument substitution, and letting the model choose a skill on its own.
+
+      [agent-skills]: https://agentskills.io/home
+      [progressive-disclosure]: https://agentskills.io/specification#progressive-disclosure
+
 stages:
   - slug: "yy2"
     name: "Communicate with the LLM"
@@ -127,3 +140,46 @@ stages:
     difficulty: easy
     marketing_md: |-
       In this stage, you'll add support for the `Bash` tool that executes bash commands.
+
+  # Extension: Skills
+  - slug: "vh1"
+    name: "Advertise skills to the LLM"
+    difficulty: easy
+    primary_extension_slug: "skills"
+    marketing_md: |-
+      In this stage, you'll add support for finding skills on disk and injecting their names and descriptions into the system prompt.
+
+  - slug: "jd8"
+    name: "Invoke a skill by name"
+    difficulty: easy
+    primary_extension_slug: "skills"
+    marketing_md: |-
+      In this stage, you'll add support for the `/skill-name` syntax that loads a single skill's instructions into context.
+
+  - slug: "wd2"
+    name: "Pass arguments to a skill"
+    difficulty: easy
+    primary_extension_slug: "skills"
+    marketing_md: |-
+      In this stage, you'll add support for substituting `$ARGUMENTS` and positional placeholders into a skill's instructions.
+
+  - slug: "sk5"
+    name: "Stack multiple skills"
+    difficulty: medium
+    primary_extension_slug: "skills"
+    marketing_md: |-
+      In this stage, you'll add support for invoking several skills in one prompt, with the trailing text passed to each.
+
+  - slug: "tq1"
+    name: "Run a script bundled with a skill"
+    difficulty: medium
+    primary_extension_slug: "skills"
+    marketing_md: |-
+      In this stage, you'll add support for skills that ship executable scripts alongside their instructions.
+
+  - slug: "gq2"
+    name: "Let the model choose a skill"
+    difficulty: medium
+    primary_extension_slug: "skills"
+    marketing_md: |-
+      In this stage, you'll add support for the model selecting and loading a skill on its own, with no explicit invocation.

@@ -87,3 +87,8 @@ The tester will verify that:
 
 
 
+### Notes
+
+- A project-relative folder like `.claude/skills/apple` is enough here, since the `Bash` tool runs from the project root.
+- Skills can also [bundle](https://agentskills.io/specification#optional-directories) `references/` and `assets/` next to `scripts/`, and a body names those the same way. We won't deal with them in this extension.
+
