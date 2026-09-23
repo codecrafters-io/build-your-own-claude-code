@@ -2,9 +2,11 @@ In this stage, you'll add support for the model choosing a skill on its own.
 
 ### Model-invoked skills
 
-Every skill so far has been triggered by the user typing `/name`. That's the easy case, as your program is told exactly which body to load.
+Every skill so far has been triggered by the user typing `/name`. That's the easy case — your program is told exactly which body to load.
 
 The more useful case is [the model deciding for itself](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill). The user describes a task in plain language, the model compares it against the descriptions already in its context, and loads the one that fits.
+
+The descriptions are already there from the advertising stage. What's missing is a way for the model to ask for a body.
 
 ### Giving the model a way in
 
@@ -28,7 +30,7 @@ $ ./your_program.sh -p "What is the database migration status?"
 
 The model matches the request against `apple`'s description, reads `.claude/skills/apple/SKILL.md`, and follows it.
 
-Notice that the skill descriptions not only describes what a skill does, but also mentions when to use the skill. In this example, if the skill `apple` description is: Database utilties, then the model might not be able to answer the question about "Database migration". 
+Notice what makes this work: the descriptions say **when** to use the skill, not just what it does. A description of "Database utilities" gives the model nothing to match against.
 
 ### Tests
 
@@ -44,10 +46,8 @@ The tester will verify that:
 - Your program outputs the word from the matching skill's body
 - Your program exits with exit code `0`
 
-
-
 ### Notes
 
-- In this test, the second skill is a decoy. Its description won't match the request, and its body contains a different word, so loading both skills will fail this stage.
+- The second skill is a decoy. Its description won't match the request, and its body contains a different word, so loading both skills will fail this stage.
+- Explicit `/name` invocation must keep working. The two paths coexist.
 - This stage depends on the model's judgment, so it is the most sensitive one in this extension. If it fails, check your system prompt wording before assuming your code is wrong.
-

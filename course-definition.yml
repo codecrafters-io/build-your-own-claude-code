@@ -99,7 +99,7 @@ extensions:
 
       A skill is a folder of instructions for one specific task. Your agent finds skills on disk and loads one only when it's needed.
 
-      Along the way you'll learn about [progressive disclosure][progressive-disclosure], frontmatter parsing, argument substitution, and letting the model choose a skill on its own.
+      Along the way you'll learn about [progressive disclosure][progressive-disclosure], frontmatter parsing, argument substitution, letting the model choose a skill on its own, and handing one to a subagent.
 
       [agent-skills]: https://agentskills.io/home
       [progressive-disclosure]: https://agentskills.io/specification#progressive-disclosure
@@ -183,3 +183,10 @@ stages:
     primary_extension_slug: "skills"
     marketing_md: |-
       In this stage, you'll add support for the model selecting and loading a skill on its own, with no explicit invocation.
+
+  - slug: "mj2"
+    name: "Run a skill in a subagent"
+    difficulty: hard
+    primary_extension_slug: "skills"
+    marketing_md: |-
+      In this stage, you'll add support for skills that are handed to a subagent, which works through them and reports back a single answer.
