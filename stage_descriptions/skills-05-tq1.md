@@ -2,7 +2,7 @@ In this stage, you'll add support for skills that bundle an executable script.
 
 ### Disclosure level 3
 
-A skill folder can hold more than `SKILL.md`. The [Agent Skills standard](https://agentskills.io/specification#optional-directories) names three conventional subfolders: 
+A skill folder can hold more than `SKILL.md`. The [Agent Skills standard](https://agentskills.io/specification#optional-directories) names three conventional subfolders:
 
 - `scripts/` for executable code
 - `references/` for documentation the model reads on demand
@@ -66,7 +66,7 @@ The model now has both halves: the folder from your message, and the relative pa
 
 ### Tests
 
-The tester will create a data file with random contents. It will also create a skill that references a script to get the hash of the random contents. 
+The tester will create a data file with random contents. It will also create a skill that references a script to get the hash of the random contents.
 
 ```bash
 $ cat .claude/skills/apple/scripts/checksum.sh

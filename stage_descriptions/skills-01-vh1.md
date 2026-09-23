@@ -26,7 +26,7 @@ description: Deploys the apple service to production.
 Run the deploy script and report the version that was deployed.
 ```
 
-The frontmatter tells your program what a skill is for. Claude Code accepts [many more frontmatter fields](https://code.claude.com/docs/en/skills#frontmatter-reference) than `name` and `description`; you'll implement two of them later in this extension.
+The frontmatter tells your program what a skill is for. Claude Code accepts [many more frontmatter fields](https://code.claude.com/docs/en/skills#frontmatter-reference) than `name` and `description`, and you'll implement one of them in later stages.
 
 ### Progressive disclosure
 
@@ -92,8 +92,7 @@ apple
 
 ### Notes
 
-- You don't need a real YAML parser. In every test, the frontmatter is exactly the two lines `name:` and `description:`, in that order, between `---` markers.
-- The [Agent Skills standard](https://agentskills.io/specification) requires the frontmatter `name` to match the folder name, so you can read either one. Later stages invoke skills by folder name.
+- You don't need a real YAML parser. In every test, the frontmatter is exactly the two lines `name:` and `description:`, in that order, between `---` markers. The [Agent Skills standard](https://agentskills.io/specification) requires the frontmatter `name` to match the folder name, so you can read either one, and later stages invoke skills by folder name.
 - Skill descriptions go in the system prompt, not in the `tools` array. Skills are instructions, not tools.
 - Both checks run through the model, so a bug in your parsing surfaces as a wrong answer rather than a clear error. While developing, print the system prompt you assembled to stderr to catch these errors.
 

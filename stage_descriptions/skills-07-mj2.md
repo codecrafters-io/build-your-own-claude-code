@@ -4,7 +4,7 @@ In this stage, you'll add support for skills that run in a subagent.
 
 A skill can ask to be handled by a [subagent](https://code.claude.com/docs/en/skills#run-skills-in-a-subagent) instead of by the main agent you've been building, by setting `context: fork` in its frontmatter.
 
-A subagent is a second run of your agent loop with a conversation of its own. It takes the skill's body as its prompt, works through it, and hands back a single answer. 
+A subagent is a second run of your agent loop with a conversation of its own. It takes the skill's body as its prompt, works through it, and hands back a single answer.
 
 Let's say your workspace holds two skills. `grape` is an ordinary one:
 
@@ -29,7 +29,7 @@ context: fork
 Respond with exactly one word: blueberry
 ```
 
-Invoking `grape` works as it always has: its body joins the main conversation. Invoking `apple` doesn't, its body goes to the subagent instead.
+Invoking `grape` works as it always has: its body joins the main conversation. Invoking `apple` doesn't — its body goes to the subagent instead.
 
 ### What your program does
 
@@ -86,6 +86,6 @@ The tester will watch the requests your program sends, and verify that:
 ### Notes
 
 - A skill that asks for a subagent ends a stacking run, so it's never expanded alongside another. You only need to handle it as a lone invocation.
-- Your subagent is your agent loop, so the model can still call tools inside it.
-- [Claude Code](https://code.claude.com/docs/en/skills#run-skills-in-a-subagent) also supports `agent` field picks which type of subagent handles the skill. We won't be handling different subagent types in this extension. 
+- Your subagent is your agent loop, so the model can still call tools inside it. Claude Code usually runs the subagent in the background, but with `-p` it always waits, so you can run it inline.
+- Claude Code also supports an [`agent` field](https://code.claude.com/docs/en/skills#run-skills-in-a-subagent) that picks which type of subagent handles the skill. We won't be handling different subagent types in this extension.
 

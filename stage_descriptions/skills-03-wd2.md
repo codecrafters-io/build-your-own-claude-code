@@ -24,7 +24,7 @@ Given this invocation:
 $ ./your_program.sh -p "/apple staging eu-west"
 ```
 
-`$ARGUMENTS` becomes `staging eu-west`, `$0` becomes `staging`, and `$1` becomes `eu-west`. 
+`$ARGUMENTS` becomes `staging eu-west`, `$0` becomes `staging`, and `$1` becomes `eu-west`.
 
 So a body of:
 
@@ -51,7 +51,7 @@ $ ./your_program.sh -p "/apple 4127"
 4127
 ```
 
-The second skill's body echoes `$1` and `$0` , in that order, reversed and is invoked with two random words:
+The second skill's body echoes `$1` followed by `$0`, so the two random words it's invoked with come back in reverse order:
 
 ```bash
 $ ./your_program.sh -p "/grape mango pear"

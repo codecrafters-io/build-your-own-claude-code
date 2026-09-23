@@ -6,7 +6,7 @@ Every skill so far has been triggered by the user typing `/name`. That's the eas
 
 The more useful case is [the model deciding for itself](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill). The user describes a task in plain language, the model compares it against the descriptions already in its context, and loads the one that fits.
 
-The descriptions are already there from the advertising stage. What's missing is a way for the model to ask for a body.
+The descriptions are already there from earlier stages. What's missing is a way for the model to ask for a body.
 
 ### Giving the model a way in
 

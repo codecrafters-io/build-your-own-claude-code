@@ -57,5 +57,5 @@ The tester will verify that:
 ### Notes
 
 - Load only the invoked skill's body. If you load every body, the model will see two conflicting instructions and this stage will fail.
-- In addition to the folder name, Claude Code also handles [additional cases](https://code.claude.com/docs/en/skills#how-a-skill-gets-its-command-name), like plugins to resolve a command. We won't deal with them in this extension. 
+- In addition to the folder name, Claude Code also handles [additional cases](https://code.claude.com/docs/en/skills#how-a-skill-gets-its-command-name), like plugins to resolve a command. We won't deal with them in this extension.
 
