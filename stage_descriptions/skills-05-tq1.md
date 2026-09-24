@@ -19,6 +19,7 @@ A skill with a bundled script looks like this:
 └── skills/
     └── apple/
         ├── SKILL.md
+        ├── data.txt
         └── scripts/
             └── checksum.sh
 ```
@@ -66,12 +67,12 @@ The model now has both halves: the folder from your message, and the relative pa
 
 ### Tests
 
-The tester will create a data file with random contents. It will also create a skill that references a script to get the hash of the random contents.
+The tester will create a data file with random contents inside the skill's folder. 
 
 ```bash
 $ cat .claude/skills/apple/scripts/checksum.sh
 #!/usr/bin/env bash
-sha256sum data.txt | cut -c1-8
+cd "$(dirname "$0")/.." && sha256sum data.txt | cut -c1-8
 ```
 
 It will then invoke the skill:

@@ -73,12 +73,12 @@ $ ./your_program.sh -p "/apple"
 The apple skill returned blueberry.
 ```
 
-The other skill is seeded but never invoked, so its name reaches the model only through the catalog.
+The other skill is seeded but never invoked, so the catalog holds more than the skill under test.
 
 The tester will watch the requests your program sends, and verify that:
 
-- One of them carries the skill's instructions **without** the skill catalog
-- One of them carries **both** the catalog and the subagent's answer
+- One of them carries the skill's instructions
+- One of them carries the subagent's answer **without** those instructions
 - The subagent's answer appears in your program's output
 
 
