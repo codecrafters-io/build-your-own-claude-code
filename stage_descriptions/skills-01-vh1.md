@@ -37,7 +37,7 @@ Skills solve this with **progressive disclosure**. Claude loads only the front m
 
 | Level | What gets loaded                    | Rough size            | When                         |
 | ----- | ----------------------------------- | --------------------- | ---------------------------- |
-| 1     | Name and description                | ~100 tokens per skill | Always                       |
+| 1     | Name, description & other fields    | ~100 tokens per skill | Always                       |
 | 2     | The `SKILL.md` body                 | Under 5,000 tokens    | When the skill is used       |
 | 3     | Bundled scripts and reference files | Unbounded             | When the body points at them |
 
@@ -92,7 +92,7 @@ apple
 
 ### Notes
 
-- You don't need a real YAML parser. In every test, the frontmatter is exactly the two lines `name:` and `description:`, in that order, between `---` markers. The [Agent Skills standard](https://agentskills.io/specification) requires the frontmatter `name` to match the folder name, so you can read either one, and later stages invoke skills by folder name.
-- Skill descriptions go in the system prompt, not in the `tools` array. Skills are instructions, not tools.
+- We highly recommend you implement a proper YAML parser at this stage. It'll come in handy in later stages.
+- The [Agent Skills standard](https://agentskills.io/specification) requires the frontmatter `name` to match the folder name, so you can read either one, and later stages invoke skills by folder name.
 - Both checks run through the model, so a bug in your parsing surfaces as a wrong answer rather than a clear error. While developing, print the system prompt you assembled to stderr to catch these errors.
 

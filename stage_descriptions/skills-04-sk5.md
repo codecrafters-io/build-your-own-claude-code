@@ -79,6 +79,5 @@ The tester will verify that:
 
 ### Notes
 
-- Claude Code expands the first skill plus up to five more. You don't need to enforce that limit.
 - Placeholder substitution works exactly as it did for a single skill. Each expanded body gets the same argument text.
 
