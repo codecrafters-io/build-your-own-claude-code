@@ -6,19 +6,6 @@ A skill can ask to be handled by a [subagent](https://code.claude.com/docs/en/sk
 
 A subagent is a second run of your agent loop with a conversation of its own. It takes the skill's body as its prompt, works through it, and hands back a single answer.
 
-Let's say your workspace holds two skills. `grape` is an ordinary one:
-
-```markdown
----
-name: grape
-description: Summarizes recent incidents for the payments team.
----
-
-Add this exact line to your response: cherry
-```
-
-and `apple` asks for a subagent:
-
 ```markdown
 ---
 name: apple
@@ -29,17 +16,22 @@ context: fork
 Respond with exactly one word: blueberry
 ```
 
-When the model reaches for `grape`, its body joins the main conversation. When it reaches for `apple`, its body goes to the subagent instead.
+Without `context: fork`, `apple`'s body would join the main conversation the way every skill's body has so far. With it, the body goes to the subagent instead, and only the answer comes back.
 
 ### What your program does
 
 For `./your_program.sh -p "Who is on the on-call rotation right now?"`:
 
 1. Discover the skills and build the catalog for the system prompt, as before.
-2. The model matches the question against `apple` and asks for its instructions, as in earlier stages.
-3. `apple` asks for a subagent, so its body doesn't go into the main conversation. Start a **separate** list of messages holding only that body, and run your agent loop over it.
-4. Hand the subagent's answer back to the main conversation as the skill's result.
+2. The model matches the question against `apple` and calls the skill tool, the same way it did in the previous stage.
+3. Check `context` before returning the body. `apple` asks for a subagent, so its body doesn't go into the main conversation. Start a **separate** list of messages holding only that body, and run your agent loop over it.
+4. Return the subagent's answer as the tool's result. For the above skill, that result can be:
+  ```
+   Skill apple ran in a separate context and returned: blueberry
+  ```
 5. Run your agent loop over the main conversation, and print its answer.
+
+All of this happens inside the skill tool handler you wrote in the previous stage. Until now it returned a body for every name it recognised, and a forked skill is the one case where it returns something else.
 
 Steps 3 and 5 are the same loop. A subagent is that loop called again with a different list of messages, so most of this stage is pulling the loop out of wherever it currently lives.
 
@@ -76,6 +68,5 @@ The tester will watch the requests your program sends, and verify that:
 ### Notes
 
 - A skill that asks for a subagent ends a stacking run, so it's never expanded alongside another.
-- Your subagent is your agent loop, so the model can still call tools inside it. Claude Code usually runs the subagent in the background, but with `-p` it always waits, so you can run it inline.
-- Claude Code also supports an [`agent` field](https://code.claude.com/docs/en/skills#run-skills-in-a-subagent) that picks which type of subagent handles the skill. We won't be handling different subagent types in this extension.
+- Claude Code also supports an [agent field](https://code.claude.com/docs/en/skills#run-skills-in-a-subagent) that picks which type of subagent handles the skill. We won't be handling different subagent types in this extension.
 

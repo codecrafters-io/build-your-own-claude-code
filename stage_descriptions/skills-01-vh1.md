@@ -26,7 +26,7 @@ description: Deploys the apple service to production.
 Run the deploy script and report the version that was deployed.
 ```
 
-The frontmatter tells your program what a skill is for. Claude Code accepts [many more frontmatter fields](https://code.claude.com/docs/en/skills#frontmatter-reference) than `name` and `description`, and you'll implement one of them in later stages.
+The frontmatter tells your program what a skill is for. 
 
 ### Progressive disclosure
 
@@ -46,9 +46,11 @@ For this stage, you'll implement level 1 only.
 
 ### Advertising skills
 
-Scan `.claude/skills/`, parse the frontmatter to read the `name` and `description` out of each `SKILL.md`, and add them to your system prompt. Do **not** include the bodies.
+Lets walk through how a skill is advertised: 
 
-Any clear format works, since the tester checks the model's answers rather than your exact wording. For example:
+1. Scan `.claude/skills/`, run through the skill folders and parse the frontmatter to read the `name` and `description` out of each `SKILL.md`, and add them to your system prompt. Do **not** include the bodies.
+
+For example, if there are two skills: `apple` and `grape`, your system prompt will look like this. 
 
 ```
 You have access to the following skills:
@@ -59,7 +61,7 @@ You have access to the following skills:
 To use a skill, read .claude/skills/<name>/SKILL.md.
 ```
 
-Your program doesn't send a system prompt yet. Your `messages` array is initialized with the user's prompt, and the agent loop appends the model's replies and your tool results onto it. Add a `system` message at the front, where you initialize the array:
+1. You already have an initial conversation history: the `messages` array with the user's prompt. Add the  `system` prompt at the front of the `messages` array.
 
 ```diff
  messages = [
@@ -92,7 +94,6 @@ apple
 
 ### Notes
 
-- We highly recommend you implement a proper YAML parser at this stage. It'll come in handy in later stages.
+- We recommend you implement a proper YAML parser at this stage. It'll come in handy in later stages.
 - The [Agent Skills standard](https://agentskills.io/specification) requires the frontmatter `name` to match the folder name, so you can read either one, and later stages invoke skills by folder name.
-- Both checks run through the model, so a bug in your parsing surfaces as a wrong answer rather than a clear error. While developing, print the system prompt you assembled to stderr to catch these errors.
 

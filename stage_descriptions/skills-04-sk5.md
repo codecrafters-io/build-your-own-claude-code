@@ -15,11 +15,11 @@ When this is invoked, both the skill bodies of `apple` and `grape` are loaded, a
 Expansion runs from the start of the prompt. Every token that names a skill is expanded, and the first token that doesn't ends the run. That token and everything after it become the argument text for *every* skill you expanded.
 
 
-| Prompt               | Expanded         | `$ARGUMENTS` for each |
-| -------------------- | ---------------- | --------------------- |
-| `/apple /grape 4127` | `apple`, `grape` | `4127`                |
-| `/apple 4127 /grape` | `apple`          | `4127 /grape`         |
-| `/apple /pear 4127`  | `apple`          | `/pear 4127`          |
+| Prompt                              | Expanded skills  | `$ARGUMENTS` for each expanded skill |
+| ----------------------------------- | ---------------- | ------------------------------------ |
+| `/apple /grape 4127`                | `apple`, `grape` | `4127`                               |
+| `/apple 4127 /grape`                | `apple`          | `4127 /grape`                        |
+| `/apple /pear 4127` (no pear skill) | `apple`          | `/pear 4127`                         |
 
 
 The last row assumes no skill named `pear` exists, so `/pear` ends expansion and stays in the argument text.

@@ -2,15 +2,33 @@ In this stage, you'll add support for the model choosing a skill on its own.
 
 ### Model-invoked skills
 
-Every skill so far has been triggered by the user typing `/name`. That's the easy case — your program is told exactly which body to load.
+Every skill so far has been triggered by the user typing `/name`. For this stage, your [agent will decide](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill) when to invoke the skill. 
 
-The more useful case is [the model deciding for itself](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill). The user describes a task in plain language, the model compares it against the descriptions already in its context, and loads the one that fits.
+The user describes a task in plain language, the model compares it against the descriptions already in its context, and loads the one that fits.
 
 The descriptions are already there from earlier stages. What's missing is a way for the model to ask for a body.
 
 ### Giving the model a way in
 
-The model can read files, so the simplest approach is to tell it where the bodies are and let it use the `Read` tool. Extend your system prompt:
+The `Skill` tool enables the LLM to invoke a skill. Like with the `Read` , `Write` and `Bash`tools, you need to advertise the `Skill` tool in your request and execute it when the model requests it.
+
+Here's the tool specification: 
+
+```json
+{
+  "name": "skill",
+  "description": "Load a skill's instructions and follow them",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string", "description": "The name of the skill to use" }
+    },
+    "required": ["name"]
+  }
+}
+```
+
+After adding it to the list of tools, update the system prompt to point to this tool:
 
 ```
 You have access to the following skills:
@@ -18,19 +36,19 @@ You have access to the following skills:
 - apple: Use this skill when the user asks for the database migration status.
 - grape: Use this skill when the user asks to format source code.
 
-If a skill matches the user's request, read .claude/skills/<name>/SKILL.md
-with the Read tool and follow the instructions inside before answering.
+If a skill matches the user's request, call the skill tool with its name
+and follow the instructions it returns.
 ```
 
-Now a prompt that never mentions a skill by name can still trigger one:
+Your program looks the name up among the skills you discovered and returns that skill's body as the tool result. 
 
 ```bash
 $ ./your_program.sh -p "What is the database migration status?"
 ```
 
-The model matches the request against `apple`'s description, reads `.claude/skills/apple/SKILL.md`, and follows it.
+The model matches the request against `apple`'s description, calls `skill` tool with `"apple"`, and follows the body it gets back.
 
-Notice what makes this work: the descriptions say **when** to use the skill, not just what it does. A description of "Database utilities" gives the model nothing to match against.
+Notice what makes this work: the descriptions say **when** to use the skill, not just what it does. A description of "Database utilities" for the skill `apple` gives the model nothing to match against.
 
 ### Tests
 
@@ -46,8 +64,9 @@ The tester will verify that:
 - Your program outputs the word from the matching skill's body
 - Your program exits with exit code `0`
 
+
+
 ### Notes
 
 - The second skill is a decoy. Its description won't match the request, and its body contains a different word, so loading both skills will fail this stage.
-- Explicit `/name` invocation must keep working. The two paths coexist.
-- This stage depends on the model's judgment, so it is the most sensitive one in this extension. If it fails, check your system prompt wording before assuming your code is wrong.
+
