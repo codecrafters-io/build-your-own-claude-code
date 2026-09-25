@@ -50,7 +50,7 @@ Your program looks the name up among the skills you discovered and returns that 
 $ ./your_program.sh -p "What is the database migration status?"
 ```
 
-The model matches the request against `apple`'s description, calls `skill` tool with `"apple"`, and follows the body it gets back.
+The model matches the request against `apple`'s description, calls `Skill` tool with `"apple"`, and follows the body it gets back.
 
 Notice what makes this work: the descriptions say **when** to use the skill, not just what it does. A description of "Database utilities" for the skill `apple` gives the model nothing to match against.
 
