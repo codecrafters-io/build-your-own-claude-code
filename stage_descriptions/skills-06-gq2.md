@@ -16,16 +16,20 @@ Here's the tool specification:
 
 ```json
 {
-  "name": "skill",
-  "description": "Load a skill's instructions and follow them",
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "name": { "type": "string", "description": "The name of the skill to use" }
-    },
-    "required": ["name"]
+    "type": "function",
+    "function": {
+      "name": "Skill",
+      "description": "Load a skill's instructions and follow them",
+      "parameters": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "description": "The name of the skill to use" },
+          "args": { "type": "string", "description": "Optional arguments for the skill" }
+        }
+      }
+    }
   }
-}
 ```
 
 After adding it to the list of tools, update the system prompt to point to this tool:
@@ -36,7 +40,7 @@ You have access to the following skills:
 - apple: Use this skill when the user asks for the database migration status.
 - grape: Use this skill when the user asks to format source code.
 
-If a skill matches the user's request, call the skill tool with its name
+If a skill matches the user's request, call the Skill tool with its name
 and follow the instructions it returns.
 ```
 

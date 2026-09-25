@@ -16,14 +16,14 @@ context: fork
 Respond with exactly one word: blueberry
 ```
 
-Without `context: fork`, `apple`'s body would join the main conversation the way every skill's body has so far. With it, the body goes to the subagent instead, and only the answer comes back.
+By adding `context:fork`, apple's body goes to the subagent. It has a new conversation stack and only the answer comes back to the main conversation. 
 
 ### What your program does
 
 For `./your_program.sh -p "Who is on the on-call rotation right now?"`:
 
 1. Discover the skills and build the catalog for the system prompt, as before.
-2. The model matches the question against `apple` and calls the skill tool, the same way it did in the previous stage.
+2. The model matches the question against `apple` and calls the Skill tool, the same way it did in previous stages.
 3. Check `context` before returning the body. `apple` asks for a subagent, so its body doesn't go into the main conversation. Start a **separate** list of messages holding only that body, and run your agent loop over it.
 4. Return the subagent's answer as the tool's result. For the above skill, that result can be:
   ```
@@ -31,7 +31,7 @@ For `./your_program.sh -p "Who is on the on-call rotation right now?"`:
   ```
 5. Run your agent loop over the main conversation, and print its answer.
 
-All of this happens inside the skill tool handler you wrote in the previous stage. Until now it returned a body for every name it recognised, and a forked skill is the one case where it returns something else.
+Steps 3 and 4 happen inside the Skill tool handler you wrote in previous stages. Until now it returned a body for every name it recognised, and a forked skill is the one case where it returns something else.
 
 Steps 3 and 5 are the same loop. A subagent is that loop called again with a different list of messages, so most of this stage is pulling the loop out of wherever it currently lives.
 
@@ -45,7 +45,7 @@ The subagent's conversation starts empty. It receives the skill's body and nothi
 ]
 ```
 
-Say it answers `blueberry`. That one word is all that travels back to the main conversation, which is where the question has been all along.
+Say it answers `blueberry`. That word is the only thing that comes out of the subagent. Whatever your program wraps around that word on the way back, as step 4 does, is your own framing rather than something the subagent returned.
 
 ### Tests
 
