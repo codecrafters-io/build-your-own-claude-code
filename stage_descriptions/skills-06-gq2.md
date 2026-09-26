@@ -19,7 +19,7 @@ Here's the tool specification:
     "type": "function",
     "function": {
       "name": "Skill",
-      "description": "Load a skill's instructions and follow them",
+      "description": "Load a skill's instructions into the conversation",
       "parameters": {
         "type": "object",
         "required": ["name"],
