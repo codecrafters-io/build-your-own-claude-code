@@ -57,8 +57,6 @@ You have access to the following skills:
 
 - apple: Deploys the apple service to production.
 - grape: Runs the grape test suite and reports failures.
-
-To use a skill, read .claude/skills/<name>/SKILL.md.
 ```
 
 1. You already have an initial conversation history: the `messages` array with the user's prompt. Add the  `system` prompt at the front of the `messages` array.
@@ -74,23 +72,12 @@ To use a skill, read .claude/skills/<name>/SKILL.md.
 
 ### Tests
 
-The tester will create a random number of skill folders, then run your program twice.
-
-First, it asks for a count:
-
-```bash
-$ ./your_program.sh -p "How many skills are available to you? Respond with only a number."
-2
-```
-
-Then it describes a task taken from one skill's description and asks which skill fits:
+The tester will create a random number of skill folders, then describe a task taken from one skill's description and ask which skill fits:
 
 ```bash
 $ ./your_program.sh -p "Which skill would help me deploy the apple service? Respond with only the skill name."
 apple
 ```
-
-
 
 ### Notes
 

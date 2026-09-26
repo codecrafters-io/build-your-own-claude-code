@@ -24,7 +24,7 @@ Where the two specs disagree, the course follows Claude Code, because that's the
 
 | # | Slug | Stage name | Difficulty | Objective | Tester assertions | New harness | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `vh1` | Advertise skills to the LLM | `easy` | Read `.claude/skills/*/SKILL.md` and inject names and descriptions into the system prompt | Model reports the correct count; model names the skill matching a described task | — | built |
+| 1 | `vh1` | Advertise skills to the LLM | `easy` | Read `.claude/skills/*/SKILL.md` and inject names and descriptions into the system prompt | Model names the skill matching a described task; every name and description reached the request | — | built |
 | 2 | `jd8` | Invoke a skill by name | `easy` | Resolve `/name` to a folder and load only that body | Output is the token hidden in the invoked skill's body, with a decoy seeded alongside | — | built |
 | 3 | `wd2` | Pass arguments to a skill | `easy` | Substitute `$ARGUMENTS` and `$0`/`$1` into the body | `$ARGUMENTS` reproduces the full string; `$1 $0` resolves reversed | — | built |
 | 4 | `sk5` | Stack multiple skills | `medium` | Expand the run of `/name` tokens at the start of a message, passing the trailing text to each | Both invoked skills' `<token>-<argument>` lines appear; the uninvoked skill's token does not | `ContainsAllAssertion`, `AllOfAssertion` | built |
