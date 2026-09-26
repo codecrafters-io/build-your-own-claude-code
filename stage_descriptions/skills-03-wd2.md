@@ -2,7 +2,7 @@ In this stage, you'll add support for passing arguments to a skill.
 
 ### Placeholders
 
-A skill that always does the same thing isn't much use. Real skills take input: *deploy* , *review*  .
+A skill that always does the same thing isn't much use. Real skills take input: *deploy* <service>, *review*  <file>.
 
 Skills [accept input](https://code.claude.com/docs/en/skills#pass-arguments-to-skills) through placeholders in the body, which your program substitutes before sending the body to the model. There are two kinds:
 
