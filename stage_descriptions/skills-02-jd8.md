@@ -10,7 +10,7 @@ When the user's prompt starts with `/`, treat the first word as a skill name. Gi
 $ ./your_program.sh -p "/apple"
 ```
 
-your program should resolve `apple` to `.claude/skills/apple/SKILL.md`, read the body (everything after the closing `---`), and send that body to the model instead of the raw prompt.
+your program should resolve `/apple` to `.claude/skills/apple/SKILL.md`, read the body (everything after the closing `---`), and send that body to the model instead of the raw prompt.
 
 ### Resolving and loading
 
