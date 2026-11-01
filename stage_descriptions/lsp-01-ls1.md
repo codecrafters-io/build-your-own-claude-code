@@ -2,15 +2,18 @@ In this stage, you'll send an `initialize` request to a language server.
 
 ### Giving your agent code navigation
 
-An invoice for two 250-cent items prints `250250` instead of `500`. Your agent
-must follow the imported name `invoice_total` and discover that the function
-expects an integer price.
+Your agent can already read files, but finding the function behind a call can
+mean searching through several files. A **language server** analyzes a project
+and can tell your agent where a function is defined and what types it expects.
 
-A **language server** analyzes code to provide definitions, types, and
-references through the
+Editors communicate with language servers through the
 [Language Server Protocol](https://microsoft.github.io/language-server-protocol/)
-(LSP). Claude Code uses this connection for navigation and type errors after
-edits. You'll begin by telling the server which project to analyze.
+(LSP). In this extension, you'll give your agent access to that code information
+too.
+
+Before asking about code, your agent needs to tell the server which project to
+analyze. In this stage, you'll start the server and send that information in an
+`initialize` request. You'll handle its reply in the next stage.
 
 ### Starting the server
 

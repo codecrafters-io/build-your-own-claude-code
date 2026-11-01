@@ -1,6 +1,9 @@
 In this stage, you'll add support for the `goToDefinition` operation.
 
-### The `goToDefinition` operation
+### Finding the code behind a call
+
+Hover can describe a function's type. To understand how it works, your agent
+also needs to find and read its implementation.
 
 Consider this call in `checkout.py`:
 

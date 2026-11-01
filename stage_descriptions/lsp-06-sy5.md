@@ -1,14 +1,18 @@
 In this stage, you'll send file changes to the language server.
 
-### Keeping files in sync
+### Getting answers about the latest code
 
-Your agent can inspect a function and use `Write` to change it. But after the
-write, the server still has the text you sent in `didOpen`.
+The language server keeps a copy of each file you open with `didOpen`. Your
+`Write` tool saves changes to disk, but the server's copy still contains the old
+text until you send an update.
 
-For example, change `price: int` to `price: str`, then ask for hover information
-again. The server can still report `int` because it hasn't received the edit.
+For example, suppose your agent changes a function's parameter from `price: int`
+to `price: str`, then asks for hover information again. The server can still
+report `int` because it hasn't received the edit. The model would then be making
+its next decision using outdated information.
 
-LSP uses
+In this stage, you'll send the new contents after a successful write, so later
+queries describe the code your agent just saved. LSP uses
 [`textDocument/didChange`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange)
 to send the new text to the server.
 

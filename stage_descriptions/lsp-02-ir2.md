@@ -1,13 +1,15 @@
 In this stage, you'll handle the language server's response to `initialize`.
 
-### Using the connection
+### Knowing when the server is ready
 
-The server may send a startup notification before its reply. Mistaking that
-notification for the answer can leave your agent stuck. Matching the reply lets
-it finish connecting or report a failed startup.
+Sending `initialize` starts the conversation. Your agent still needs to know
+whether startup succeeded and which features the server supports. The server's
+reply provides both answers.
 
-This reader will also carry the invoice function's type and errors from edits.
-For now, finish initialization.
+The server can also send log messages while starting up, so the next message
+isn't necessarily the reply. You'll read complete messages, match the reply to
+your request, and acknowledge a successful startup. This completes the
+connection your agent will use for code queries in later stages.
 
 ### Reading a message
 

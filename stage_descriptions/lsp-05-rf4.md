@@ -1,10 +1,13 @@
 In this stage, you'll add support for the `findReferences` operation.
 
-### Finding the callers
+### Finding where a function is used
 
-Before changing a function, your agent needs to know which files use it.
-Searching for its name can include unrelated functions and miss imported
-aliases:
+Your agent can now find a function's definition. Before changing that function,
+it also helps to find the code that uses it, so the agent can check which calls
+might be affected.
+
+For example, this code imports `total` from `pricing.py` under the name
+`invoice_total`:
 
 ```python
 from pricing import total as invoice_total
@@ -12,9 +15,14 @@ from pricing import total as invoice_total
 amount = invoice_total(250, 2)
 ```
 
-Claude Code's `findReferences` operation asks a language server about the symbol
-at a position. The server decides which locations belong to that symbol. Your
-program returns those locations without filtering them by spelling.
+The call refers to `pricing.total`, even though it uses the name
+`invoice_total`. Another file could define an unrelated `total` function. Your
+agent needs the locations that refer to this particular function.
+
+The `findReferences` operation asks the language server where a particular
+symbol is used. Returning those locations lets the model inspect the uses with
+`Read` before deciding how to change the code. Your program passes on the
+server's results without filtering them by spelling.
 
 ### Requesting references
 

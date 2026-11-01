@@ -1,10 +1,17 @@
 In this stage, you'll add support for the `hover` operation.
 
-### The `hover` operation
+### Looking up types and documentation
 
-Your program can now communicate with the server, but the model has no way to
-use it yet. You'll add an `LSP` tool with a `hover` operation, which returns the
-type information and documentation you'd see when hovering in an editor.
+Before calling or changing a function, your agent may need to know what types
+its parameters accept and what it returns. A **hover** query asks the language
+server for type information and documentation at a position in a file, just as
+hovering over code in an editor does.
+
+Your program has a connection to the server. Now you'll make it available to the
+model through an `LSP` tool with a `hover` operation. Returning the server's
+answer as a tool result lets the model use that information in its next step.
+
+### The `hover` operation
 
 The corresponding LSP request is
 [`textDocument/hover`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_hover).

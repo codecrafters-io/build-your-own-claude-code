@@ -3,13 +3,35 @@ catch and repair its own mistakes.
 
 ### Catching the agent's own mistakes
 
-Your agent can find a function through an alias and synchronize its edits. Now
-it needs to notice when an edit breaks something.
+A successful `Write` tells your agent that a file was saved. The change could
+still introduce a type error. Now that the server receives edits, it can report
+those errors while the agent is working.
 
-Claude Code receives type errors after editing, before running a build. If your
-agent changes `invoice_total(250, 2)` to `invoice_total("250", 2)`, the server
-reports a string where an integer is expected. Returning that error lets the
-model repair the argument.
+For example, suppose `pricing.py` defines a function that expects an integer
+price:
+
+```python
+def total(price: int, quantity: int) -> int:
+    return price * quantity
+```
+
+Your agent might accidentally pass a string when editing `checkout.py`:
+
+```python
+from pricing import total as invoice_total
+
+amount = invoice_total("250", 2)
+```
+
+Here, `invoice_total` is another name for `total`. In Python, `"250" * 2`
+produces the text `"250250"`, while `250 * 2` produces the number `500`. The
+language server can flag the string argument because the function expects an
+integer.
+
+In this stage, you'll return that feedback to the model after `Write`. The model
+can then use `Write` again to repair the mistake and receive confirmation that
+the type error has cleared. This gives your agent an edit-feedback-repair loop
+without needing to run a build to discover this error.
 
 These errors and warnings are called **diagnostics**. They arrive as
 [`textDocument/publishDiagnostics`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics)
