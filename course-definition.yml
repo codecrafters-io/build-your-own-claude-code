@@ -92,17 +92,6 @@ marketing:
         Didn't even know that was possible!
 
 extensions:
-  - slug: "lsp"
-    name: "Language Server Protocol"
-    description_markdown: |-
-      In this challenge extension, you'll connect your Claude Code implementation to a language server using the [Language Server Protocol][lsp].
-
-      A language server gives your agent the code understanding behind an editor's hover, go-to-definition, and find-references features.
-
-      Along the way, you'll learn about JSON-RPC, communicating with another process, keeping documents in sync, reading diagnostics, and applying edits across files.
-
-      [lsp]: https://microsoft.github.io/language-server-protocol/
-
   - slug: "skills"
     name: "Skills"
     description_markdown: |-
@@ -114,6 +103,17 @@ extensions:
 
       [agent-skills]: https://agentskills.io/home
       [progressive-disclosure]: https://agentskills.io/specification#progressive-disclosure
+
+  - slug: "lsp"
+    name: "Language Server Protocol"
+    description_markdown: |-
+      In this challenge extension, you'll connect your Claude Code implementation to a language server using the [Language Server Protocol][lsp].
+
+      A language server gives your agent the code understanding behind an editor's hover, go-to-definition, and find-references features.
+
+      Along the way, you'll learn about JSON-RPC, communicating with another process, keeping documents in sync, reading diagnostics, and applying edits across files.
+
+      [lsp]: https://microsoft.github.io/language-server-protocol/
 
 stages:
   - slug: "yy2"

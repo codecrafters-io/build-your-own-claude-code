@@ -4,8 +4,10 @@
 All eight stages, a controlled stdio server, a standard-library Python reference
 agent, and recorded offline fixtures are implemented. All 26 cases passed ten
 consecutive offline runs. Live-model trials and model-backed prose lint remain
-outstanding because no OpenRouter key is configured. This is ready for local
-implementation and testing, with publication checks still pending.
+outstanding. The first staging CI run received OpenRouter 401 errors, so its
+repository API secret must be corrected before those trials can pass. This is
+ready for local implementation and testing, with publication checks still
+pending.
 
 **Extension:** `lsp` - Language Server Protocol
 
@@ -292,7 +294,7 @@ command, and expected output.
 | Show how to invoke the program and what to expect                    | Every Tests section contains a literal command and an example of the expected protocol message, tool result, or changed file.                                                             | Checked locally                                          |
 | Keep early work approachable and split substantial steps             | Sending and receiving initialization are separate stages. The opener is rated easy. The buffered reader remains medium because its actual work includes partial frames and notifications. | Provisional until learner trials                         |
 | Give every registered stage a corresponding tester case              | All eight slugs are registered in the tester and match its local copy of the course YAML. Each stage has recorded output and executable checks.                                           | Passed offline                                           |
-| Test the tester against a reference implementation                   | The reference client passes all 26 controlled cases and five broken variants are rejected. A Pyright 1.1.414 smoke check passes for the overlapping transport and query features.         | Passed offline and smoke checks, live trials outstanding |
+| Test the tester against a reference implementation                   | The reference client passes all 26 controlled cases and six broken variants are rejected. A Pyright 1.1.414 smoke check passes for the overlapping transport and query features.          | Passed offline and smoke checks, live trials outstanding |
 
 The planning guide recommends keeping the first two or three challenge stages
 easy. This extension follows the completed base course, so its learners already
@@ -363,12 +365,12 @@ make record_lsp_fixtures
 ```
 
 `make test_lsp` runs fixture helper tests, the recorded output comparison, YAML
-registration, a sending-only stage-one client, and five deliberately broken
+registration, a sending-only stage-one client, and six deliberately broken
 clients. The rejected clients discard hover results, omit synchronization, apply
 edits forward, interpret UTF-16 columns as code points, or turn absent
-diagnostics into an empty success list. Temporary mutations of UTF-16 counting,
-array cardinality, and alias-preserving rename helpers were also rejected by
-their focused tests.
+diagnostics into an empty success list. The sixth client calls the model before
+initialization. Temporary mutations of UTF-16 counting, array cardinality, and
+alias-preserving rename helpers were also rejected by their focused tests.
 
 `make test_lsp_offline` drives the real agent HTTP/tool loop against a
 deterministic model and the real stdio fixture. Its 26 cases passed ten
@@ -409,3 +411,33 @@ a release; the hosted challenge does.
 - [Rename](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_rename)
   and
   [workspace edits](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspaceEdit)
+
+## Comparison with the existing CodeCrafters repositories
+
+Reviewed against `core`, `build-your-own-redis`, and `redis-tester` on 1
+November 2026. This review checks the actual implementation conventions as well
+as the public authoring guide.
+
+| Convention                                                                                     | LSP extension                                                                                                                                                                                     |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The course declares extensions separately and assigns each stage with `primary_extension_slug` | The eight LSP stages use `lsp`. Skills keeps its existing first position in the extension list. No extension is nested inside another extension's stages.                                         |
+| Description files use `<extension>-NN-<slug>.md`                                               | All eight filenames match the loader's pattern and restart numbering at 01.                                                                                                                       |
+| Stages build one capability at a time                                                          | The sending/receiving split follows the same progression as Redis's separate replication-handshake stages. Each stage includes a command and observable protocol behavior.                        |
+| A stage slug maps to a Go test function, and the tester's YAML stays synchronized              | All eight registrations use the existing Go declaration style. The YAML consistency test passes.                                                                                                  |
+| Scenario tests cover working and broken implementations, with recorded tester output           | The reference agent has a recorded output fixture. Six broken variants and a legacy-port isolation regression exercise the assertions.                                                            |
+| Network and process state must not leak between scenarios                                      | Each LSP run uses a private loopback model endpoint and registers server teardown. The old shared port reproduced a false initialization-order failure under unrelated traffic.                   |
+| Standard test commands run fresh checks and preserve failures                                  | `make test` disables Go test caching, as Redis's tester does. Separate offline and live CI jobs both report their own failures. The live job remains enabled while its API credential is invalid. |
+
+Source checkouts: `core` at `0332cb7`, the Redis course at `09b175e`, and the
+Redis tester at `e7c1012`. The relevant public examples are Redis's
+[course definition](https://github.com/codecrafters-io/build-your-own-redis/blob/09b175e62b02299d190465092d45aeaaa6435855/course-definition.yml),
+[first replication-handshake stage](https://github.com/codecrafters-io/build-your-own-redis/blob/09b175e62b02299d190465092d45aeaaa6435855/stage_descriptions/replication-05-gl7.md),
+[test registrations](https://github.com/codecrafters-io/redis-tester/blob/e7c10128f10c053a3d1c59bb6f6d137f0fc3a808/internal/tester_definition.go),
+[scenario tests](https://github.com/codecrafters-io/redis-tester/blob/e7c10128f10c053a3d1c59bb6f6d137f0fc3a808/internal/stages_test.go),
+and
+[Makefile](https://github.com/codecrafters-io/redis-tester/blob/e7c10128f10c053a3d1c59bb6f6d137f0fc3a808/Makefile).
+
+The local stage editor currently flattens every stage into a single sidebar and
+numbers it across the course. That presentation does not reflect extension
+membership or numbering. The definition and backend treat extensions as separate
+groups. No backend change is required to register LSP.
