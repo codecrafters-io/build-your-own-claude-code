@@ -92,6 +92,17 @@ marketing:
         Didn't even know that was possible!
 
 extensions:
+  - slug: "lsp"
+    name: "Language Server Protocol"
+    description_markdown: |-
+      In this challenge extension, you'll connect your Claude Code implementation to a language server using the [Language Server Protocol][lsp].
+
+      A language server gives your agent the code understanding behind an editor's hover, go-to-definition, and find-references features.
+
+      Along the way, you'll learn about JSON-RPC, communicating with another process, keeping documents in sync, reading diagnostics, and applying edits across files.
+
+      [lsp]: https://microsoft.github.io/language-server-protocol/
+
   - slug: "skills"
     name: "Skills"
     description_markdown: |-
@@ -190,3 +201,60 @@ stages:
     primary_extension_slug: "skills"
     marketing_md: |-
       In this stage, you'll add support for skills that are handed to a subagent, which works through them and reports back a single answer.
+
+  # Extension: Language Server Protocol
+  - slug: "ls1"
+    name: "Send the initialization request"
+    difficulty: easy
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll send an `initialize` request to a language server.
+
+  - slug: "ir2"
+    name: "Read the initialization response"
+    difficulty: medium
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll handle the language server's response to `initialize`.
+
+  - slug: "hv2"
+    name: "Look up a symbol's type"
+    difficulty: medium
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll add support for the `hover` operation.
+
+  - slug: "df3"
+    name: "Go to a definition"
+    difficulty: easy
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll add support for the `definition` operation.
+
+  - slug: "rf4"
+    name: "Find a symbol's references"
+    difficulty: easy
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll add support for the `references` operation.
+
+  - slug: "sy5"
+    name: "Keep the server up to date"
+    difficulty: medium
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll send file changes to the language server.
+
+  - slug: "dg6"
+    name: "Read diagnostics after an edit"
+    difficulty: medium
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll add support for language-server diagnostics.
+
+  - slug: "rn7"
+    name: "Rename a symbol across files"
+    difficulty: hard
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll add support for the `rename` operation.
