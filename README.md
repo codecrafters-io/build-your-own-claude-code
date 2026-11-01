@@ -10,7 +10,7 @@ submit solutions.
 
 ## Run the LSP extension locally
 
-The companion `claude-code-tester` checkout contains all eight registered
+The companion `claude-code-tester` checkout contains all seven registered
 stages, a controlled stdio language server, and a reference agent. With Go
 1.25.5 and Python 3.10 or newer, run these commands in that checkout:
 
