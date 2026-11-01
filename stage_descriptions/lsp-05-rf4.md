@@ -1,27 +1,30 @@
-In this stage, you'll add support for the `references` operation.
+In this stage, you'll add support for the `findReferences` operation.
 
-### The `references` operation
+### Finding the callers
 
-You can now find where a function is defined. To change that function, you might
-also need to find the code that uses it.
+Before changing a function, your agent needs to know which files use it.
+Searching for its name can include unrelated functions and miss imported
+aliases:
 
-The `total` function from `pricing.py` can be imported as `invoice_total` in one
-file and called as `total` in another. A separate function can also be named
-`total`. Searching for the name alone won't tell you which uses belong to the
-function you want.
+```python
+from pricing import total as invoice_total
 
-The language server's
-[`textDocument/references`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_references)
-request returns the locations that refer to the symbol at a given position.
+amount = invoice_total(250, 2)
+```
+
+Claude Code's `findReferences` operation asks a language server about the symbol
+at a position. The server decides which locations belong to that symbol. Your
+program returns those locations without filtering them by spelling.
 
 ### Requesting references
 
-Add `references` to your LSP tool's operations. It uses the same file and
-position arguments as `definition`, plus a required boolean argument named
-`include_declaration`. This controls whether the result includes the function's
-definition. Explain the argument in the tool description.
+Add `findReferences` to the LSP tool's operations. It takes `filePath`, `line`,
+and `character`, just like `goToDefinition`. The tool's positions start at `1`.
 
-Here's the request when `include_declaration` is `false`:
+Open the source file if needed, convert the position to zero-based coordinates,
+then send a
+[`textDocument/references`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_references)
+request:
 
 ```json
 {
@@ -31,32 +34,39 @@ Here's the request when `include_declaration` is `false`:
   "params": {
     "textDocument": { "uri": "file:///path/to/project/pricing.py" },
     "position": { "line": 0, "character": 4 },
-    "context": { "includeDeclaration": false }
+    "context": { "includeDeclaration": true }
   }
 }
 ```
 
-Open the source file if needed, then send the request. Return every location in
-the result to the model. An empty array or `null` means the server didn't find
-any references.
+Use `includeDeclaration: true`, as Claude Code does. This includes the symbol's
+definition as well as its uses. It is fixed for this operation, so there's no
+extra tool argument to parse.
 
-The server handles the search across files. Your program only needs to open the
-file named in the request, even when the results point to other files.
+Return every location in the result to the model. An empty array or `null` means
+the server found no references. The server searches across files, so your
+program only needs to open the file named in the request.
 
 ### Tests
 
-The tester will create `pricing.py` and a `checkout.py` that imports the
-function as `invoice_total`, then run:
+The tester will create `pricing.py` and a `checkout.py` whose imported alias is
+called on line `4`, then run:
 
 ```bash
-$ ./your_program.sh -p "Use LSP references on pricing.py at line 0, character 4, without the declaration. Report every returned location."
+$ ./your_program.sh -p "Use LSP findReferences on pricing.py at line 1, character 5. Report every returned location."
 ```
 
-For a caller with an import on line `0` and a call on line `4`, the server
-returns:
+Its server returns these three locations, in any order:
 
 ```json
 [
+  {
+    "uri": "file:///path/to/project/pricing.py",
+    "range": {
+      "start": { "line": 0, "character": 4 },
+      "end": { "line": 0, "character": 9 }
+    }
+  },
   {
     "uri": "file:///path/to/project/checkout.py",
     "range": {
@@ -74,13 +84,11 @@ returns:
 ]
 ```
 
-The tester checks that both locations reach the model. Other cases include calls
-using the original name, unrelated names and comments, empty results, results in
-a different order, and `includeDeclaration: true`.
+All three must reach the model. Other cases include several source files,
+unrelated names and comments, and empty results.
 
 ### Notes
 
-- Don't filter the result by comparing symbol names. The alias is a reference
-  even though it is spelled differently.
-- The server may return locations in any order. Preserve them or sort them for
-  readability. The tester won't require a particular order.
+- Different servers can treat aliases differently. Preserve the locations the
+  configured server returns rather than implementing a name-based search.
+- Results can arrive in any order. You can preserve that order or sort them.

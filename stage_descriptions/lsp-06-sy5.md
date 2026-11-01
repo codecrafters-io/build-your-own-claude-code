@@ -58,7 +58,7 @@ a write fails, don't send `didChange`.
 The tester will create `pricing.py` and run:
 
 ```bash
-$ ./your_program.sh -p "Hover on pricing.py at line 0, character 4. Use Write to change total to accept price: str and return str. Hover at the same position again."
+$ ./your_program.sh -p "Hover on pricing.py at line 1, character 5. Use Write to change total to accept price: str and return str. Hover at the same position again."
 ```
 
 The server must receive the version `2` change shown above before the second
@@ -74,8 +74,8 @@ hover. It then returns:
 ```
 
 The tester checks that the model receives the updated signature. It also checks
-successive writes, writes to different files, unopened files, failed writes, and
-reuse of the same server process.
+successive writes, unopened files, failed writes, and reuse of the same server
+process.
 
 ### Notes
 

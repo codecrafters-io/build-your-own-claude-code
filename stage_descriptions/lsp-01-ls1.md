@@ -2,15 +2,15 @@ In this stage, you'll send an `initialize` request to a language server.
 
 ### Giving your agent code navigation
 
-Ask your agent to change a function, and it needs to find the callers that might
-break. Imports, aliases, and unrelated functions with the same name make that
-harder than a text search.
+An invoice for two 250-cent items prints `250250` instead of `500`. Your agent
+must follow the imported name `invoice_total` and discover that the function
+expects an integer price.
 
-A **language server** analyzes source code and can answer those questions. Your
-agent can ask it for definitions, types, and references through the
+A **language server** analyzes code to provide definitions, types, and
+references through the
 [Language Server Protocol](https://microsoft.github.io/language-server-protocol/)
-(LSP). Here, you'll begin that connection by telling the server which project
-you're working on.
+(LSP). Claude Code uses this connection for navigation and type errors after
+edits. You'll begin by telling the server which project to analyze.
 
 ### Starting the server
 
@@ -18,15 +18,22 @@ The tester will create `.lsp.json` in the project directory:
 
 ```json
 {
-  "command": "/path/to/language-server",
-  "args": ["--stdio"],
-  "languageId": "python"
+  "python": {
+    "command": "/path/to/language-server",
+    "args": ["--stdio"],
+    "extensionToLanguage": { ".py": "python" }
+  }
 }
 ```
 
-Read `command` and `args` from this course's `.lsp.json` and start the process
-before calling the LLM. Run it in the project directory. Pipe stdin and stdout,
-and inherit stderr. The tester supplies the server.
+The file uses Claude Code's
+[LSP server configuration](https://code.claude.com/docs/en/plugins/components#lsp-servers).
+Here, `.lsp.json` contains one server in the project root. Plugin installation
+is outside this extension.
+
+Start its `command` with `args` in the project directory. Pipe stdin and stdout,
+and inherit stderr. The tester supplies the server. For these opening tests,
+connect even when the prompt only asks for a reply.
 
 ### The `initialize` request
 
@@ -86,5 +93,6 @@ cleanup, and behavior without configuration.
 - You don't need to read the reply yet. The test server sends a small response
   that fits in the pipe.
 - When your program finishes, close the child's stdin and wait for it to exit.
-  This stage's server exits on EOF. Later stages add protocol shutdown.
+  The supplied server exits on EOF. A completed client may also shut it down
+  gracefully.
 - Without `.lsp.json`, keep the base behavior.

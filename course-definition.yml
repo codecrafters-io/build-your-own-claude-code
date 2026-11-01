@@ -27,7 +27,11 @@ languages:
 marketing:
   difficulty: medium
   sample_extension_idea_title: "Add a WebFetch Tool"
-  sample_extension_idea_description: "Implement a WebFetch tool that allows the LLM to fetch content from URLs. This tool would take a URL as a parameter, make an HTTP request, and return the response body, enabling the AI assistant to retrieve information from the web."
+  sample_extension_idea_description:
+    "Implement a WebFetch tool that allows the LLM to fetch content from URLs.
+    This tool would take a URL as a parameter, make an HTTP request, and return
+    the response body, enabling the AI assistant to retrieve information from
+    the web."
   frequently_asked_questions:
     - question_markdown: "What exactly will I build?"
       answer_markdown: |-
@@ -81,7 +85,9 @@ marketing:
       author_description: "Automation Engineer at Apple"
       author_avatar: "https://codecrafters.io/images/external/testimonials/oxta.jpeg"
       link: "https://github.com/anu294"
-      text: "There are few sites I like as much that have a step by step guide. The real-time feedback is so good, it's creepy!"
+      text:
+        "There are few sites I like as much that have a step by step guide. The
+        real-time feedback is so good, it's creepy!"
 
     - author_name: "Patrick Burris"
       author_description: "Senior Software Developer, CenturyLink"
@@ -109,9 +115,7 @@ extensions:
     description_markdown: |-
       In this challenge extension, you'll connect your Claude Code implementation to a language server using the [Language Server Protocol][lsp].
 
-      A language server gives your agent the code understanding behind an editor's hover, go-to-definition, and find-references features.
-
-      Along the way, you'll learn about JSON-RPC, communicating with another process, keeping documents in sync, reading diagnostics, and applying edits across files.
+      Along the way, you'll learn about JSON-RPC, code navigation, document synchronization, and diagnostic feedback after edits.
 
       [lsp]: https://microsoft.github.io/language-server-protocol/
 
@@ -229,14 +233,14 @@ stages:
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll add support for the `definition` operation.
+      In this stage, you'll add support for the `goToDefinition` operation.
 
   - slug: "rf4"
     name: "Find a symbol's references"
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll add support for the `references` operation.
+      In this stage, you'll add support for the `findReferences` operation.
 
   - slug: "sy5"
     name: "Keep the server up to date"
@@ -246,15 +250,8 @@ stages:
       In this stage, you'll send file changes to the language server.
 
   - slug: "dg6"
-    name: "Read diagnostics after an edit"
+    name: "Feed diagnostics back after edits"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll add support for language-server diagnostics.
-
-  - slug: "rn7"
-    name: "Rename a symbol across files"
-    difficulty: hard
-    primary_extension_slug: "lsp"
-    marketing_md: |-
-      In this stage, you'll add support for the `rename` operation.
+      In this stage, you'll return diagnostics after file edits so your agent can catch and repair its own mistakes.

@@ -2,9 +2,14 @@ In this stage, you'll handle the language server's response to `initialize`.
 
 ### Using the connection
 
-Your agent will use this connection every time it asks for a type or follows a
-function call. Reading the `initialize` reply lets it check which features are
-available and catch startup errors before starting a coding task.
+The server may send a startup notification before its reply. Mistaking that
+notification for the answer can leave your agent stuck. Matching the reply lets
+it finish connecting or report a failed startup.
+
+This reader will also carry the invoice function's type and errors from edits.
+For now, finish initialization.
+
+### Reading a message
 
 Read the reply from the server's stdout:
 
@@ -58,12 +63,11 @@ After the successful response, send:
 { "jsonrpc": "2.0", "method": "initialized", "params": {} }
 ```
 
-You can now continue to the LLM request. Keep this server process running for
+You can now send language-server queries. Keep this server process running for
 the whole agent run so you can send it more requests in later stages.
 
-When the run ends, send a `shutdown` request with a fresh ID and no parameters.
-Wait for its response, whose `result` is `null`, then send the `exit`
-notification and wait for the process to exit.
+Keep the cleanup from earlier stages: close stdin and wait on exit. A graceful
+`shutdown` and `exit` exchange is also accepted.
 
 ### Tests
 
@@ -79,20 +83,10 @@ After the initialization response above, it expects:
 { "jsonrpc": "2.0", "method": "initialized", "params": {} }
 ```
 
-At the end, it expects a fresh shutdown request, followed by `exit` after its
-reply:
-
-```json
-{ "jsonrpc": "2.0", "id": 2, "method": "shutdown" }
-```
-
-```json
-{ "jsonrpc": "2.0", "method": "exit" }
-```
-
-Your request IDs can differ. The tester checks the message order and also sends
-partial messages, notifications, an initialization error, and an incomplete
-response.
+Your request IDs can differ. The tester also sends partial messages,
+notifications, an initialization error, and an incomplete response. Failed
+initialization must be reported and must not lead to `initialized` or document
+queries.
 
 ### Notes
 
