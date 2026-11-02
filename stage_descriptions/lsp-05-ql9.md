@@ -35,8 +35,7 @@ Each affected call must now read the `cents` field. Checkout should still return
 
 ### Run your completed integration
 
-Run `codecrafters test` with your existing integration. You may pass without
-new code: this capstone adds no LSP operation. If it fails, check:
+Run `codecrafters test`. If it fails, check:
 
 - **Loop capacity.** The scripted task uses 11 tool calls. The base loop stage
   sets no iteration cap; any limit you added must allow this longer conversation

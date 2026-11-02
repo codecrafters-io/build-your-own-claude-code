@@ -88,7 +88,12 @@ The HTTP endpoint is course scaffolding around the stdio LSP connection, not a
 part of LSP. The learner's model-facing LSP tool uses the product's one-based
 positions; the server receives zero-based positions.
 
-## Read notifications in stage five
+## Optional: read server notifications
+
+The five graded stages do not require reading server notifications. The final
+capstone combines navigation, synchronized edits, and Bash test results to check
+an API migration. The helper also exposes queued notifications for optional
+advanced work, such as diagnostic feedback.
 
 Call action `notifications` with:
 
@@ -118,8 +123,9 @@ Save the returned cursor for the next call. `timeoutMs: 0` drains without waitin
 a value up to 5000 waits for messages. Notifications are retained while requests
 are running. An empty notification batch is not a clean diagnostic report.
 
-Before Write, drain pending messages, then record the cursor. Save and synchronize
-the file. Poll after that cursor until you receive a publication for its URI;
+For optional diagnostic feedback after Write, drain pending messages before the
+edit, then record the cursor. Save and synchronize the file. Poll after that
+cursor until you receive a publication for its URI;
 ignore versioned reports older than the current document. Advance the cursor
 even for unrelated notifications. Stop at an overall deadline and return a
 feedback error on timeout. Accept unversioned publications in arrival order.
@@ -133,7 +139,12 @@ installed locally. It isn't required for graded stages. From this repository:
 ```sh
 (cd extension_helpers/lsp_transport && go build -o /tmp/lsp-transport .)
 cd extension_designs/lsp_exercise
-/tmp/lsp-transport .lsp.json -- /absolute/path/to/your_program.sh -p "Migrate pricing.total to a Price object with cents and update its callers. Use LSP navigation and Write feedback."
+/tmp/lsp-transport .lsp.json -- /absolute/path/to/your_program.sh -p \
+  "Change pricing.total to return a Price TypedDict with a cents field.
+Use LSP to find the implementation and its callers. Edit files with Write.
+Update checkout.py and reports.py so they still return integer cents.
+Leave preview.total unchanged. Don't modify test_invoice.py.
+Run python3 -m unittest -v test_invoice.py."
 ```
 
 The standalone helper and tester use the same transport source. The helper reads
