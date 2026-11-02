@@ -25,36 +25,33 @@ inputs. Your agent can use any supported course language.
 
 ### Example: the lookup you'll build in later stages
 
-```text
-+--------------------------------------------------------+
-| 1. Model (LLM) calls LSP goToDefinition                |
-|    checkout.py, line 5, character 12: invoice_total    |
-+--------------------------------------------------------+
-                             |
-                             v
-+--------------------------------------------------------+
-| 2. Your agent opens checkout.py and asks for the       |
-|    definition through the supplied client/helper.      |
-+--------------------------------------------------------+
-                             |
-                             v
-+--------------------------------------------------------+
-| 3. Language server follows the alias to pricing.total  |
-|    and returns its location: pricing.py, line 1.       |
-+--------------------------------------------------------+
-                             |
-                             v
-+--------------------------------------------------------+
-| 4. Your agent receives it through the client/helper    |
-|    and sends the model the matching tool result.       |
-+--------------------------------------------------------+
-                             |
-                             v
-+--------------------------------------------------------+
-| 5. Model (LLM) requests Read for pricing.py.           |
-|    Your agent runs Read and returns the file contents. |
-+--------------------------------------------------------+
-```
+Suppose the user asks: "Find the function that calculates the checkout total."
+
+1. **Read the caller.** The model requests Read for `checkout.py`. Your agent
+   reads the file and returns its contents:
+
+   ```python
+   from pricing import total as invoice_total
+
+
+   def checkout_total() -> int:
+       return invoice_total(250, 2)
+   ```
+
+2. **Ask where the function is defined.** Having seen the call, the model can
+   request your `LSP` tool with `operation: "goToDefinition"`, pointing at
+   `invoice_total` in `checkout.py`.
+3. **Run the lookup.** Your agent's tool handler sends the file contents and
+   definition request through the supplied client/helper. The language server
+   resolves the alias to `total` in `pricing.py` and returns that location.
+4. **Return the location.** Your agent sends it back to the model as the result
+   of its `LSP` tool call.
+5. **Read the implementation.** The model requests Read for `pricing.py`.
+   Your agent returns the file contents so the model can explain the calculation.
+
+The model chooses tool calls; your agent executes them. The model does not contact
+the language server directly. This stage only sets up the connection and
+advertises the tool; you'll implement the lookup next.
 
 ### Your task
 
