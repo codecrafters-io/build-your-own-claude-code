@@ -7,11 +7,35 @@ An invoice for two items at 250 cents should total **500 cents**. Currently,
 `python3 checkout.py` prints `250250`: checkout passes a string to a function
 that expects an integer. A language server can catch that argument error.
 
-## Explore with the agent
+## Set up a language server locally
 
-The companion tester supplies a server and `.lsp.json`. Run the seven stages
-against its reference agent with `make test_lsp_offline` in claude-code-tester.
-For independent checks, use the pinned Pyright setup in that tester's README.
+A language server is a separate program that your agent starts to analyze this
+project. For this Python example, install Pyright using Node.js and npm:
+
+```bash
+npm install --global pyright@1.1.414
+```
+
+This directory includes [`.lsp.json`](.lsp.json), which tells your agent to start
+`pyright-langserver --stdio`. Run your agent with this directory as its working
+directory so it can find the configuration and Python files. Use the absolute
+path to your `your_program.sh` script:
+
+```bash
+/path/to/your-agent/your_program.sh -p "Reply with ready."
+```
+
+You can use this setup while building Stage 1. That stage only sends the
+initialization request; reading the reply and asking questions about code come
+in later stages. Your agent can be implemented in any course language.
+
+During automated course tests, the tests supply their own `.lsp.json` and server.
+Your agent should read whichever configuration is in its working directory.
+
+## Explore with the completed agent
+
+For type errors after edits, also create `pyrightconfig.json` in this directory
+with `{"typeCheckingMode": "basic"}`. Then try these tasks:
 
 1. Use hover on pricing.py at line 1, character 5 to inspect total's signature.
 2. Use goToDefinition on checkout.py at line 5, character 12 to follow the
@@ -35,6 +59,10 @@ A demonstration prompt for the completed agent:
 The supplied invoice is already broken, so this task has a useful outcome
 without deliberately breaking it again. It demonstrates navigation, a repair and
 diagnostic clearing.
+
+Course contributors can run the seven stages against the reference agent with
+`make test_lsp_offline` in the companion `claude-code-tester` repository. Its
+README also documents independent Pyright checks.
 
 ## See the agent recover from a bad edit
 

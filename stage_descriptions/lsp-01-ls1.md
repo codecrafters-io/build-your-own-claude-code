@@ -1,4 +1,4 @@
-In this stage, you'll send an `initialize` request to a language server.
+In this stage, you'll start a language server and introduce your agent to it.
 
 ### Giving your agent code navigation
 
@@ -15,34 +15,52 @@ Before asking about code, your agent needs to tell the server which project to
 analyze. In this stage, you'll start the server and send that information in an
 `initialize` request. You'll handle its reply in the next stage.
 
-### Starting the server
+### Start the configured server
 
-The tester will create `.lsp.json` in the project directory:
+Before starting your program, the tester creates `.lsp.json` in the project
+directory and supplies a language server executable. You don't need to create
+this file or install a server to run the automated tests. Your code reads the
+file at runtime from its current working directory.
+
+The file contains one server configuration, with this structure:
 
 ```json
 {
   "python": {
     "command": "/path/to/language-server",
-    "args": ["--stdio"],
+    "args": [],
     "extensionToLanguage": { ".py": "python" }
   }
 }
 ```
 
-The file uses Claude Code's
+This follows Claude Code's
 [LSP server configuration](https://code.claude.com/docs/en/plugins/components#lsp-servers).
-Here, `.lsp.json` contains one server in the project root. Plugin installation
-is outside this extension.
 
-Start its `command` with `args` in the project directory. Pipe stdin and stdout,
-and inherit stderr. The tester supplies the server. For these opening tests,
-connect even when the prompt only asks for a reply.
+When your agent starts:
 
-### The `initialize` request
+1. Read and parse `.lsp.json` in the current working directory.
+2. Extract `command` and `args` from its single server configuration (the
+   `python` entry in this example).
+3. Start a child process using that command and those arguments, with the
+   project directory as its working directory.
 
-LSP uses
-[JSON-RPC messages](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#baseProtocol).
-Send `initialize` as the first request:
+The command path above is a placeholder. This example has no arguments, but the
+tester may supply them in `args`. Read both `command` and the complete `args`
+array from the file, passing each argument unchanged and in order. The `.py`
+mapping is for later stages. Your agent can be written in any course language.
+
+Create pipes for the child's stdin and stdout: your agent writes requests to
+the server's stdin and reads replies from its stdout. Inherit stderr so server
+errors appear in the test logs. Use your language's subprocess API to start the
+child and obtain these streams. There is no network port to connect to.
+
+If `.lsp.json` is absent, continue handling prompts as before, without starting
+a server.
+
+### Introduce your agent
+
+Send this JSON message to the server first:
 
 ```json
 {
@@ -57,45 +75,64 @@ Send `initialize` as the first request:
 }
 ```
 
-The fields you'll need are:
+You can use the shown `jsonrpc`, `id`, `method`, and empty `capabilities` values
+as-is for this stage. The `id` identifies your request so you can recognize its
+reply in the next stage.
 
-- `id`: Identifies the request so you can match the server's reply later.
-- `processId`: Your program's process ID.
-- `rootUri`: The project's absolute file URI.
-- `capabilities`: The client features you support. Leave this empty for now.
+Replace these two example values with values from your running program:
 
-Before writing the JSON to the server's stdin, add a header giving its length:
+- `processId`: your agent's process ID, not the child server's ID.
+- `rootUri`: the project's absolute file URI. Use your language's URI utilities
+  to convert the current working directory, including encoding any spaces.
+
+### Send the message
+
+The server reads a stream of bytes, so it needs to know where each message ends.
+LSP puts a `Content-Length` header before each JSON body:
 
 ```text
-Content-Length: <number of body bytes>\r\n\r\n<JSON body>
+Content-Length: <number of JSON bytes>\r\n\r\n<JSON body>
 ```
 
-Encode the JSON as UTF-8 and count its bytes. Here, `\r\n` means actual
-carriage-return and newline bytes. Flush stdin after writing the message.
+Serialize your request as UTF-8 JSON, count the body's bytes, and put that count
+in the header. Count bytes, not characters, and exclude the header itself.
+Here, `\r\n` means actual carriage-return and newline bytes. Write the header
+and body to the server's stdin, then flush so the message is sent immediately.
+
+You don't need to read the reply yet. Keep the server running until your agent
+finishes, then close its stdin and wait for it to exit.
+
+To pass this stage, start the configured server and send one correctly framed
+`initialize` request. You don't need to read its response or add an LSP tool
+yet. Continue handling the prompt as usual.
 
 ### Tests
 
-The tester will write `.lsp.json` and run:
+The automated course tests will create `.lsp.json`, supply a test server, and run:
 
 ```bash
 $ ./your_program.sh -p "Reply with ready."
 ```
 
-For process `1234` in `/path/to/project`, the server should receive:
+Even though this prompt doesn't ask about code, your agent should start the
+configured server and send `initialize`. The tests check that it launches the
+configured command with its arguments in the project directory, sends a
+correctly framed request with your process ID and project URI, and cleans up
+the server process when it finishes. The test server exits when stdin closes.
 
-```text
-Content-Length: 128\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"processId":1234,"rootUri":"file:///path/to/project","capabilities":{}}}
+### Optional: test with a server locally
+
+To try this outside the automated tests, install
+[Pyright](https://github.com/microsoft/pyright), a Python language server. With
+Node.js and npm installed, run:
+
+```bash
+npm install --global pyright@1.1.414
 ```
 
-Use the process ID and project path from your run. JSON spacing can differ, but
-the byte count must match. The tester also checks the launch arguments, process
-cleanup, and behavior without configuration.
-
-### Notes
-
-- You don't need to read the reply yet. The test server sends a small response
-  that fits in the pipe.
-- When your program finishes, close the child's stdin and wait for it to exit.
-  The supplied server exits on EOF. A completed client may also shut it down
-  gracefully.
-- Without `.lsp.json`, keep the base behavior.
+Create `.lsp.json` in the directory where you'll run your agent. Use the
+configuration above with `command` set to `"pyright-langserver"` and `args` set
+to `["--stdio"]`. Your agent will then start `pyright-langserver --stdio`.
+These arguments are specific to Pyright; the automated test server uses its own.
+Python is the language this server analyzes; your agent can use any course
+language.
