@@ -115,7 +115,7 @@ extensions:
     description_markdown: |-
       In this challenge extension, you'll connect your Claude Code implementation to a language server using the [Language Server Protocol][lsp].
 
-      Along the way, you'll learn about JSON-RPC, code navigation, document synchronization, and diagnostic feedback after edits.
+      Give your agent precise code navigation and feedback about errors after editing. You'll follow one API change from finding its implementation and callers to catching and repairing a missed caller. A supplied helper handles the server connection.
 
       [lsp]: https://microsoft.github.io/language-server-protocol/
 
@@ -207,51 +207,30 @@ stages:
       In this stage, you'll add support for skills that are handed to a subagent, which works through them and reports back a single answer.
 
   # Extension: Language Server Protocol
-  - slug: "ls1"
-    name: "Send the initialization request"
-    difficulty: easy
-    primary_extension_slug: "lsp"
-    marketing_md: |-
-      In this stage, you'll send an `initialize` request to a language server.
-
-  - slug: "ir2"
-    name: "Read the initialization response"
-    difficulty: medium
-    primary_extension_slug: "lsp"
-    marketing_md: |-
-      In this stage, you'll handle the language server's response to `initialize`.
-
-  - slug: "hv2"
-    name: "Look up a symbol's type"
-    difficulty: medium
-    primary_extension_slug: "lsp"
-    marketing_md: |-
-      In this stage, you'll add support for the `hover` operation.
-
   - slug: "df3"
-    name: "Go to a definition"
-    difficulty: easy
+    name: "Find the implementation"
+    difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll add support for the `goToDefinition` operation.
+      Connect an LSP tool to your existing agent loop and follow a call to its implementation. The connection helper is supplied.
 
   - slug: "rf4"
-    name: "Find a symbol's references"
+    name: "Find the affected callers"
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll add support for the `findReferences` operation.
+      Find the callers of a specific symbol before changing its API, including aliased uses and excluding unrelated names.
 
   - slug: "sy5"
-    name: "Keep the server up to date"
+    name: "Keep the analysis current"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll send file changes to the language server.
+      Synchronize successful writes so the language server answers questions about the code your agent just saved.
 
   - slug: "dg6"
-    name: "Feed diagnostics back after edits"
+    name: "Catch an error after editing"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll return diagnostics after file edits so your agent can catch and repair its own mistakes.
+      Return diagnostic feedback after Write and watch your existing agent loop repair a caller missed during an API change.

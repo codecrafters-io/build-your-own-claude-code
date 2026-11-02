@@ -1,0 +1,28 @@
+{
+  "type": "function",
+  "function": {
+    "name": "LSP",
+    "description": "Resolve a symbol using the language server. Positions are one-based UTF-16.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": ["goToDefinition"]
+        },
+        "filePath": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "character": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["operation", "filePath", "line", "character"]
+    }
+  }
+}

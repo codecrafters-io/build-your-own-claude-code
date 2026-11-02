@@ -1,94 +1,67 @@
-# Your agent catches its own mistake
+# Change an API and watch the agent repair a missed caller
 
-This small Python project is input to your agent. You can implement the agent in
-any course language.
+The invoice currently returns integer cents: checkout is 500 and reporting is 600. Preview has an unrelated total function. The task is to change pricing.total
+to return a Price object containing cents, then update its callers.
 
-An invoice for two items at 250 cents should total **500 cents**. Currently,
-`python3 checkout.py` prints `250250`: checkout passes a string to a function
-that expects an integer. A language server can catch that argument error.
+A partial migration returns the whole Price object from checkout_total, which
+still promises int. The file saves successfully; language analysis reports the
+return-type error. After the agent changes it to return amount["cents"], the
+error clears and the original behavior is preserved.
 
-## Set up a language server locally
+## Four visible milestones
 
-A language server is a separate program that your agent starts to analyze this
-project. For this Python example, install Pyright using Node.js and npm:
+1. Follow checkout's invoice_total alias to pricing.total.
+2. Find pricing's callers in checkout and reporting, excluding preview.total.
+3. Temporarily change checkout's import from pricing to discounts and watch
+   definition lookup follow the new target. Restore pricing before migration.
+4. Replay the incomplete API migration and let Write feedback drive its repair.
 
-```bash
-npm install --global pyright@1.1.414
+Text search remains useful. A search for total also finds unrelated code, and
+its aliased calls require interpretation. The language server supplies resolved
+locations and type feedback; it does not replace behavioral tests.
+
+## Run the controlled before/after demonstration
+
+In the companion tester checkout:
+
+```sh
+make test_lsp_offline
 ```
 
-This directory includes [`.lsp.json`](.lsp.json), which tells your agent to start
-`pyright-langserver --stdio`. Run your agent with this directory as its working
-directory so it can find the configuration and Python files. Use the absolute
-path to your `your_program.sh` script:
-
-```bash
-/path/to/your-agent/your_program.sh -p "Reply with ready."
-```
-
-You can use this setup while building Stage 1. That stage only sends the
-initialization request; reading the reply and asking questions about code come
-in later stages. Your agent can be implemented in any course language.
-
-During automated course tests, the tests supply their own `.lsp.json` and server.
-Your agent should read whichever configuration is in its working directory.
-
-## Explore with the completed agent
-
-For type errors after edits, also create `pyrightconfig.json` in this directory
-with `{"typeCheckingMode": "basic"}`. Then try these tasks:
-
-1. Use hover on pricing.py at line 1, character 5 to inspect total's signature.
-2. Use goToDefinition on checkout.py at line 5, character 12 to follow the
-   invoice_total alias to pricing.total.
-3. Use findReferences on pricing.total and inspect the server's returned
-   locations. preview.total is unrelated. Servers can treat local aliases
-   differently, so preserve their results instead of guessing by spelling.
-4. Use Write to change string "250" to integer 250. Diagnostic feedback should
-   clear, and checkout should print 500.
-
-These tool positions start at one and refer to the original files. Protocol
-positions start at zero. After an edit, use the current text's positions.
-
-A demonstration prompt for the completed agent:
-
-> The invoice for two 250-cent items prints 250250. Use the language server to
-> inspect the function and follow its imported alias. Fix the argument using
-> Write and inspect the diagnostic feedback. Confirm that the error cleared,
-> show what changed, and run the project tests.
-
-The supplied invoice is already broken, so this task has a useful outcome
-without deliberately breaking it again. It demonstrates navigation, a repair and
-diagnostic clearing.
-
-Course contributors can run the seven stages against the reference agent with
-`make test_lsp_offline` in the companion `claude-code-tester` repository. Its
-README also documents independent Pyright checks.
-
-## See the agent recover from a bad edit
-
-The final graded stage is a controlled regression test. It starts with valid
-code and introduces the same argument error deliberately, so every learner can
-see the agent recover even when a model would otherwise make the correct edit
-first. The tester's model selects a repair only after receiving the type error.
-
-The tester shows the verified feedback after both writes:
+The final stage runs a fixed first attempt through the real reference-agent loop.
+Its model requests the repair only after the Write result contains an error.
+The output shows:
 
 ```text
-Edit feedback for checkout.py: Argument of type str cannot be assigned to parameter price of type int
+Partial API migration: Write saved checkout.py, but the caller still returns Price as int
+Edit feedback for checkout.py: Type Price is not assignable to return type int
 Repair feedback for checkout.py: diagnostics []
 ```
 
-If this stalls, check that Write sends the new contents to the server, the
-reader handles notifications while waiting for replies, and each write waits for
-a new publication for its own file. An empty list clears an error only when the
-server actually publishes it.
+This is a controlled demonstration, not a claim that a live model must make a
+mistake. The tester checks final file contents and the matching tool results.
+For an independent language analyzer, run `make test_lsp_with_pyright`.
 
-## Check the project
+## Try your completed agent
 
-```bash
+The course supplies the server automatically during grading. For an optional
+local run with your own server, use the [helper guide](../../extension_helpers/README.md).
+This directory already contains .lsp.json and pyrightconfig.json.
+
+Try this ordinary prompt:
+
+> Change pricing.total to return a Price TypedDict with a cents field. Find its
+> implementation and callers with LSP. Update checkout and reporting while
+> preserving their integer results. Use Write's diagnostic feedback to repair
+> any type errors, leave preview.total unchanged, and run the project tests.
+
+The model may make the right edit on its first attempt; recovery isn't guaranteed
+to occur in a live run. LSP diagnostic clearing establishes the reported errors
+are gone, while the tests below check behavior.
+
+```sh
 python3 -m unittest -v test_invoice.py
 ```
 
-The checkout test intentionally fails in the supplied project. After repairing
-its argument, all three tests pass. The other tests protect reports.py and the
-unrelated preview.py behavior.
+All three tests pass initially and should still pass after the complete migration.
+Python is the analyzed language; your agent can use any course language.

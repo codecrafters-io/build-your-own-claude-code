@@ -1,32 +1,32 @@
 # build-your-own-claude-code
 
-Content for the "Build your own Claude Code" challenge
+Content for the "Build your own Claude Code" challenge.
 
 ## Setup
 
 This challenge is developed using https://github.com/codecrafters-io/course-sdk.
-Read the README there for information on how to contribute language support &
-submit solutions.
+Read its README for language support and submission workflows.
 
-## Run the LSP extension locally
+## LSP extension
 
-The companion `claude-code-tester` checkout contains all seven registered
-stages, a controlled stdio language server, and a reference agent. With Go
-1.25.5 and Python 3.10 or newer, run these commands in that checkout:
+Four short stages add definition lookup, references, document synchronization,
+and diagnostic feedback to the learner's existing agent. A supplied connection
+helper removes server setup and wire-transport work from the graded path.
+
+- [Extension design](extension_designs/lsp.md)
+- [Supplied helper and language clients](extension_helpers/README.md)
+- [Invoice API migration and before/after demo](extension_designs/lsp_exercise/README.md)
+
+In the companion claude-code-tester checkout, with Go 1.25.5 and Python 3.10+:
 
 ```sh
 make test_lsp
 make test_lsp_offline
+make test_lsp_with_pyright
 ```
 
-The first command checks recorded output, fixture helpers, registration, and
-broken-client regressions. The second runs the extension against the reference
-agent using a local model that emits tool calls. Neither needs an API key.
-
-For the existing live-model test workflow, configure
-`CODECRAFTERS_SECRET_OPENROUTER_API_KEY` and run
-`make test_lsp_with_users_code`. See
-[the extension design](extension_designs/lsp.md) for protocol scope and
-validation status, and
-[the invoice exercise](extension_designs/lsp_exercise/README.md) for the sample
-task. Live-model trials remain outstanding before publication.
+The first two need no model credentials. The third requires an installed
+Pyright language server and checks the integration independently of the fixture.
+For live-model trials, set CODECRAFTERS_SECRET_OPENROUTER_API_KEY and run
+`make test_lsp_with_users_code`. Learner trials and live-model reliability checks
+remain release gates.
