@@ -2,9 +2,31 @@ In this stage, you'll handle the LSP tool's first operation: `goToDefinition`.
 
 ### The first lookup
 
-In the supplied invoice project, `checkout.py` calls `pricing.total` through
-the alias `invoice_total`. Definition lookup should follow that call back to
-`pricing.py`, where the model can inspect the implementation using Read.
+In the supplied invoice project, `checkout.py` contains:
+
+```python
+from pricing import total as invoice_total
+
+
+def checkout_total() -> int:
+    return invoice_total(250, 2)
+```
+
+The import gives `total` from `pricing.py` the local name `invoice_total`.
+Calling `invoice_total(250, 2)` therefore runs the `total` function.
+
+After reading `checkout.py`, the model can ask: "Where is the function called
+here defined?" It requests `LSP` with `goToDefinition`, pointing at
+`invoice_total` on line 5. Your agent asks the language server, which returns
+the location of `total` in `pricing.py`.
+
+The lookup returns a location, not the function's code. The model then requests
+Read for `pricing.py` to see the implementation:
+
+```python
+def total(price: int, quantity: int) -> int:
+    return price * quantity
+```
 
 ### Handle a definition call
 
