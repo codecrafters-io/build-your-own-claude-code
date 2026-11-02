@@ -57,6 +57,14 @@ Check:  Keep later lookups current; run the project tests through Bash.
 ```
 
 The payoff is watching the existing agent loop complete a change across files.
+No new code may be needed. The scripted sequence makes 11 tool calls; the base
+loop stage specifies no iteration cap. Stage four already exercises versions 2
+and 3 of one document; the capstone combines per-URI versions with several files.
+Its references query opens pricing.py, so that Write requires didChange.
+Reports.py is indexed but closed: after Write, reuse didOpen with the new text.
+Read and returned reference locations do not open documents. A real server may
+otherwise answer later references queries from its stale index.
+
 Do not hardcode the migration in a learner tool handler. The offline model emits
 a deterministic tool sequence to verify the integration; a live model chooses
 its own sequence. Neither run requires an intentionally broken first edit.
@@ -115,9 +123,13 @@ Rename remains outside the built-in LSP tool's course scope.
 
 The fixture recognizes the documented invoice project; it is not a Python
 analyzer. Pyright independently verifies navigation and the actual Price migration.
+Its pricing references identify checkout's import, rather than the aliased call;
+the model reads the returned file to inspect its uses. Preserve server results.
 LSP supplies a persistent analysis connection and structured navigation. Project
 tests check behavior, while separate grader assertions check the new pricing API
 and unchanged unrelated files.
+The supplied test_invoice.py also tests the Price shape and type contract;
+those two tests intentionally fail before migration. Prompts protect that file.
 
 Deferred: asynchronous diagnostic feedback, completion, incremental synchronization,
 workspace indexing by the client, cancellation, arbitrary shell-edit watching and

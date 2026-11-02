@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "LSP",
-    "description": "Resolve a symbol using the language server. Positions are one-based UTF-16.",
+    "description": "Resolve a symbol using the language server. Accepts one-based input positions. Returns raw LSP results with file URIs and zero-based UTF-16 ranges. Edit files with Write so the language server sees changes.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -11,15 +11,18 @@
           "enum": ["goToDefinition"]
         },
         "filePath": {
-          "type": "string"
+          "type": "string",
+          "description": "Absolute path, or a path relative to the agent's current working directory."
         },
         "line": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "1-based line number of the symbol."
         },
         "character": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "1-based character offset in UTF-16 code units (same as character count for ASCII)."
         }
       },
       "required": ["operation", "filePath", "line", "character"]

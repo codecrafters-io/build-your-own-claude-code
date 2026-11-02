@@ -16,7 +16,7 @@ Add `findReferences` to the operation enum in your tool schema. Reuse document
 opening, file URIs, position conversion, and tool-result handling from definition lookup.
 
 For a call on `pricing.total`, pass this complete object to
-`client.call("request", payload)`, as in the definition stage:
+`lsp.call("request", payload)`, as in the definition stage:
 
 ```json
 {
@@ -34,6 +34,8 @@ Keep `includeDeclaration` fixed to true. There is no extra model argument.
 Return every location in the response to the model. Each contains a URI and a
 zero-based range. Preserve the server's results; don't reconstruct or filter
 them by spelling. Different servers can represent aliased references differently.
+For example, Pyright returns checkout's import of `total`, rather than the
+`invoice_total` call. The model reads that file to find the affected call.
 An empty array or null means there were no results.
 
 ### Tests

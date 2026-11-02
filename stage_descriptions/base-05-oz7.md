@@ -17,7 +17,7 @@ Here's the tool specification:
       "properties": {
         "file_path": {
           "type": "string",
-          "description": "The path of the file to write to"
+          "description": "Absolute path, or a path relative to the agent's current working directory."
         },
         "content": {
           "type": "string",

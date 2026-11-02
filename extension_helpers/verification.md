@@ -8,6 +8,31 @@ five-stage registration, reference agent, fixtures, transport and regressions.
 Stage ql9 now combines navigation, reads, synchronized edits, and Bash to migrate
 pricing and both callers. It adds no diagnostic-handling requirement.
 
+- Stage 5 feedback follow-up: the scripted sequence has 11 tool calls; the base
+  loop stage has no prescribed cap (the reference agent allows 50 model requests).
+  Stage bn2 already tests successive versions 2 and 3. The capstone writes to
+  several URIs; it is not the first test of repeated edits to one document.
+- The deliberate closed-file Pyright probe initially failed: reports.py was
+  indexed by references but not opened, and Write left its reference ranges
+  stale. Successful Write now reuses didOpen for supported closed files, while
+  open-file writes retain didChange. The probe inserts two lines and verifies
+  the report calls at zero-based line 6, columns 11 and 36. It passed after the
+  fix. The controlled fixture now caches indexed text too, and a broken-agent
+  regression rejects omission of closed-file synchronization.
+- Pyright references on pricing.total return checkout's import token, not the
+  aliased invoice_total call. Stages 3 and 5 explain inspecting returned files
+  and preserving each server's results.
+- test_invoice.py now checks both the returned cents object and the Price
+  TypedDict contract. Before migration, its three behavior tests pass and two
+  API tests fail; after migration all five pass. Both copies of the fixture
+  match. Capstone prompts explicitly protect the test file.
+- Re-recorded all five stages and ran the complete offline suite with
+  `go test -count=1 -skip '^TestStages$' ./...` in a temporary copy of the
+  companion tester. All packages passed, including the new regression.
+- Inspected the staging course page: Share Feedback and Edit are UI controls.
+  Its How to pass this stage section contains generic editor/submission steps;
+  it is neither empty nor part of this repository's stage Markdown.
+
 - Full offline suite: `go test -count=1 -skip '^TestStages$' ./...` with TESTER_DIR
   set to the updated companion tester checkout. All packages passed, including
   recorded output comparisons for all five stages (14 graded cases).
@@ -20,7 +45,8 @@ pricing and both callers. It adds no diagnostic-handling requirement.
   the capstone does not require the scripted model's exact source text.
 - The updated reference integration passed against installed Pyright: definition,
   references, edited-import synchronization, the complete Price migration, and
-  all three invoice behavior tests. Follow-up navigation sees the updated API.
+  all five invoice tests. Follow-up navigation sees the updated API and exact
+  reference positions in the edited report.
 - The rewritten stage renders in the local course editor. The stage ID remains
   ql9; the title is now "Change an API across files".
 

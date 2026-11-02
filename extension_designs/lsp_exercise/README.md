@@ -46,17 +46,27 @@ This directory already contains .lsp.json and pyrightconfig.json.
 Try this prompt:
 
 > Change pricing.total to return a Price TypedDict with a cents field. Use LSP
-> to find the implementation and its callers. Update checkout and reporting so
-> they still return integer cents. Leave preview.total unchanged and run
-> python3 -m unittest -v test_invoice.py to check the result.
+> to find the implementation and its callers. Update checkout.py and reports.py
+> so they still return integer cents. Leave preview.total unchanged. Don't modify
+> test_invoice.py. Run python3 -m unittest -v test_invoice.py.
 
-The final stage adds no new LSP operation. Definition lookup, references, and
-edit synchronization from the previous stages support the existing agent loop.
-The model decides which edits to make and uses Bash to check their behavior.
+The final stage adds no new LSP operation and may pass without new code. Its
+scripted run makes 11 tool calls; the base loop stage sets no iteration cap.
+Keep document versions per URI, send didChange for open-file writes, and reuse
+didOpen after successful writes to supported closed files. In this sequence,
+references opens pricing.py but only returns locations in reports.py; Read
+doesn't open it. An indexed copy can otherwise stay stale after Write.
+
+The model decides which calls and edits to make. Pyright returns checkout's
+import location rather than the aliased call; Read lets the model inspect the
+affected file. The independent Pyright check deliberately shifts reports.py's
+lines and verifies exact follow-up reference positions, rather than filenames.
 
 ```sh
 python3 -m unittest -v test_invoice.py
 ```
 
-All three tests pass initially and should still pass after the complete migration.
+The three existing behavior tests pass initially. Two API tests fail until
+pricing returns a Price TypedDict with integer cents. All five tests should
+pass after the complete migration; leave the tests unchanged.
 Python is the analyzed language; your agent can use any course language.
