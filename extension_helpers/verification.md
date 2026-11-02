@@ -1,14 +1,17 @@
 # LSP revision verification
 
 Checked locally on 2 November 2026. The companion tester contains the matching
-four-stage registration, reference agent, fixtures, transport and regressions.
+five-stage registration, reference agent, fixtures, transport and regressions.
 
 ## Passed
 
 - Complete offline tester suite from the updated companion checkout:
   `go test -count=1 -skip '^TestStages$' ./...` with TESTER_DIR set to that checkout.
-  This includes 16 graded cases, recorded-output comparisons, seven broken-agent
+  This includes 17 graded cases, recorded-output comparisons, eleven broken-agent
   regressions and course/tester stage registration checks.
+- Setup passes with an agent whose navigation handler is unimplemented. Setup
+  regressions reject a missing configuration call, a missing LSP tool, an LSP
+  tool advertised without a connection, and an incomplete required schema.
 - `go test -count=1 -race ./internal/lsp_transport ./internal/lsp_manager`,
   including fragmented initialization, queued notifications, startup failure,
   cleanup and a configuration accessed through a project symlink.
@@ -31,13 +34,13 @@ four-stage registration, reference agent, fixtures, transport and regressions.
 - All three invoice behavior tests passed initially and after the complete API
   migration. The partial migration failed only checkout's behavior test;
   reporting and unrelated preview behavior remained correct.
-- Four stage descriptions contain 300, 249, 280 and 296 prose words respectively,
+- Five stage descriptions contain 229, 201, 249, 280 and 296 prose words respectively,
   excluding code blocks. Markdown formatting, JSON/YAML parsing, exact course/
   tester YAML equality, starter/template parity, shared transport source parity
   and diff whitespace checks passed.
-- The extension introduction and first stage render in the local course editor.
-  The introduction explains the supplied helper and shows the test project's
-  pricing.py and checkout.py before the first definition lookup.
+- Setup and definition lookup render separately in the local course editor.
+  Setup links to the example project and client guide; definition lookup reuses
+  that connection without repeating configuration or tool registration.
 
 The path fix matters: a helper initialized through a symlink must identify the
 same physical project as the agent's document URIs. Otherwise real-server
@@ -52,7 +55,8 @@ reference results can omit callers even while the controlled fixture passes.
   valid CODECRAFTERS_SECRET_OPENROUTER_API_KEY.
 - A learner pacing trial, especially the first navigation stage and notification
   freshness in the finale.
-- Official stage-ID allocation and deployment. Existing IDs were retained;
+- Official stage-ID allocation and deployment. Setup uses provisional lc1;
+  existing IDs were retained;
   ls1, ir2 and hv2 were retired. No publication was performed.
 
 Scripted integration runs prove the wiring and causal feedback gate. They do not

@@ -8,13 +8,15 @@ still promises int. The file saves successfully; language analysis reports the
 return-type error. After the agent changes it to return amount["cents"], the
 error clears and the original behavior is preserved.
 
-## Four visible milestones
+## Five visible milestones
 
-1. Follow checkout's invoice_total alias to pricing.total.
-2. Find pricing's callers in checkout and reporting, excluding preview.total.
-3. Temporarily change checkout's import from pricing to discounts and watch
+1. Connect the supplied helper, read configuration, advertise LSP, and inspect
+   this project with the agent's existing Read tool.
+2. Follow checkout's invoice_total alias to pricing.total.
+3. Find pricing's callers in checkout and reporting, excluding preview.total.
+4. Temporarily change checkout's import from pricing to discounts and watch
    definition lookup follow the new target. Restore pricing before migration.
-4. Replay the incomplete API migration and let Write feedback drive its repair.
+5. Replay the incomplete API migration and let Write feedback drive its repair.
 
 Text search remains useful. A search for total also finds unrelated code, and
 its aliased calls require interpretation. The language server supplies resolved

@@ -158,16 +158,17 @@ extensions:
       ```
 
       Here, `pricing.total` means the `total` function defined in `pricing.py`.
-      The first lookup follows the call to `invoice_total` back to that definition.
+      After setup, the first lookup follows `invoice_total` back to that definition.
 
       ### What you'll build
 
-      Your agent will learn to:
+      The extension has five short stages:
 
-      1. Follow a call to its implementation.
-      2. Find the callers affected by changing that function.
-      3. Keep the server's copy current after edits.
-      4. Give the agent error feedback so it can repair an incomplete API change.
+      1. Set up the supplied connection and advertise the LSP tool.
+      2. Follow a call to its implementation.
+      3. Find the callers affected by changing that function.
+      4. Keep the server's copy current after edits.
+      5. Give the agent error feedback so it can repair an incomplete API change.
 
       In the final demonstration, an incomplete API change leaves a saved caller that
       returns an object where an integer is expected. Write reports the type error,
@@ -262,12 +263,19 @@ stages:
       In this stage, you'll add support for skills that are handed to a subagent, which works through them and reports back a single answer.
 
   # Extension: Language Server Protocol
+  - slug: "lc1"
+    name: "Set up the LSP connection"
+    difficulty: easy
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      Explore the supplied example project, connect with the helper, and advertise the LSP tool. Navigation comes in the next stage.
+
   - slug: "df3"
     name: "Find the implementation"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      Connect an LSP tool to your existing agent loop and follow a call to its implementation. The connection helper is supplied.
+      Open a document and handle goToDefinition so your agent can follow a call to its implementation.
 
   - slug: "rf4"
     name: "Find the affected callers"

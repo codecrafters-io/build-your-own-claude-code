@@ -1,6 +1,6 @@
 # Optional: what the connection helper does
 
-You don't need this material to complete the four graded stages. Inspect
+You don't need this material to complete the five graded stages. Inspect
 transport.go and protocol.go to see the server lifecycle and framing code.
 
 The helper reads one named server configuration from .lsp.json:

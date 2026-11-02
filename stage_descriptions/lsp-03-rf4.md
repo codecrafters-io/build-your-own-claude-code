@@ -13,7 +13,7 @@ agent can read those locations before editing.
 ### Add references to your LSP tool
 
 Add `findReferences` to the operation enum in your tool schema. Reuse document
-opening, file URIs, position conversion, and tool-result handling from stage one.
+opening, file URIs, position conversion, and tool-result handling from definition lookup.
 
 For a call on `pricing.total`, use the helper's request action to send
 `textDocument/references`:

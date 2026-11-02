@@ -1,6 +1,6 @@
 # Language Server Protocol - extension design
 
-**Status:** An introduction followed by four graded stages. Current IDs remain provisional; official allocation
+**Status:** An introduction followed by five graded stages. Current IDs remain provisional; official allocation
 and publication are deferred. No production release is authorized.
 
 **Promise:** Give your existing agent precise code navigation before an edit and
@@ -15,7 +15,7 @@ The learner builds an agent integration, not a language analyzer or editor.
 The extension description is the learner's introduction. It explains what a
 language server analyzes, how it connects to the existing agent loop, and which
 parts are supplied. This is reading material before the first implementation
-stage; it has no stage ID or separate graded setup task.
+stage. A short graded setup stage then checks the connection and tool schema.
 
 The introduction shows the complete route from a model tool call through the
 learner's handler and supplied connection to the language server, and back as a
@@ -26,12 +26,17 @@ It also shows pricing.py and checkout.py from the test-supplied invoice project,
 including the aliased import. These are files the agent analyzes in its test
 working directory, not extra files the learner must build into the agent.
 
-Stage one then focuses on one outcome: follow invoice_total to pricing.total and
-let the model read the implementation. It introduces the helper's configuration,
-notify and request actions with their actual payload envelopes. It does not also
-introduce a return-type migration or diagnostic handling.
+Stage one links to the example files, connects the supplied client, retrieves
+the extension-to-language mapping, and advertises the supplied tool schema.
+It uses the existing Read tool to inspect the example; it does not require an
+LSP tool handler, file URIs, coordinates, or document messages. Tests check both
+the connected path and ordinary prompts without a connection.
 
-The same invoice project continues through all four stages. The introduction
+Stage two focuses on following invoice_total to pricing.total. It reuses the
+connection and schema, adding only document opening, definition routing, and
+matching tool results. It introduces notify and request payloads when needed.
+
+The same invoice project continues through all five stages. The introduction
 previews the destination: changing pricing.total from integer cents to a Price
 TypedDict leaves a caller returning an object where an integer is expected.
 The final stage supplies the error feedback that lets the agent repair it.
@@ -54,20 +59,21 @@ finds unrelated preview code and imports, while the alias invoice_total needs
 interpretation. Do not claim grep cannot solve it. The API migration and resulting
 type error provide the main reason to use language analysis.
 
-## Four short stages
+## Five short stages
 
 | #   | Current ID | Stage                        | New implementation                                                         | Visible evidence                                                          |
 | --- | ---------- | ---------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 1   | df3        | Find the implementation      | Register supplied LSP schema; didOpen; definition routing and tool results | Follow invoice_total to pricing.total and read the implementation         |
-| 2   | rf4        | Find the affected callers    | References routing with includeDeclaration true                            | Return pricing callers across checkout/reporting, excluding preview.total |
-| 3   | sy5        | Keep the analysis current    | Successful Write sends full didChange with increasing per-file versions    | An edited import changes the definition target without a server restart   |
-| 4   | dg6        | Catch an error after editing | Process diagnostic publications; return fresh feedback from Write          | Partial API migration reports an error, drives repair, and clears         |
+| 1   | lc1        | Set up the LSP connection    | Connect supplied client; read configuration; advertise supplied LSP schema | Inspect the invoice project with Read; LSP appears only when connected    |
+| 2   | df3        | Find the implementation      | didOpen; definition routing and tool results                               | Follow invoice_total to pricing.total and read the implementation         |
+| 3   | rf4        | Find the affected callers    | References routing with includeDeclaration true                            | Return pricing callers across checkout/reporting, excluding preview.total |
+| 4   | sy5        | Keep the analysis current    | Successful Write sends full didChange with increasing per-file versions    | An edited import changes the definition target without a server restart   |
+| 5   | dg6        | Catch an error after editing | Process diagnostic publications; return fresh feedback from Write          | Partial API migration reports an error, drives repair, and clears         |
 
 The introduction establishes the roles before any implementation. Each stage
-introduces one learner-owned behavior. Descriptions target 200-350
-words of prose with one protocol example. The first stage supplies the tool
-schema; no separate advertising stage is needed. Synchronization remains its own
-stage to keep diagnostics bounded and show why a server can have stale text.
+introduces one learner-owned behavior. Descriptions stay under 350 prose words.
+Setup has no protocol payloads; definition lookup shows its two messages together.
+Synchronization remains its own stage to keep diagnostics bounded and show why
+a server can have stale text.
 
 ## Supply the connection
 

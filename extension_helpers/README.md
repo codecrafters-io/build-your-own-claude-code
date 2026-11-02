@@ -1,6 +1,6 @@
 # Supplied LSP connection
 
-The four LSP stages teach the bridge between an existing agent and a language
+The five LSP stages teach the bridge between an existing agent and a language
 server. The supplied helper owns subprocess startup, JSON-RPC framing,
 initialization, request IDs, buffering, and cleanup. It does not open files,
 synchronize edits, interpret diagnostics, choose repairs, or run an agent.
@@ -26,7 +26,8 @@ your program. Your starter includes a client in your implementation language:
 Import/include the supplied file in the usual way. JavaScript uses
 `import { LSPClient } from "./lsp_client.js"`; Rust needs `mod lsp_client;`.
 The starter's `lsp_tool.json` supplies the initial model-facing tool schema.
-Add `findReferences` to its operation enum in stage two.
+Setup only connects the client, reads configuration, and advertises this schema.
+Definition calls begin in stage two. Add `findReferences` in stage three.
 
 ## Select the analyzed language
 
@@ -71,7 +72,7 @@ The HTTP endpoint is course scaffolding around the stdio LSP connection, not a
 part of LSP. The learner's model-facing LSP tool uses the product's one-based
 positions; the server receives zero-based positions.
 
-## Read notifications in stage four
+## Read notifications in stage five
 
 Call action `notifications` with:
 
