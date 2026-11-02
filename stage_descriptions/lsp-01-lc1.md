@@ -33,28 +33,21 @@ will inspect, not files you add to your solution.
 Before your first model request:
 
 1. Get the [client for your implementation language][helper] at the listed path
-   (Python: `app/lsp_client.py`), and [lsp_tool.json][schema] at your solution's
-   root beside `your_program.sh`. New starters include them; copy missing files
-   from these links.
+   (Python: `app/lsp_client.py`). New starters include it; copy it from the guide
+   if it is missing.
 2. Construct the client, request its configuration, and keep the returned language
    mapping for later document messages. The tester supplies the connection.
-3. Parse `lsp_tool.json` and append its object to your existing `tools` array.
-   Include that array in your model requests. The schema describes the tool;
-   its operation handler comes in the next stage.
+3. Add the JSON object shown below directly to your existing `tools` list,
+   alongside Read, Write, and Bash. Include that list in your model requests.
 
-For Python in `app/main.py`, with your existing `tools` list:
+Connection setup in Python:
 
 ```python
-import json
-from pathlib import Path
-
 from lsp_client import LSPClient
 
 lsp = LSPClient()
 configuration = lsp.call("configuration", {})
 extension_to_language = configuration["extensionToLanguage"]
-schema_path = Path(__file__).resolve().parents[1] / "lsp_tool.json"
-tools.append(json.loads(schema_path.read_text(encoding="utf-8")))
 ```
 
 `configuration` is a helper action; `{}` means it takes no arguments. It returns:
@@ -65,6 +58,41 @@ tools.append(json.loads(schema_path.read_text(encoding="utf-8")))
 
 Later, this mapping identifies `.py` documents as Python.
 
+### Advertise the LSP tool
+
+This describes the tool to the model; implement its handler in the next stage.
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "LSP",
+    "description": "Resolve a symbol using the language server. Positions are one-based UTF-16.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": ["goToDefinition"]
+        },
+        "filePath": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "character": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["operation", "filePath", "line", "character"]
+    }
+  }
+}
+```
+
 ### Tests
 
 Run `codecrafters test`. It checks configuration retrieval and tool registration,
@@ -74,5 +102,4 @@ For running outside the tester, follow the optional [local-server guide][local-r
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
 [helper]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_helpers/README.md#connect-in-one-line
-[schema]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/starter_templates/all/code/lsp_tool.json
 [local-run]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_helpers/README.md#run-with-your-own-server

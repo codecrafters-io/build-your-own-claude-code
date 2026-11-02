@@ -44,14 +44,15 @@ five-stage registration, reference agent, fixtures, transport and regressions.
   and show the request/result route, so the context is visible while taking
   the course. Setup identifies the supplied server/helper/client and lists
   file setup, configuration retrieval, and tool registration steps.
-  The revised setup links directly to the schema and to a guide linking all ten
-  clients, explains the tester-provided connection and the empty
+  The revised setup shows the JSON schema to add directly to the existing tool
+  list and links to a guide for all ten clients. It explains the tester-provided
+  connection and the empty
   configuration request body, and covers existing checkouts missing these files.
   Its Python example was exercised with the supplied client against a temporary
-  local endpoint: configuration retrieval and schema registration work from a
-  different working directory without a learner-side environment check. Linked
-  source files exist and match generated starters; the schema's GitHub link opens the
-  actual file. Definition lookup reuses setup's connection without repeating
+  local endpoint without a learner-side environment check. The inline tool
+  schema matches the starter schema; registration no longer requires loading a
+  schema file. Linked client files exist and match generated starters.
+  Definition lookup reuses setup's connection without repeating
   configuration or tool registration.
 - Stages two through five use complete helper request/notification envelopes.
   The definition response and matching model tool message, references request,

@@ -30,7 +30,8 @@ including the aliased import. These are files the agent analyzes in its test
 working directory, not extra files the learner must build into the agent.
 
 Stage one links to the example files, connects the supplied client, retrieves
-the extension-to-language mapping, and advertises the supplied tool schema.
+the extension-to-language mapping, and shows the JSON schema to add directly
+to the learner's existing tool list.
 It uses the existing Read tool to inspect the example; it does not require an
 LSP tool handler, file URIs, coordinates, or document messages. Every LSP test
 supplies a connection; learners construct the client without an environment check.
