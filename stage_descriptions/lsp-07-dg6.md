@@ -1,15 +1,19 @@
-In this stage, you'll add support for language-server diagnostics.
+In this stage, you'll return diagnostics after file edits so your agent can
+catch and repair its own mistakes.
 
-### Diagnostics
+### Catching the agent's own mistakes
 
-Your `Write` tool tells the model whether a file was written. The language
-server can also tell it whether the new code has errors.
+Your agent can find a function through an alias and synchronize its edits. Now
+it needs to notice when an edit breaks something.
 
-These errors and warnings are called **diagnostics**. For example,
-`invoice_total("250", 2)` passes a string where an integer is expected. The
-server reports the problem in a
+Claude Code receives type errors after editing, before running a build. If your
+agent changes `invoice_total(250, 2)` to `invoice_total("250", 2)`, the server
+reports a string where an integer is expected. Returning that error lets the
+model repair the argument.
+
+These errors and warnings are called **diagnostics**. They arrive as
 [`textDocument/publishDiagnostics`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics)
-notification after `didOpen` or `didChange`:
+notifications, rather than as responses to a query:
 
 ```json
 {
@@ -17,7 +21,6 @@ notification after `didOpen` or `didChange`:
   "method": "textDocument/publishDiagnostics",
   "params": {
     "uri": "file:///path/to/project/checkout.py",
-    "version": 2,
     "diagnostics": [
       {
         "range": {
@@ -32,53 +35,61 @@ notification after `didOpen` or `didChange`:
 }
 ```
 
-Like the log notifications you handled in earlier stages, this message has no
-request ID. Update your reader to store its diagnostics by URI and keep handling
-ordinary responses.
+### Returning feedback after a write
 
-### Returning diagnostics
+Update your reader to store the latest list for each URI while continuing to
+handle ordinary responses. Each list replaces the previous one. An empty list
+clears the old errors.
 
-Add `"textDocument": {"publishDiagnostics": {"versionSupport": true}}` to your
-initialization capabilities. Every diagnostic notification from the test server
-includes the document's version.
+Before synchronizing a successful `Write`, record which diagnostic publication
+you last received for that URI. Send `didChange`, or `didOpen` with the new
+contents if the file isn't open. Keep reading messages until a new publication
+for that URI arrives, then include its list in the write's tool result:
 
-Add a `diagnostics` operation to the LSP tool. It needs only `operation` and
-`file_path`. Make `line` and `character` optional in the schema and validate
-them for position-based operations.
+```json
+{ "diagnostics": [] }
+```
 
-When the model requests diagnostics, open the file if needed. Return the stored
-list for its current version, or keep reading until that list arrives. Use a
-timeout and return an error if it doesn't arrive.
+Dispatch notifications even while waiting for a response. A cached empty list
+from before the write isn't feedback about the edit.
 
-Do the same after every successful `Write`, including the diagnostics in the
-write's tool result. If the file wasn't open, first open it with its new text.
-The model can then use the error message to make another edit.
+The course uses the Write result for feedback. Claude Code can attach it
+separately to the conversation. Both let the model act on the findings.
 
-Each new list replaces the old one for that URI. An empty list clears the old
-errors. Ignore notifications for older versions.
+A publication may include `version`. If you advertise
+`textDocument.publishDiagnostics.versionSupport: true`, discard versions older
+than your document. Accept unversioned reports in arrival order. Use a bounded
+wait and return an explicit feedback error if nothing arrives.
 
 ### Tests
 
-The tester will create a valid `checkout.py` and run:
+The tester creates valid `checkout.py` and introduces a known error to make
+recovery repeatable. It runs:
 
 ```bash
-$ ./your_program.sh -p 'Check diagnostics for checkout.py. Use Write to make invoice_total receive "250" instead of 250, then fix that argument using Write. Check the diagnostics returned by each write.'
+$ ./your_program.sh -p 'Read checkout.py and use LSP goToDefinition on its invoice_total call at line 5, character 12. Use Write to replace integer 250 with string "250". Use the diagnostic feedback to repair the argument with Write, then report whether the error cleared.'
 ```
 
-Opening gives the file version `1`, followed by versions `2` and `3` for the
-writes. Their tool results must contain the error above and then:
+The first Write result must contain the error above. Only then does the tester's
+model request a repair. The repaired Write must return:
 
 ```json
-{ "version": 3, "diagnostics": [] }
+{ "diagnostics": [] }
 ```
 
-Your tool result can include other fields. The tester also sends diagnostics
-between responses, before you start waiting, for older versions, and not at all.
+Other cases include unversioned publications, an older version arriving late,
+and a server that publishes nothing.
+
+The tester also shows the verified error and repair in its output:
+
+```text
+Edit feedback for checkout.py: Argument of type str cannot be assigned to parameter price of type int
+Repair feedback for checkout.py: diagnostics []
+```
 
 ### Notes
 
-- Don't invent a `textDocument/diagnostics` request. This stage uses push
-  notifications.
-- The supplied server always publishes versioned diagnostics for each open and
-  change. This is an exercise guarantee, not a guarantee made by every language
-  server.
+- Keep the LSP tool read-only. Diagnostics come from notifications, so don't add
+  a `diagnostics` tool operation or invent a protocol request for them.
+- The test server publishes once per open or change. Other servers have their
+  own timing. An unversioned notification cannot prove which edit it analyzed.

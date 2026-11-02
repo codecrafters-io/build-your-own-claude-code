@@ -1,6 +1,6 @@
-In this stage, you'll add support for the `definition` operation.
+In this stage, you'll add support for the `goToDefinition` operation.
 
-### The `definition` operation
+### The `goToDefinition` operation
 
 Consider this call in `checkout.py`:
 
@@ -19,8 +19,8 @@ request follows the name at the call site to the function's definition.
 
 ### Requesting a definition
 
-Add `definition` to your LSP tool's operations. It takes the same `file_path`,
-`line`, and `character` arguments as `hover`.
+Add `goToDefinition` to your LSP tool's operations. It takes the same
+`filePath`, `line`, and `character` arguments as `hover`.
 
 Open the document if necessary, then send:
 
@@ -62,7 +62,7 @@ location.
 The tester will create the example project with an imported alias and run:
 
 ```bash
-$ ./your_program.sh -p "Use LSP definition on checkout.py at line 2, character 9. Report the definition location."
+$ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 3, character 10. Report the definition location."
 ```
 
 The server returns this location, which must reach the model in the matching

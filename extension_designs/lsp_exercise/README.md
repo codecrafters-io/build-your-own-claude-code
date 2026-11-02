@@ -1,85 +1,94 @@
-# Fix the invoice, then rename its calculation
+# Your agent catches its own mistake
 
-This is the sample project for the LSP extension. It is deliberately small
-enough to read in a minute. The Python project is input to the learner's agent;
-the agent can be implemented in any course language.
+This small Python project is input to your agent. You can implement the agent in
+any course language.
 
-## The bug
+An invoice for two items at 250 cents should total **500 cents**. Currently,
+`python3 checkout.py` prints `250250`: checkout passes a string to a function
+that expects an integer. A language server can catch that argument error.
 
-An invoice for two items at 250 cents should total **500 cents**. Instead:
+## Set up a language server locally
+
+A language server is a separate program that your agent starts to analyze this
+project. For this Python example, install Pyright using Node.js and npm:
 
 ```bash
-python3 checkout.py
+npm install --global pyright@1.1.414
 ```
 
-prints `250250`.
+This directory includes [`.lsp.json`](.lsp.json), which tells your agent to start
+`pyright-langserver --stdio`. Run your agent with this directory as its working
+directory so it can find the configuration and Python files. Use the absolute
+path to your `your_program.sh` script:
 
-`pricing.total` expects an integer price, but checkout passes a string. Python
-repeats the string instead of multiplying two integers. A language server with
-type checking can point to the invalid argument before running the program.
+```bash
+/path/to/your-agent/your_program.sh -p "Reply with ready."
+```
 
-## Explore with the agent
+You can use this setup while building Stage 1. That stage only sends the
+initialization request; reading the reply and asking questions about code come
+in later stages. Your agent can be implemented in any course language.
 
-The companion tester supplies `.lsp.json` and its controlled language server
-during stage runs. To run all eight stages against its reference agent, use
-`make test_lsp_offline` in the `claude-code-tester` checkout. To explore this
-project with your own completed agent, supply a language server using the
-configuration described in [the extension design](../lsp.md), then work through
-these tasks:
+During automated course tests, the tests supply their own `.lsp.json` and server.
+Your agent should read whichever configuration is in its working directory.
 
-1. Use hover on `pricing.py`, line `0`, character `4`, to inspect the signature
-   of `total`.
-2. Go to the definition of `invoice_total` in `checkout.py`, line `4`, character
-   `11`. It should resolve to `pricing.total`.
-3. Find references to `pricing.total`. Compare the result to a text search for
-   `total`: aliases belong to the symbol, but `preview.total` does not.
-4. Change the string argument `"250"` to the integer `250` using Write. The
-   current diagnostics should clear, and checkout should print `500`.
-5. Rename `pricing.total` to `total_cents` using the LSP rename operation.
+## Explore with the completed agent
 
-All positions above are zero-based. These instructions refer to the original
-files; after edits, use the current positions.
+For type errors after edits, also create `pyrightconfig.json` in this directory
+with `{"typeCheckingMode": "basic"}`. Then try these tasks:
 
-The finished project should have:
+1. Use hover on pricing.py at line 1, character 5 to inspect total's signature.
+2. Use goToDefinition on checkout.py at line 5, character 12 to follow the
+   invoice_total alias to pricing.total.
+3. Use findReferences on pricing.total and inspect the server's returned
+   locations. preview.total is unrelated. Servers can treat local aliases
+   differently, so preserve their results instead of guessing by spelling.
+4. Use Write to change string "250" to integer 250. Diagnostic feedback should
+   clear, and checkout should print 500.
 
-- A definition named `total_cents` in `pricing.py`
-- `from pricing import total_cents as invoice_total` in `checkout.py`, with the
-  local call still named `invoice_total`
-- An updated import and both calls in `reports.py`
-- Exactly the original contents of `preview.py`, including its comment and
-  string
+These tool positions start at one and refer to the original files. Protocol
+positions start at zero. After an edit, use the current text's positions.
 
-The two calls on one line in `reports.py` make edit order matter. Applying the
-first rename before the second shifts the second range.
-
-## Try the full task
-
-An optional demonstration prompt for the completed agent:
+A demonstration prompt for the completed agent:
 
 > The invoice for two 250-cent items prints 250250. Use the language server to
-> inspect the function and follow its imported alias. Fix the argument and check
-> the diagnostics. Then rename pricing.total to total_cents using LSP,
-> preserving the local invoice_total alias and the unrelated total in
-> preview.py. Run the project tests.
+> inspect the function and follow its imported alias. Fix the argument using
+> Write and inspect the diagnostic feedback. Confirm that the error cleared,
+> show what changed, and run the project tests.
 
-This combines existing operations. The graded final stage uses a narrower rename
-prompt so a diagnostic or model-planning failure doesn't hide a bug in applying
-edits.
+The supplied invoice is already broken, so this task has a useful outcome
+without deliberately breaking it again. It demonstrates navigation, a repair and
+diagnostic clearing.
+
+Course contributors can run the seven stages against the reference agent with
+`make test_lsp_offline` in the companion `claude-code-tester` repository. Its
+README also documents independent Pyright checks.
+
+## See the agent recover from a bad edit
+
+The final graded stage is a controlled regression test. It starts with valid
+code and introduces the same argument error deliberately, so every learner can
+see the agent recover even when a model would otherwise make the correct edit
+first. The tester's model selects a repair only after receiving the type error.
+
+The tester shows the verified feedback after both writes:
+
+```text
+Edit feedback for checkout.py: Argument of type str cannot be assigned to parameter price of type int
+Repair feedback for checkout.py: diagnostics []
+```
+
+If this stalls, check that Write sends the new contents to the server, the
+reader handles notifications while waiting for replies, and each write waits for
+a new publication for its own file. An empty list clears an error only when the
+server actually publishes it.
 
 ## Check the project
-
-From this directory, run:
 
 ```bash
 python3 -m unittest -v test_invoice.py
 ```
 
-The checkout test intentionally fails in the supplied project. After the repair
-and rename, all three tests should pass. They check behavior; the course tester
-must additionally inspect exact file contents and LSP messages to prove that the
-operations were implemented.
-
-The supplied course server and reference agent are implemented in the companion
-`claude-code-tester` repository. Running this Python project and its tests needs
-no server. The exercise server uses a controlled project shape and is not a
-general Python analyzer.
+The checkout test intentionally fails in the supplied project. After repairing
+its argument, all three tests pass. The other tests protect reports.py and the
+unrelated preview.py behavior.

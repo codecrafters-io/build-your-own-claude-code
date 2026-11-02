@@ -17,16 +17,16 @@ Add this specification to your request's `tools` array, just as you did for
   "type": "function",
   "function": {
     "name": "LSP",
-    "description": "Returns language-server information about a symbol at a zero-based line and UTF-16 character offset.",
+    "description": "Returns language-server information about a symbol at a one-based line and UTF-16 character offset.",
     "parameters": {
       "type": "object",
       "properties": {
         "operation": { "type": "string", "enum": ["hover"] },
-        "file_path": { "type": "string" },
-        "line": { "type": "integer", "minimum": 0 },
-        "character": { "type": "integer", "minimum": 0 }
+        "filePath": { "type": "string" },
+        "line": { "type": "integer", "minimum": 1 },
+        "character": { "type": "integer", "minimum": 1 }
       },
-      "required": ["operation", "file_path", "line", "character"]
+      "required": ["operation", "filePath", "line", "character"]
     }
   }
 }
@@ -53,10 +53,10 @@ answer. Read the file and send
 }
 ```
 
-Use `languageId` from `.lsp.json` and put the complete file contents in `text`.
-The `uri` is the file's absolute path written as a file URI. Use your language's
-URI utilities so paths with spaces are encoded correctly. Open each URI only
-once.
+Use the language ID from `.lsp.json`'s `extensionToLanguage` map and put the
+complete file contents in `text`. The `uri` is the file's absolute path written
+as a file URI. Use your language's URI utilities so paths with spaces are
+encoded correctly. Open each URI only once.
 
 Then send a request with a fresh ID:
 
@@ -82,7 +82,7 @@ as a tool error.
 The tester will create `pricing.py`, configure its server, and run:
 
 ```bash
-$ ./your_program.sh -p "Use LSP hover on pricing.py at line 0, character 4. Report its documentation word."
+$ ./your_program.sh -p "Use LSP hover on pricing.py at line 1, character 5. Report its documentation word."
 ```
 
 For example, the server's hover result can be:
@@ -98,9 +98,10 @@ queries, and paths with spaces.
 
 ### Notes
 
-- The first line is line `0`. For ASCII text, a character's index equals its
-  UTF-16 offset.
-- The server supports `hoverProvider` and document opening. Send
-  `textDocument/didClose` for open documents before shutdown.
+- Tool positions start at `1`, as in Claude Code. Subtract `1` from both
+  coordinates for the LSP request, whose positions start at `0`. Columns count
+  UTF-16 code units, so some characters occupy two units.
+- The server supports `hoverProvider` and document opening. Closing documents
+  before a graceful shutdown is supported, but not required by this stage.
 - The LSP request ID and the model's tool-call ID are separate. Use the model's
   ID for `tool_call_id` when appending the tool result to `messages`.
