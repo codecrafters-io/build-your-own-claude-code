@@ -1,7 +1,7 @@
 In this stage, you'll return diagnostic feedback after Write so your existing
 agent loop can repair a caller missed during an API change.
 
-### Replay the opening failure
+### Repair an incomplete API change
 
 Pricing now returns a `Price` object with a `cents` field. A partial checkout
 migration stores that object in `amount`, then returns it from a function

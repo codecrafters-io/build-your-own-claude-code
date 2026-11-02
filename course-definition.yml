@@ -105,11 +105,74 @@ extensions:
   - slug: "lsp"
     name: "Language Server Protocol"
     description_markdown: |-
-      In this challenge extension, you'll connect your Claude Code implementation to a language server using the [Language Server Protocol][lsp].
+      Give your agent the code navigation and error feedback you use in an editor.
 
-      Give your agent precise code navigation and feedback about errors after editing. You'll follow one API change from finding its implementation and callers to catching and repairing a missed caller. A supplied helper handles the server connection.
+      ### What a language server does
 
-      [lsp]: https://microsoft.github.io/language-server-protocol/
+      A language server analyzes source code to find definitions, references, and
+      type errors. Editors communicate with it using the Language Server Protocol
+      (LSP). Your agent can use that same analysis.
+
+      Your agent already has Read, Write, Bash, and an agent loop. You'll add an LSP
+      tool to that loop and later include diagnostic feedback in Write's results.
+
+      ### What the supplied helper does
+
+      The course starts a configured language server and supplies a connection client
+      for your implementation language. The connection looks like this:
+
+      ```text
+      Model -> your LSP tool -> supplied connection -> language server
+      Model <- tool result  <- supplied connection <- server response
+      ```
+
+      The helper handles startup, initialization, message delivery, replies, and
+      queued notifications. Your code sends documents and queries, then returns
+      results to the model. A definition query gives the model a location it can
+      inspect with Read.
+
+      The tests analyze Python; your agent can use any supported course language.
+      The server configuration selects the analyzed language.
+
+      ### The project your agent will inspect
+
+      The tests place a small Python invoice project in your agent's working
+      directory. You don't create these files; you build the agent that inspects
+      and edits them.
+
+      `pricing.py` defines the calculation:
+
+      ```python
+      def total(price: int, quantity: int) -> int:
+          return price * quantity
+      ```
+
+      `checkout.py` imports that function under another name:
+
+      ```python
+      from pricing import total as invoice_total
+
+
+      def checkout_total() -> int:
+          return invoice_total(250, 2)
+      ```
+
+      Here, `pricing.total` means the `total` function defined in `pricing.py`.
+      The first lookup follows the call to `invoice_total` back to that definition.
+
+      ### What you'll build
+
+      Your agent will learn to:
+
+      1. Follow a call to its implementation.
+      2. Find the callers affected by changing that function.
+      3. Keep the server's copy current after edits.
+      4. Give the agent error feedback so it can repair an incomplete API change.
+
+      In the final demonstration, an incomplete API change leaves a saved caller that
+      returns an object where an integer is expected. Write reports the type error,
+      the agent repairs the caller, and the error clears. The tester supplies the
+      first edit to make this repeatable.
 
 stages:
   - slug: "yy2"

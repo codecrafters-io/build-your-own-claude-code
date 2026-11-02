@@ -31,10 +31,13 @@ four-stage registration, reference agent, fixtures, transport and regressions.
 - All three invoice behavior tests passed initially and after the complete API
   migration. The partial migration failed only checkout's behavior test;
   reporting and unrelated preview behavior remained correct.
-- Four stage descriptions contain 336, 249, 280 and 295 prose words respectively,
+- Four stage descriptions contain 300, 249, 280 and 296 prose words respectively,
   excluding code blocks. Markdown formatting, JSON/YAML parsing, exact course/
   tester YAML equality, starter/template parity, shared transport source parity
   and diff whitespace checks passed.
+- The extension introduction and first stage render in the local course editor.
+  The introduction explains the supplied helper and shows the test project's
+  pricing.py and checkout.py before the first definition lookup.
 
 The path fix matters: a helper initialized through a symlink must identify the
 same physical project as the agent's document URIs. Otherwise real-server

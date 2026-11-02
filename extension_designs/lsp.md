@@ -1,6 +1,6 @@
 # Language Server Protocol - extension design
 
-**Status:** Four graded stages. Current IDs remain provisional; official allocation
+**Status:** An introduction followed by four graded stages. Current IDs remain provisional; official allocation
 and publication are deferred. No production release is authorized.
 
 **Promise:** Give your existing agent precise code navigation before an edit and
@@ -10,14 +10,31 @@ API change.
 **Prerequisites:** The base agent loop, Read, Write, and Bash. Skills is not needed.
 The learner builds an agent integration, not a language analyzer or editor.
 
-## Start with the failure
+## Introduce the server and helper before coding
 
-The same invoice project runs through the extension. Change pricing.total from
-integer cents to a Price TypedDict containing cents. A partially migrated
-checkout stores the object in amount but returns it from an int-returning
-function. Write succeeds; the caller is still wrong.
+The extension description is the learner's introduction. It explains what a
+language server analyzes, how it connects to the existing agent loop, and which
+parts are supplied. This is reading material before the first implementation
+stage; it has no stage ID or separate graded setup task.
 
-Show that incomplete migration before the first stage. Preview the final replay:
+The introduction shows the complete route from a model tool call through the
+learner's handler and supplied connection to the language server, and back as a
+tool result. The helper owns starting the server and delivering messages. The
+learner owns document contents, queries, synchronization and model-visible results.
+
+It also shows pricing.py and checkout.py from the test-supplied invoice project,
+including the aliased import. These are files the agent analyzes in its test
+working directory, not extra files the learner must build into the agent.
+
+Stage one then focuses on one outcome: follow invoice_total to pricing.total and
+let the model read the implementation. It introduces the helper's configuration,
+notify and request actions with their actual payload envelopes. It does not also
+introduce a return-type migration or diagnostic handling.
+
+The same invoice project continues through all four stages. The introduction
+previews the destination: changing pricing.total from integer cents to a Price
+TypedDict leaves a caller returning an object where an integer is expected.
+The final stage supplies the error feedback that lets the agent repair it.
 
 ```text
 Before: Write saved checkout.py. The caller still returns Price as int.
@@ -46,7 +63,8 @@ type error provide the main reason to use language analysis.
 | 3   | sy5        | Keep the analysis current    | Successful Write sends full didChange with increasing per-file versions    | An edited import changes the definition target without a server restart   |
 | 4   | dg6        | Catch an error after editing | Process diagnostic publications; return fresh feedback from Write          | Partial API migration reports an error, drives repair, and clears         |
 
-Each stage introduces one learner-owned behavior. Descriptions target 200-350
+The introduction establishes the roles before any implementation. Each stage
+introduces one learner-owned behavior. Descriptions target 200-350
 words of prose with one protocol example. The first stage supplies the tool
 schema; no separate advertising stage is needed. Synchronization remains its own
 stage to keep diagnostics bounded and show why a server can have stale text.
