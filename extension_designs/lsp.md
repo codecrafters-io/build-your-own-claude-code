@@ -1,7 +1,8 @@
 # Language Server Protocol - extension design
 
-**Status:** An introduction followed by five graded stages. Current IDs remain provisional; official allocation
-and publication are deferred. No production release is authorized.
+**Status:** An introduction followed by five graded stages. Stage IDs use the first
+five slugs supplied from the backend generator on 2 November 2026. Publication
+is deferred. No production release is authorized.
 
 **Promise:** Give your existing agent precise code navigation before an edit and
 language-server feedback afterward, so it can repair a caller missed during an
@@ -12,15 +13,11 @@ The learner builds an agent integration, not a language analyzer or editor.
 
 ## Introduce the server and helper before coding
 
-The extension description is the learner's introduction. It explains what a
-language server analyzes, how it connects to the existing agent loop, and which
-parts are supplied. This is reading material before the first implementation
-stage. Keep the server explanation and request/result route in this extension
-introduction and repeat the essential context in stage one, where learners see
-it while taking the course. The setup stage then gives implementation
-instructions and checks the connection and tool schema.
+The Configure Extensions description is a short overview of LSP and the
+capabilities learners will add. Keep setup instructions, code examples, and the
+exercise details in the stages.
 
-The introduction shows the complete route from a model tool call through the
+Stage one explains the server and shows the route from a model tool call through the
 learner's handler and supplied connection to the language server, and back as a
 tool result. The helper owns starting the server and delivering messages. The
 learner owns document contents, queries, synchronization and model-visible results.
@@ -40,8 +37,8 @@ Stage two focuses on following invoice_total to pricing.total. It reuses the
 connection and schema, adding only document opening, definition routing, and
 matching tool results. It introduces notify and request payloads when needed.
 
-The same invoice project continues through all five stages. The introduction
-previews the destination: changing pricing.total from integer cents to a Price
+The same invoice project continues through all five stages. Changing
+pricing.total from integer cents to a Price
 TypedDict leaves a caller returning an object where an integer is expected.
 The final stage supplies the error feedback that lets the agent repair it.
 
@@ -67,13 +64,13 @@ type error provide the main reason to use language analysis.
 
 | #   | Current ID | Stage                        | New implementation                                                         | Visible evidence                                                          |
 | --- | ---------- | ---------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 1   | lc1        | Set up the LSP connection    | Connect supplied client; read configuration; advertise supplied LSP schema | Inspect the invoice project with Read; advertise LSP in the model request |
-| 2   | df3        | Find the implementation      | didOpen; definition routing and tool results                               | Follow invoice_total to pricing.total and read the implementation         |
-| 3   | rf4        | Find the affected callers    | References routing with includeDeclaration true                            | Return pricing callers across checkout/reporting, excluding preview.total |
-| 4   | sy5        | Keep the analysis current    | Successful Write sends full didChange with increasing per-file versions    | An edited import changes the definition target without a server restart   |
-| 5   | dg6        | Catch an error after editing | Process diagnostic publications; return fresh feedback from Write          | Partial API migration reports an error, drives repair, and clears         |
+| 1   | cx7        | Set up the LSP connection    | Connect supplied client; read configuration; advertise supplied LSP schema | Inspect the invoice project with Read; advertise LSP in the model request |
+| 2   | gz6        | Find the implementation      | didOpen; definition routing and tool results                               | Follow invoice_total to pricing.total and read the implementation         |
+| 3   | rb6        | Find the affected callers    | References routing with includeDeclaration true                            | Return pricing callers across checkout/reporting, excluding preview.total |
+| 4   | bn2        | Keep the analysis current    | Successful Write sends full didChange with increasing per-file versions    | An edited import changes the definition target without a server restart   |
+| 5   | ql9        | Catch an error after editing | Process diagnostic publications; return fresh feedback from Write          | Partial API migration reports an error, drives repair, and clears         |
 
-The introduction establishes the roles before any implementation. Each stage
+Stage one establishes the roles before any implementation. Each stage
 introduces one learner-owned behavior. Descriptions stay under 350 prose words.
 Setup has no protocol payloads; definition lookup shows its two messages together.
 Synchronization remains its own stage to keep diagnostics bounded and show why
@@ -108,8 +105,9 @@ native-product smoke check; do not confuse our structured Write result with the
 product's diagnostic attachments.
 
 Hover, standalone initialization and response-reading stages are removed. Their
-IDs ls1, ir2, hv2 are retired, not repurposed. Existing df3/rf4/sy5/dg6 IDs retain
-their behaviors. Rename remains outside the built-in LSP tool's course scope.
+IDs ls1, ir2, hv2 are retired, not repurposed. All five stages now use
+backend-generated IDs; navigation, references, synchronization and diagnostics
+retain their behaviors. Rename remains outside the built-in LSP tool's course scope.
 
 The fixture recognizes the documented invoice project; it is not a Python
 analyzer. Pyright independently verifies navigation and the actual Price migration.
@@ -141,7 +139,8 @@ Check starter helper parity and course/tester stage registration together.
 The revised design still needs a learner pacing trial and repeated live-model
 runs with valid CODECRAFTERS_SECRET_OPENROUTER_API_KEY before publication.
 Deterministic scripted runs establish integration, not live-model reliability.
-Official stage allocation and deployment remain separate release steps.
+Stage IDs are allocated. Deploy matching course content and a tester release
+with these IDs together.
 
 See the [local verification record](../extension_helpers/verification.md) for
 passed checks and remaining release checks.

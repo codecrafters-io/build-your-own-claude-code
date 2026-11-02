@@ -40,9 +40,10 @@ five-stage registration, reference agent, fixtures, transport and regressions.
   tester YAML equality, starter/template parity, shared transport source parity
   and diff whitespace checks passed.
 - Setup and definition lookup render separately in the local course editor.
-  Both the extension introduction and setup define a language server and LSP
-  and show the request/result route, so the context is visible while taking
-  the course. Setup identifies the supplied server/helper/client and lists
+  The extension description gives a brief LSP overview. Setup defines a
+  language server and LSP and shows the request/result route, so the detailed
+  context is visible while taking the course. Setup identifies the supplied
+  server/helper/client and lists
   file setup, configuration retrieval, and tool registration steps.
   The revised setup shows the JSON schema to add directly to the existing tool
   list and links to a guide for all ten clients. It explains the tester-provided
@@ -75,9 +76,9 @@ reference results can omit callers even while the controlled fixture passes.
   valid CODECRAFTERS_SECRET_OPENROUTER_API_KEY.
 - A learner pacing trial, especially the first navigation stage and notification
   freshness in the finale.
-- Official stage-ID allocation and deployment. Setup uses provisional lc1;
-  existing IDs were retained;
-  ls1, ir2 and hv2 were retired. No publication was performed.
+- Deploy matching course content and tester registration with the allocated
+  stage IDs cx7, gz6, rb6, bn2 and ql9. These use the first five slugs supplied
+  from the backend generator on 2 November 2026. No publication was performed.
 
 Scripted integration runs prove the wiring and causal feedback gate. They do not
 prove that a live model will make the same initial mistake or repair it reliably.

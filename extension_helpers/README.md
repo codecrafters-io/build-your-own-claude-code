@@ -31,7 +31,7 @@ solution at the path shown:
 
 Import/include the supplied file in the usual way. JavaScript uses
 `import { LSPClient } from "./lsp_client.js"`; Rust needs `mod lsp_client;`.
-The [setup stage](../stage_descriptions/lsp-01-lc1.md#advertise-the-lsp-tool)
+The [setup stage](../stage_descriptions/lsp-01-cx7.md#advertise-the-lsp-tool)
 shows the initial model-facing tool schema. Add that JSON object directly to
 your existing tool list alongside Read, Write, and Bash.
 Setup only connects the client, reads configuration, and advertises this schema.
