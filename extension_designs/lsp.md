@@ -15,7 +15,10 @@ The learner builds an agent integration, not a language analyzer or editor.
 The extension description is the learner's introduction. It explains what a
 language server analyzes, how it connects to the existing agent loop, and which
 parts are supplied. This is reading material before the first implementation
-stage. A short graded setup stage then checks the connection and tool schema.
+stage. Keep the server explanation and request/result route in this extension
+introduction and repeat the essential context in stage one, where learners see
+it while taking the course. The setup stage then gives implementation
+instructions and checks the connection and tool schema.
 
 The introduction shows the complete route from a model tool call through the
 learner's handler and supplied connection to the language server, and back as a
@@ -29,8 +32,8 @@ working directory, not extra files the learner must build into the agent.
 Stage one links to the example files, connects the supplied client, retrieves
 the extension-to-language mapping, and advertises the supplied tool schema.
 It uses the existing Read tool to inspect the example; it does not require an
-LSP tool handler, file URIs, coordinates, or document messages. Tests check both
-the connected path and ordinary prompts without a connection.
+LSP tool handler, file URIs, coordinates, or document messages. Every LSP test
+supplies a connection; learners construct the client without an environment check.
 
 Stage two focuses on following invoice_total to pricing.total. It reuses the
 connection and schema, adding only document opening, definition routing, and
@@ -63,7 +66,7 @@ type error provide the main reason to use language analysis.
 
 | #   | Current ID | Stage                        | New implementation                                                         | Visible evidence                                                          |
 | --- | ---------- | ---------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 1   | lc1        | Set up the LSP connection    | Connect supplied client; read configuration; advertise supplied LSP schema | Inspect the invoice project with Read; LSP appears only when connected    |
+| 1   | lc1        | Set up the LSP connection    | Connect supplied client; read configuration; advertise supplied LSP schema | Inspect the invoice project with Read; advertise LSP in the model request |
 | 2   | df3        | Find the implementation      | didOpen; definition routing and tool results                               | Follow invoice_total to pricing.total and read the implementation         |
 | 3   | rf4        | Find the affected callers    | References routing with includeDeclaration true                            | Return pricing callers across checkout/reporting, excluding preview.total |
 | 4   | sy5        | Keep the analysis current    | Successful Write sends full didChange with increasing per-file versions    | An edited import changes the definition target without a server restart   |

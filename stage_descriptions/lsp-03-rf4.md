@@ -15,14 +15,17 @@ agent can read those locations before editing.
 Add `findReferences` to the operation enum in your tool schema. Reuse document
 opening, file URIs, position conversion, and tool-result handling from definition lookup.
 
-For a call on `pricing.total`, use the helper's request action to send
-`textDocument/references`:
+For a call on `pricing.total`, pass this complete object to
+`client.call("request", payload)`, as in the definition stage:
 
 ```json
 {
-  "textDocument": { "uri": "file:///project/pricing.py" },
-  "position": { "line": 0, "character": 4 },
-  "context": { "includeDeclaration": true }
+  "method": "textDocument/references",
+  "params": {
+    "textDocument": { "uri": "file:///project/pricing.py" },
+    "position": { "line": 0, "character": 4 },
+    "context": { "includeDeclaration": true }
+  }
 }
 ```
 

@@ -7,25 +7,35 @@ synchronize edits, interpret diagnostics, choose repairs, or run an agent.
 
 ## Connect in one line
 
-The tester starts one helper for each case and sets `CODECRAFTERS_LSP_URL` for
-your program. Your starter includes a client in your implementation language:
+The tester starts one helper for each case and configures the supplied client's
+connection before launching your program. Construct the client directly; its
+connection settings are handled internally. Running `./your_program.sh` directly
+does not start the helper; use the local-run instructions below instead.
+
+Your starter includes a client in your implementation language. If you started
+the base course before these files were added, copy the linked client into your
+solution at the path shown:
 
 | Language   | Client file                    | Connection                                                                                     |
 | ---------- | ------------------------------ | ---------------------------------------------------------------------------------------------- |
-| Python     | `app/lsp_client.py`            | `lsp = LSPClient()`                                                                            |
-| JavaScript | `app/lsp_client.js`            | `const lsp = new LSPClient()`                                                                  |
-| TypeScript | `app/lsp_client.ts`            | `const lsp = new LSPClient()`                                                                  |
-| Go         | `app/lsp_client.go`            | `lsp, err := NewLSPClient()`                                                                   |
-| Java       | `src/main/java/LSPClient.java` | `var lsp = new LSPClient()`                                                                    |
-| C#         | `src/LSPClient.cs`             | `var lsp = new LSPClient()`                                                                    |
-| C          | `src/lsp_client.h`             | `lsp_call(action, json)` reads the supplied URL                                                |
-| C++        | `src/lsp_client.hpp`           | `LSPClient lsp;`                                                                               |
-| Rust       | `src/lsp_client.rs`            | `let lsp = LspClient::new()?;`                                                                 |
-| Zig        | `src/lsp_client.zig`           | `const lsp = try LSPClient.init(allocator, io, init.environ_map.get("CODECRAFTERS_LSP_URL"));` |
+| Python     | [app/lsp_client.py](../starter_templates/python/code/app/lsp_client.py) | `lsp = LSPClient()` |
+| JavaScript | [app/lsp_client.js](../starter_templates/javascript/code/app/lsp_client.js) | `const lsp = new LSPClient()` |
+| TypeScript | [app/lsp_client.ts](../starter_templates/typescript/code/app/lsp_client.ts) | `const lsp = new LSPClient()` |
+| Go         | [app/lsp_client.go](../starter_templates/go/code/app/lsp_client.go) | `lsp, err := NewLSPClient()` |
+| Java       | [src/main/java/LSPClient.java](../starter_templates/java/code/src/main/java/LSPClient.java) | `var lsp = new LSPClient()` |
+| C#         | [src/LSPClient.cs](../starter_templates/csharp/code/src/LSPClient.cs) | `var lsp = new LSPClient()` |
+| C          | [src/lsp_client.h](../starter_templates/c/code/src/lsp_client.h) | `lsp_call(action, json)` reads the supplied URL |
+| C++        | [src/lsp_client.hpp](../starter_templates/cpp/code/src/lsp_client.hpp) | `LSPClient lsp;` |
+| Rust       | [src/lsp_client.rs](../starter_templates/rust/code/src/lsp_client.rs) | `let lsp = LspClient::new()?;` |
+| Zig        | [src/lsp_client.zig](../starter_templates/zig/code/src/lsp_client.zig) | `const lsp = try LSPClient.init(allocator, io, init.environ_map.get("CODECRAFTERS_LSP_URL"));` |
 
 Import/include the supplied file in the usual way. JavaScript uses
 `import { LSPClient } from "./lsp_client.js"`; Rust needs `mod lsp_client;`.
-The starter's `lsp_tool.json` supplies the initial model-facing tool schema.
+The starter's [lsp_tool.json](../starter_templates/all/code/lsp_tool.json) supplies
+the initial model-facing tool schema. Copy it to your solution's root, beside
+`your_program.sh`, if it is missing. Parse the file as JSON and append its single
+object to the `tools` array in your model requests; don't send the filename or
+JSON source string as a tool.
 Setup only connects the client, reads configuration, and advertises this schema.
 Definition calls begin in stage two. Add `findReferences` in stage three.
 
@@ -37,8 +47,16 @@ analyzes comes from `.lsp.json`: `command` and `args` select the server, and
 fixed Python language in the helper and no language argument to the constructor.
 The course tests configure Python; you can configure a different server locally.
 
-Call action `configuration` with `{}` to obtain the configured mapping. For a
-TypeScript server, for example, the result could be:
+Call action `configuration` with `{}` to read the configured mapping. The empty
+object is the request's argument list, not a configuration you must fill in.
+This action belongs to the course helper, not the LSP protocol. The response in
+the course tests is:
+
+```json
+{ "extensionToLanguage": { ".py": "python" } }
+```
+
+For a locally configured TypeScript server, the response could instead be:
 
 ```json
 { "extensionToLanguage": { ".ts": "typescript", ".tsx": "typescript" } }

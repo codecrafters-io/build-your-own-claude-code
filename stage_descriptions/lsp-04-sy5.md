@@ -15,13 +15,16 @@ feedback possible in the final stage.
 After a successful write to an open document:
 
 1. Increment that URI's document version.
-2. Send `textDocument/didChange` using the helper's notify action.
+2. Pass the complete object below to `client.call("notify", payload)`.
 3. Continue the existing agent loop.
 
 ```json
 {
-  "textDocument": { "uri": "file:///project/checkout.py", "version": 2 },
-  "contentChanges": [{ "text": "<complete new file contents>" }]
+  "method": "textDocument/didChange",
+  "params": {
+    "textDocument": { "uri": "file:///project/checkout.py", "version": 2 },
+    "contentChanges": [{ "text": "<complete new file contents>" }]
+  }
 }
 ```
 

@@ -7,11 +7,12 @@ five-stage registration, reference agent, fixtures, transport and regressions.
 
 - Complete offline tester suite from the updated companion checkout:
   `go test -count=1 -skip '^TestStages$' ./...` with TESTER_DIR set to that checkout.
-  This includes 17 graded cases, recorded-output comparisons, eleven broken-agent
+  This includes 16 graded cases, recorded-output comparisons, ten broken-agent
   regressions and course/tester stage registration checks.
 - Setup passes with an agent whose navigation handler is unimplemented. Setup
-  regressions reject a missing configuration call, a missing LSP tool, an LSP
-  tool advertised without a connection, and an incomplete required schema.
+  regressions reject a missing configuration call, a missing LSP tool, and an
+  incomplete required schema. Every LSP case supplies a connection; the reference
+  agent constructs its client and advertises LSP without an environment check.
 - `go test -count=1 -race ./internal/lsp_transport ./internal/lsp_manager`,
   including fragmented initialization, queued notifications, startup failure,
   cleanup and a configuration accessed through a project symlink.
@@ -34,13 +35,31 @@ five-stage registration, reference agent, fixtures, transport and regressions.
 - All three invoice behavior tests passed initially and after the complete API
   migration. The partial migration failed only checkout's behavior test;
   reporting and unrelated preview behavior remained correct.
-- Five stage descriptions contain 229, 201, 249, 280 and 296 prose words respectively,
-  excluding code blocks. Markdown formatting, JSON/YAML parsing, exact course/
+- All five stage descriptions stay under 350 prose words, excluding code blocks.
+  Markdown formatting, JSON/YAML parsing, exact course/
   tester YAML equality, starter/template parity, shared transport source parity
   and diff whitespace checks passed.
 - Setup and definition lookup render separately in the local course editor.
-  Setup links to the example project and client guide; definition lookup reuses
-  that connection without repeating configuration or tool registration.
+  Both the extension introduction and setup define a language server and LSP
+  and show the request/result route, so the context is visible while taking
+  the course. Setup identifies the supplied server/helper/client and lists
+  file setup, configuration retrieval, and tool registration steps.
+  The revised setup links directly to the schema and to a guide linking all ten
+  clients, explains the tester-provided connection and the empty
+  configuration request body, and covers existing checkouts missing these files.
+  Its Python example was exercised with the supplied client against a temporary
+  local endpoint: configuration retrieval and schema registration work from a
+  different working directory without a learner-side environment check. Linked
+  source files exist and match generated starters; the schema's GitHub link opens the
+  actual file. Definition lookup reuses setup's connection without repeating
+  configuration or tool registration.
+- Stages two through five use complete helper request/notification envelopes.
+  The definition response and matching model tool message, references request,
+  changed-import synchronization, and diagnostic error/clearing examples were
+  exercised through the supplied transport and controlled stdio fixture. All
+  JSON examples parse; the diagnostic ranges and Write result examples match
+  the fixture's actual publications. Diagnostics now has a numbered sequence
+  covering draining, saving/synchronization, waiting, selection, and tool results.
 
 The path fix matters: a helper initialized through a symlink must identify the
 same physical project as the agent's document URIs. Otherwise real-server
