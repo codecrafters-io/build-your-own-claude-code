@@ -1,104 +1,58 @@
-In this stage, Write will return diagnostics so the agent can repair an edit.
+In this stage, your agent will use everything you've built to change an API
+across several files from a single prompt.
 
-### The repair we're working toward
+### One change, several callers
 
-Pricing now returns a `Price` object with a `cents` field. Checkout stores it in
-`amount`, then incorrectly returns it from a function annotated to return int.
-The repair is `return amount["cents"]`.
+The invoice project currently returns integer cents from `pricing.total`.
+Checkout imports it as `invoice_total`; reporting calls it twice as `total`.
+Preview has an unrelated function with the same name.
 
-The tester supplies this incomplete edit. Its model requests repair only after
-Write returns the diagnostic.
+Give your agent this task:
 
-### Collect fresh feedback after each Write
-
-Keep a notification cursor, initially `0`, for the supplied connection. Follow
-these steps for each Write:
-
-1. **Before saving**, drain queued messages by calling
-   `client.call("notifications", {"after": cursor, "timeoutMs": 0})`.
-   Save the returned `cursor` so earlier messages cannot count as this edit's
-   feedback.
-2. **Save and synchronize.** After a successful save, send didChange as in the
-   previous stage. If the file isn't open, send didOpen with its new contents.
-   If saving fails, return the existing Write error.
-3. **Wait for feedback.** Call the same notifications action with
-   `{"after": cursor, "timeoutMs": 1000}`. Advance the cursor after every batch,
-   including batches about other files. Repeat up to an overall deadline, for
-   example three seconds.
-4. **Select a fresh publication.** Look for
-   [`textDocument/publishDiagnostics`][diagnostics] for the written URI.
-   Discard reports whose version is older than the current
-   document. Accept unversioned reports in arrival order. Replace that URI's
-   previous diagnostic list, including when the new list is empty.
-5. **Return the result.** Include the selected diagnostics in this Write's tool
-   result and continue the agent loop. On timeout, return a feedback error.
-   An empty notification batch is not a clean diagnostic report.
-
-A notifications response can look like this:
-
-```json
-{
-  "cursor": 8,
-  "notifications": [
-    {
-      "method": "textDocument/publishDiagnostics",
-      "params": {
-        "uri": "file:///project/checkout.py",
-        "version": 2,
-        "diagnostics": [
-          {
-            "range": {
-              "start": { "line": 5, "character": 11 },
-              "end": { "line": 5, "character": 17 }
-            },
-            "severity": 1,
-            "message": "Type Price is not assignable to return type int"
-          }
-        ]
-      }
-    }
-  ]
-}
+```text
+Change pricing.total to return a Price TypedDict with a cents field.
+Use LSP to find the implementation and its callers. Update checkout and
+reporting so they still return integer cents. Leave preview.total unchanged
+and run python3 -m unittest -v test_invoice.py to check the result.
 ```
 
-### Return feedback to the model
+The new pricing API should look like this:
 
-An example Write result:
+```python
+from typing import TypedDict
 
-```json
-{
-  "written": "/project/checkout.py",
-  "uri": "file:///project/checkout.py",
-  "diagnostics": [
-    {
-      "range": {
-        "start": { "line": 5, "character": 11 },
-        "end": { "line": 5, "character": 17 }
-      },
-      "severity": 1,
-      "message": "Type Price is not assignable to return type int"
-    }
-  ]
-}
+
+class Price(TypedDict):
+    cents: int
+
+
+def total(price: int, quantity: int) -> Price:
+    return {"cents": price * quantity}
 ```
 
-Keep LSP read-only; diagnostics belong in Write's result. Serialize this value
-as JSON in the tool message's `content`, with the matching `tool_call_id`.
-After repair, a fresh empty publication produces:
+Each affected call must now read the `cents` field. Checkout should still return
+`500`, and reporting should still return `600` after adding both amounts.
 
-```json
-{
-  "written": "/project/checkout.py",
-  "uri": "file:///project/checkout.py",
-  "diagnostics": []
-}
-```
+### Bring the previous stages together
+
+Reuse your existing connection, LSP handler, and agent loop:
+
+1. **Find the implementation.** Follow checkout's `invoice_total` alias with
+   `goToDefinition`, then Read the returned file.
+2. **Find the callers.** Use `findReferences` on `pricing.total`, then Read the
+   affected files. The results identify checkout and reporting, excluding preview.
+3. **Make the edits.** Let the model use Write to update pricing and both callers.
+   Keep sending didChange for open documents, as in the previous stage, so later
+   lookups see the edited code.
+4. **Check the result.** Return Bash's test output to the model so it can confirm
+   that the original behavior is preserved.
+
+This is a capstone: it adds no new LSP operation or diagnostic handling. Your
+agent's tools should work together without hardcoding the migration in a handler.
 
 ### Tests
 
-Cases cover repair, clearing, unversioned reports, stale versions, and missing
-feedback. The fixture publishes once per open/change; real servers control timing.
-Unversioned reports cannot prove which edit was analyzed. Cleared diagnostics
-establish that reported errors are gone; project tests check behavior.
-
-[diagnostics]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics
+The tester exercises navigation, reads, edits, follow-up lookups, and the Bash
+test run through your agent loop. It checks the new pricing result, both callers'
+integer results, synchronization, and that unrelated files remain unchanged.
+Diagnostic publications are not required to complete this stage.

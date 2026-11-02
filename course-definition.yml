@@ -5,10 +5,10 @@ release_status: "beta"
 description_md: |-
   Build a terminal-based AI coding assistant that reads files, edits code, and runs commands. Learn large language model (LLM) APIs, tool calling, and agent loops.
 
-  Then add Skills and language-server support to find relevant code and use diagnostic feedback to repair mistakes.
+  Then add Skills and language-server support to find relevant code and complete changes across multiple files.
 
 short_description_md: |-
-  Build an AI coding agent with tool calling, Skills, and language-server feedback
+  Build an AI coding agent with tool calling, Skills, and language-server navigation
 
 completion_percentage: 15
 
@@ -42,7 +42,7 @@ marketing:
         Two extensions build on that agent:
 
         * Skills: load reusable task instructions when needed, pass arguments, run bundled scripts, and hand a skill to a subagent.
-        * Language Server Protocol (LSP): find definitions and references, synchronize edits, and return diagnostic feedback so the agent can repair mistakes.
+        * Language Server Protocol (LSP): find definitions and references, synchronize edits, and use those tools to update an API across files.
 
         You'll finish with a working codebase you can inspect, modify, and extend.
     - question_markdown: "What exactly will I learn?"
@@ -56,12 +56,12 @@ marketing:
 
         The Skills extension covers discovering instructions on disk, loading them on demand, substituting arguments, and running a skill in a separate agent conversation.
 
-        The LSP extension covers symbol navigation, document synchronization, and asynchronous diagnostics. You'll connect those results to your existing tools so the model can act on errors after editing.
+        The LSP extension covers symbol navigation and document synchronization. In the final capstone, your agent combines those capabilities with Read, Write, and Bash to change an API and update its callers.
     - question_markdown: "Why should I build such a project?"
       answer_markdown: |-
         Building an agent makes its behavior visible. You can follow a model's tool request into your own code, inspect the result it receives, and see why it takes another step or stops.
 
-        One useful milestone is watching your program read a file, change it, and use feedback to continue working from a single prompt. In the LSP extension, you'll see how a successful file write can still leave a type error, and how returning that error lets the agent attempt a repair.
+        One useful milestone is watching your program read a file, change it, and use feedback to continue working from a single prompt. In the LSP extension, you'll watch the agent follow a symbol across files, update its callers, and run tests to check the result.
 
         That gives you practical experience for debugging coding agents and experimenting with your own tools and workflows.
     - question_markdown: "What are the pre-requisites for this challenge?"
@@ -110,8 +110,8 @@ extensions:
       tools communicate with it.
 
       In this extension, you'll connect your agent to a supplied language server,
-      add code navigation, and return diagnostic feedback so it can repair mistakes
-      after editing.
+      add code navigation, and keep analysis current after edits. Finish by using
+      those capabilities to change an API and update its callers across files.
 
 stages:
   - slug: "yy2"
@@ -230,8 +230,8 @@ stages:
       Synchronize successful writes so the language server answers questions about the code your agent just saved.
 
   - slug: "ql9"
-    name: "Catch an error after editing"
+    name: "Change an API across files"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      Return diagnostic feedback after Write and watch your existing agent loop repair a caller missed during an API change.
+      Bring navigation, synchronized edits, and your existing tools together to migrate an API, update its callers, and run the project tests.

@@ -3,7 +3,31 @@
 Checked locally on 2 November 2026. The companion tester contains the matching
 five-stage registration, reference agent, fixtures, transport and regressions.
 
-## Passed
+## Capstone revision verified
+
+Stage ql9 now combines navigation, reads, synchronized edits, and Bash to migrate
+pricing and both callers. It adds no diagnostic-handling requirement.
+
+- Full offline suite: `go test -count=1 -skip '^TestStages$' ./...` with TESTER_DIR
+  set to the updated companion tester checkout. All packages passed, including
+  recorded output comparisons for all five stages (14 graded cases).
+- The reference agent no longer collects diagnostic publications. Both capstone
+  cases pass, including a server that never publishes diagnostics.
+- Broken-agent regressions reject unsynchronized edits, a missed reporting caller,
+  an unrelated preview edit, and lost Bash output. A separate regression rejects
+  fabricated passing test output when reporting was never migrated.
+- Equivalent pricing source using `dict(cents=...)` passes the behavior checks;
+  the capstone does not require the scripted model's exact source text.
+- The updated reference integration passed against installed Pyright: definition,
+  references, edited-import synchronization, the complete Price migration, and
+  all three invoice behavior tests. Follow-up navigation sees the updated API.
+- The rewritten stage renders in the local course editor. The stage ID remains
+  ql9; the title is now "Change an API across files".
+
+The checks below describe the earlier diagnostics design and remain historical
+evidence for the helper and product integration, not the revised capstone.
+
+## Earlier diagnostics design (historical)
 
 - Complete offline tester suite from the updated companion checkout:
   `go test -count=1 -skip '^TestStages$' ./...` with TESTER_DIR set to that checkout.
@@ -74,11 +98,11 @@ reference results can omit callers even while the controlled fixture passes.
   inclusion and generated-starter parity do not establish runtime correctness.
 - Live-model reliability and the existing 100-run live flakiness check with a
   valid CODECRAFTERS_SECRET_OPENROUTER_API_KEY.
-- A learner pacing trial, especially the first navigation stage and notification
-  freshness in the finale.
+- A learner pacing trial, especially the first navigation stage and the coordinated
+  API migration in the finale.
 - Deploy matching course content and tester registration with the allocated
   stage IDs cx7, gz6, rb6, bn2 and ql9. These use the first five slugs supplied
   from the backend generator on 2 November 2026. No publication was performed.
 
-Scripted integration runs prove the wiring and causal feedback gate. They do not
-prove that a live model will make the same initial mistake or repair it reliably.
+Scripted integration runs prove the tool wiring and migration checks. They do not
+prove that a live model will reliably choose the required navigation and edits.

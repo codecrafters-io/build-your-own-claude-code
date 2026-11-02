@@ -7,8 +7,8 @@ the local name `invoice_total`. The file on disk is correct, but definition
 lookup still points to pricing: the server has its own copy from didOpen.
 
 Send the edit to that same server and repeat the query. It should now point to
-`discounts.total`. This is also the document update that will make diagnostic
-feedback possible in the final stage.
+`discounts.total`. In the final stage, the same synchronization keeps analysis
+current while your agent updates several files.
 
 ### Extend your Write handler
 
