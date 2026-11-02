@@ -35,13 +35,16 @@ marketing:
   frequently_asked_questions:
     - question_markdown: "What exactly will I build?"
       answer_markdown: |-
-        You'll build your own Claude Code: an AI coding agent that takes a task in plain English and works on your project.
+        You'll build a command-line program in a supported language of your choice. Given a prompt, it calls an LLM, executes the tools the model requests, and returns their results to the model until it produces a final response.
 
-        Ask it to "Fix the invoice calculation and run the tests." Your agent can read the relevant files, edit the code, run the tests, and use their output to decide what to do next.
+        The six base stages give your agent tools to read files, write changes, and run shell commands. You can ask it to inspect a project, make an edit, and run a command to check the result.
 
-        With Skills, it can load instructions for a task and hand work to a subagent. With LSP, it can find the right code across files and receive type errors after an edit, so it can catch and repair its own mistakes.
+        Two extensions build on that agent:
 
-        You'll be able to run your agent on your own projects and add tools for the workflows you care about.
+        * Skills: load reusable task instructions when needed, pass arguments, run bundled scripts, and hand a skill to a subagent.
+        * Language Server Protocol (LSP): find definitions and references, synchronize edits, and return diagnostic feedback so the agent can repair mistakes.
+
+        You'll finish with a working codebase you can inspect, modify, and extend.
     - question_markdown: "What exactly will I learn?"
       answer_markdown: |-
         In the six base stages, you'll learn how to:
