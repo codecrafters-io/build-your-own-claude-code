@@ -28,7 +28,26 @@ Import/include the supplied file in the usual way. JavaScript uses
 The starter's `lsp_tool.json` supplies the initial model-facing tool schema.
 Add `findReferences` to its operation enum in stage two.
 
-## Three transport actions
+## Select the analyzed language
+
+The client is written in your agent's implementation language. The language it
+analyzes comes from `.lsp.json`: `command` and `args` select the server, and
+`extensionToLanguage` maps file extensions to document language IDs. There is no
+fixed Python language in the helper and no language argument to the constructor.
+The course tests configure Python; you can configure a different server locally.
+
+Call action `configuration` with `{}` to obtain the configured mapping. For a
+TypeScript server, for example, the result could be:
+
+```json
+{ "extensionToLanguage": { ".ts": "typescript", ".tsx": "typescript" } }
+```
+
+Use the entry for the file's extension as `didOpen.textDocument.languageId`.
+Report an unsupported file extension if it has no entry. The helper requires a
+nonempty mapping; it does not guess a language or install a server.
+
+## Transport actions
 
 All clients provide `call(action, payload)` (capitalized `Call` in Go/C#).
 Java, C#, C and Zig accept serialized JSON; their results are serialized JSON.

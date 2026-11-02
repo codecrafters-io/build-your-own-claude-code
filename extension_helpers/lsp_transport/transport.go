@@ -24,20 +24,21 @@ type Notification struct {
 }
 
 type Transport struct {
-	URL           string
-	command       *exec.Cmd
-	input         io.WriteCloser
-	output        io.ReadCloser
-	server        *http.Server
-	mu            sync.Mutex
-	writeMu       sync.Mutex
-	nextID        int
-	pending       map[string]chan Message
-	notifications []Notification
-	changed       chan struct{}
-	failure       error
-	done          chan struct{}
-	closeOnce     sync.Once
+	URL                 string
+	extensionToLanguage map[string]string
+	command             *exec.Cmd
+	input               io.WriteCloser
+	output              io.ReadCloser
+	server              *http.Server
+	mu                  sync.Mutex
+	writeMu             sync.Mutex
+	nextID              int
+	pending             map[string]chan Message
+	notifications       []Notification
+	changed             chan struct{}
+	failure             error
+	done                chan struct{}
+	closeOnce           sync.Once
 }
 
 // Start owns one configured server until Close. The HTTP facade is course scaffolding.
@@ -55,8 +56,9 @@ func Start(configurationPath string) (*Transport, error) {
 		return nil, err
 	}
 	var configurations map[string]struct {
-		Command string   `json:"command"`
-		Args    []string `json:"args"`
+		Command             string            `json:"command"`
+		Args                []string          `json:"args"`
+		ExtensionToLanguage map[string]string `json:"extensionToLanguage"`
 	}
 	if err = json.Unmarshal(data, &configurations); err != nil {
 		return nil, err
@@ -66,6 +68,10 @@ func Start(configurationPath string) (*Transport, error) {
 	}
 	t := &Transport{pending: map[string]chan Message{}, changed: make(chan struct{}), done: make(chan struct{})}
 	for _, configuration := range configurations {
+		if len(configuration.ExtensionToLanguage) == 0 {
+			return nil, fmt.Errorf("expected extensionToLanguage in %s", configurationPath)
+		}
+		t.extensionToLanguage = configuration.ExtensionToLanguage
 		t.command = exec.Command(configuration.Command, configuration.Args...)
 	}
 	t.command.Dir = root
@@ -205,6 +211,8 @@ func (t *Transport) serve(w http.ResponseWriter, r *http.Request, action string)
 	var result any
 	var err error
 	switch action {
+	case "configuration":
+		result = map[string]any{"extensionToLanguage": t.extensionToLanguage}
 	case "request":
 		result, err = t.request(body.Method, body.Params)
 	case "notify":

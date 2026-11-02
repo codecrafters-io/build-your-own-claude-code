@@ -3,8 +3,9 @@ to its implementation.
 
 ### Why give an agent a language server?
 
-The opening replay changes invoice pricing to return `{"cents": 500}` instead of `500`.
-Your agent saves a caller that still returns the whole object as an integer.
+Suppose you change invoice pricing to return `{"cents": 500}` instead of `500`.
+Your agent updates a caller but leaves it returning the whole object where an
+integer is expected.
 
 ```text
 Write: File saved.
@@ -21,10 +22,10 @@ imported alias and an unrelated `preview.total`.
 
 ### Connect your existing tool loop
 
-The course starts the configured language server. The supplied client connects
-in one line, for example `lsp = LSPClient()` in Python. No server installation,
-subprocess code, framing, or handshake is needed. It analyzes Python regardless
-of the language you use to implement your agent.
+Connect using the supplied client for your implementation language. The tests
+configure a Python language server; your agent can use any supported course
+language. The helper starts the server selected in `.lsp.json`, so no server
+installation, subprocess code, framing, or handshake is needed.
 
 If CODECRAFTERS_LSP_URL is absent, keep your original tools and prompt handling.
 
@@ -40,7 +41,9 @@ existing loop receives this call:
 }
 ```
 
-read the file and send `textDocument/didOpen` once per URI:
+read the file and send `textDocument/didOpen` once per URI. Use the helper's
+`configuration` action with `{}` to obtain `extensionToLanguage`, then look up
+the file extension to set `languageId`. Here `.py` maps to `python`:
 
 ```json
 {

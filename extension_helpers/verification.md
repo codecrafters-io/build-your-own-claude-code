@@ -12,6 +12,10 @@ four-stage registration, reference agent, fixtures, transport and regressions.
 - `go test -count=1 -race ./internal/lsp_transport ./internal/lsp_manager`,
   including fragmented initialization, queued notifications, startup failure,
   cleanup and a configuration accessed through a project symlink.
+- Configured-language regressions: the helper exposes a TypeScript extension
+  map, rejects missing mappings, and the reference agent opens documents using
+  the configured language ID while rejecting unmapped extensions. The offline
+  suite and real Pyright migration also pass with configuration-based selection.
 - `go vet ./...` in the tester and standalone transport build.
 - Reference integration against Pyright 1.1.414: definition, cross-file
   references, definition after an edited import, the Price API migration,
@@ -27,7 +31,7 @@ four-stage registration, reference agent, fixtures, transport and regressions.
 - All three invoice behavior tests passed initially and after the complete API
   migration. The partial migration failed only checkout's behavior test;
   reporting and unrelated preview behavior remained correct.
-- Four stage descriptions contain 311, 249, 280 and 295 prose words respectively,
+- Four stage descriptions contain 336, 249, 280 and 295 prose words respectively,
   excluding code blocks. Markdown formatting, JSON/YAML parsing, exact course/
   tester YAML equality, starter/template parity, shared transport source parity
   and diff whitespace checks passed.
