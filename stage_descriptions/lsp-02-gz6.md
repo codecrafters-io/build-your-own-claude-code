@@ -23,10 +23,11 @@ Your existing tool dispatcher will receive arguments like these:
 2. Open the URI once with `client.call("notify", payload)` below. Set languageId
    using the extension mapping saved during setup.
 3. Send `client.call("request", payload)` below. Subtract one from both tool coordinates;
-   columns count UTF-16 code units.
+   columns count UTF-16 code units (see [LSP positions][position]).
 4. Return the result in the matching model tool result and continue the agent loop.
 
-The **notify** payload opens the file with its complete contents:
+The **notify** payload opens the file with its complete contents
+([didOpen specification][did-open]):
 
 ```json
 {
@@ -42,7 +43,8 @@ The **notify** payload opens the file with its complete contents:
 }
 ```
 
-The **request** payload asks for the definition:
+The **request** payload asks for the definition
+([definition specification][definition]):
 
 ```json
 {
@@ -94,3 +96,7 @@ tool errors.
 Tests check that the lookup reaches pricing.total and the model can read it.
 Cases cover multiple locations, null, errors, and coordinates. Reuse the client
 and tool registration from setup; this stage adds document opening and lookup.
+
+[position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
+[did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen
+[definition]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_definition

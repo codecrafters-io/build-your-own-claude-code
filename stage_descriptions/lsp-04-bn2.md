@@ -12,7 +12,8 @@ feedback possible in the final stage.
 
 ### Extend your Write handler
 
-After a successful write to an open document:
+After a successful write to an open document, send a
+[didChange notification][did-change]:
 
 1. Increment that URI's document version.
 2. Pass the complete object below to `client.call("notify", payload)`.
@@ -48,3 +49,5 @@ writes must leave its analysis unchanged.
 
 The test output shows the updated target. Restarting the server or returning
 the old location doesn't satisfy synchronization.
+
+[did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange

@@ -25,8 +25,9 @@ these steps for each Write:
    `{"after": cursor, "timeoutMs": 1000}`. Advance the cursor after every batch,
    including batches about other files. Repeat up to an overall deadline, for
    example three seconds.
-4. **Select a fresh publication.** Look for `textDocument/publishDiagnostics`
-   for the written URI. Discard reports whose version is older than the current
+4. **Select a fresh publication.** Look for
+   [`textDocument/publishDiagnostics`][diagnostics] for the written URI.
+   Discard reports whose version is older than the current
    document. Accept unversioned reports in arrival order. Replace that URI's
    previous diagnostic list, including when the new list is empty.
 5. **Return the result.** Include the selected diagnostics in this Write's tool
@@ -99,3 +100,5 @@ Cases cover repair, clearing, unversioned reports, stale versions, and missing
 feedback. The fixture publishes once per open/change; real servers control timing.
 Unversioned reports cannot prove which edit was analyzed. Cleared diagnostics
 establish that reported errors are gone; project tests check behavior.
+
+[diagnostics]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics

@@ -6,9 +6,9 @@ We're preparing to change `pricing.total` from an integer to an object with a
 `cents` field. Checkout imports it as `invoice_total`; reporting calls it under
 its original name. Preview defines an unrelated `total`.
 
-Searching for `total` requires interpreting those matches. References asks the
-language server for the locations associated with this particular symbol. The
-agent can read those locations before editing.
+Searching for `total` requires interpreting those matches.
+[References][references] asks the language server for the locations associated
+with this particular symbol. Your agent can read those locations before editing.
 
 ### Add references to your LSP tool
 
@@ -52,3 +52,5 @@ multiple source files, unrelated names and comments, and no references.
 The visible payoff is a list of affected pricing locations in checkout and
 reporting, with unrelated preview code excluded. Your handler returns locations;
 the model uses the existing Read tool to inspect them.
+
+[references]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_references
