@@ -1,8 +1,10 @@
-In this stage, you'll handle the LSP tool's first operation: `goToDefinition`.
+In this stage, you'll let your agent find the function behind a call using
+`goToDefinition`.
 
-### The first lookup
+### Why look up a definition?
 
-In the supplied invoice project, `checkout.py` contains:
+Suppose the user asks: "How is the checkout total calculated?" After reading
+`checkout.py` in the supplied invoice project, the model sees:
 
 ```python
 from pricing import total as invoice_total
@@ -12,25 +14,14 @@ def checkout_total() -> int:
     return invoice_total(250, 2)
 ```
 
-The import gives `total` from `pricing.py` the local name `invoice_total`.
-Calling `invoice_total(250, 2)` therefore runs the `total` function.
-
-After reading `checkout.py`, the model can ask: "Where is the function called
-here defined?" It requests `LSP` with `goToDefinition`, pointing at
-`invoice_total` on line 5. Your agent asks the language server, which returns
-the location of `total` in `pricing.py`.
-
-The lookup returns a location, not the function's code. The model then requests
-Read for `pricing.py` to see the implementation:
-
-```python
-def total(price: int, quantity: int) -> int:
-    return price * quantity
-```
+`invoice_total` is an alias for `pricing.total`. The model requests
+`goToDefinition` to locate the function, then Read to see how it calculates
+the total.
 
 ### Handle a definition call
 
-Your existing tool dispatcher will receive arguments like these:
+When the model calls your `LSP` tool to find a definition (`goToDefinition`),
+your dispatcher passes these arguments to the handler:
 
 ```json
 {
@@ -41,15 +32,18 @@ Your existing tool dispatcher will receive arguments like these:
 }
 ```
 
-1. Read the file and convert its absolute path to an encoded file URI.
-2. Open the URI once with `client.call("notify", payload)` below. Set languageId
-   using the extension mapping saved during setup.
-3. Send `client.call("request", payload)` below. Subtract one from both tool coordinates;
-   columns count UTF-16 code units (see [LSP positions][position]).
-4. Return the result in the matching model tool result and continue the agent loop.
+This selects `invoice_total` at line 5, character 12 in `checkout.py`.
+Reuse the `lsp` client and extension mapping from setup.
 
-The **notify** payload opens the file with its complete contents
-([didOpen specification][did-open]):
+### 1. Give the server the source file
+
+Inside your handler, read `filePath` (`checkout.py`) from disk. Resolve its
+absolute path and convert it to an encoded file URI. These examples assume
+`/project/checkout.py`; use your actual project path.
+
+On the first lookup for each URI, send `lsp.call("notify", payload)` with this
+[`didOpen` payload][did-open]. Fill `text` with the complete file contents and
+get `languageId` from the saved extension mapping (`.py` maps to `python`).
 
 ```json
 {
@@ -59,14 +53,20 @@ The **notify** payload opens the file with its complete contents
       "uri": "file:///project/checkout.py",
       "languageId": "python",
       "version": 1,
-      "text": "<complete file contents>"
+      "text": "<complete contents of checkout.py>"
     }
   }
 }
 ```
 
-The **request** payload asks for the definition
-([definition specification][definition]):
+Track opened URIs so later lookups reuse the document.
+
+### 2. Ask where the function is defined
+
+Send `result = lsp.call("request", payload)` with this
+[`definition` payload][definition]. Use the same URI. Subtract one from the
+tool's line and character because LSP positions start at zero. Both use UTF-16
+code units for columns (see [positions][position]).
 
 ```json
 {
@@ -78,9 +78,9 @@ The **request** payload asks for the definition
 }
 ```
 
-### Return the location to the model
+### 3. Return the location to the model
 
-The helper returns the server's result, for example:
+For this call, the server returns the location of `total` in `pricing.py`:
 
 ```json
 {
@@ -92,32 +92,15 @@ The helper returns the server's result, for example:
 }
 ```
 
-This identifies `total` on the first line of `pricing.py`. The returned range
-stays zero-based; only incoming model tool coordinates are converted.
-
-Use your existing tool-result handling to send this value back. For example,
-in Python, `result` is the helper response and `tool_call` is the model's call:
-
-```python
-messages.append({
-    "role": "tool",
-    "tool_call_id": tool_call["id"],
-    "content": json.dumps(result),
-})
-```
-
-Continue the loop. The model can decode the URI and request Read with
-`file_path: "/project/pricing.py"` to inspect the implementation. Use the
-actual project path in place of `/project` throughout these examples.
-
-Preserve single locations, arrays, and null results; return protocol errors as
-tool errors.
+Serialize `result` into your existing tool-result message with the matching
+`tool_call_id`. Preserve single locations, arrays, null, and zero-based ranges;
+return protocol errors as tool errors. Continue the loop so the model can
+request Read for `/project/pricing.py` and explain the calculation.
 
 ### Tests
 
-Tests check that the lookup reaches pricing.total and the model can read it.
-Cases cover multiple locations, null, errors, and coordinates. Reuse the client
-and tool registration from setup; this stage adds document opening and lookup.
+Run `codecrafters test`. It checks document opening, lookup coordinates, returned
+locations, null results, errors, and the model's follow-up Read.
 
 [position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen
