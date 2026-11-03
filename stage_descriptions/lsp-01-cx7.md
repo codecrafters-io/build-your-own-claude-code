@@ -37,23 +37,16 @@ directly. **LSP finds the implementation; Read retrieves its contents.** Later,
 you'll also use LSP to find references, helping the model identify callers that
 may need updating when it changes a function.
 
-### How the connection works
+### The supplied LSP client
 
-```text
-Agent -> supplied client -> helper -> language server
-```
+Your agent communicates with the language server through the supplied LSP client.
+During course tests, the environment starts the server and handles message
+delivery for you. Your agent is responsible for sending file contents, asking
+navigation questions, and returning the server's answers to the model.
 
-- **Your agent** handles the model's tool calls and sends calls through the client.
-- **The supplied client** connects to the helper and forwards each call to it.
-- **The helper** starts and initializes the language server and handles LSP's
-  JSON-RPC message framing, so you don't have to implement that transport yourself.
-- **The language server** analyzes the project and answers definition and reference
-  requests.
-
-During course tests, the environment runs the helper and language server before
-starting your agent. It supplies the same Python project in your agent's working
-directory regardless of the language you use to implement your agent. You don't
-need to install or launch a server for these tests.
+The tester supplies the same Python project in your agent's working directory
+regardless of the language you use to implement your agent. You don't need to
+install or launch a server for these tests.
 
 ### Your task
 
@@ -68,10 +61,10 @@ Complete this setup before your first model request:
 
 ### Connect the client and read configuration
 
-The helper's `configuration` action tells you which file extensions the server
-handles and the language ID for each. The empty `{}` means this action needs no
-additional arguments. It reads the helper's configuration; the server has already
-been initialized for you.
+Call `configuration` through the supplied client to learn which file extensions
+the server handles and the language ID for each. The empty `{}` means this action
+needs no additional arguments. You're reading the existing configuration; the
+server has already been initialized for you.
 
 Use the supplied client file with the setup below. You won't need to edit the
 client itself.
@@ -321,7 +314,7 @@ alive until after the agent loop. The deferred cleanup above runs on exit.
 
 {{/lang_is_zig}}
 
-The helper's `configuration` action returns:
+The `configuration` call returns:
 
 ```json
 { "extensionToLanguage": { ".py": "python" } }
