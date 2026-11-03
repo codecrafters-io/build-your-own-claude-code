@@ -1,5 +1,4 @@
-In this stage, you'll let your agent find the function behind a call using
-`goToDefinition`.
+In this stage, you'll implement `goToDefinition` so your agent can find the function behind a call.
 
 ### Why look up a definition?
 
@@ -13,8 +12,8 @@ def checkout_total() -> int:
     return invoice_total(250, 2)
 ```
 
-`goToDefinition` resolves `invoice_total` to `pricing.total`; Read retrieves
-its implementation. These Python files are test inputs for every agent language.
+`goToDefinition` resolves `invoice_total` to `pricing.total`. Read retrieves
+its implementation.
 
 ### Implement your LSP handler
 
@@ -59,7 +58,7 @@ Track successfully opened URIs. Wait for notification completion before requesti
 ### 2. Ask where the function is defined
 
 Send action `request` with this [`definition` payload][definition]. Reuse the
-URI; subtract one from the input line and character. LSP [positions][position]
+URI. Subtract one from the input line and character. LSP [positions][position]
 use zero-based UTF-16 columns.
 
 ```json
@@ -75,7 +74,7 @@ use zero-based UTF-16 columns.
 ### 3. Call your client and return the result
 
 Use the complete payloads above. `isOpen`/`is_open` is the current URI's stored
-flag; save its updated value even if the request fails.
+flag. Save its updated value even if the request fails.
 
 {{#lang_is_python}}
 
@@ -308,7 +307,7 @@ A definition result can be:
 ```
 
 Use the computed `content` and matching `tool_call_id`. Preserve locations,
-arrays, and null; keep returned URIs and ranges unchanged. The model decodes
+arrays, and null. Keep returned URIs and ranges unchanged. The model decodes
 URIs for Read and converts positions back to one-based for later LSP calls.
 
 Use the same error-result pattern for unknown operations, missing files, and
@@ -316,9 +315,27 @@ unmapped extensions. Preserve the helper's error message and continue the loop.
 
 ### Tests
 
-Run `codecrafters test`. Cases cover a location plus follow-up Read, an array,
-null, and error `-32603` (`"Definition unavailable"`). The error message must
-reach the model.
+The tester writes the invoice project and runs:
+
+```bash
+$ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Read the returned implementation and explain which total is called; preview.total is unrelated."
+```
+
+With `/project` representing the actual project directory, the matching LSP tool
+result must preserve:
+
+```json
+{"uri":"file:///project/pricing.py","range":{"start":{"line":0,"character":4},"end":{"line":0,"character":9}}}
+```
+
+The subsequent Read result must preserve:
+
+```json
+"def total(price: int, quantity: int) -> int:\n    return price * quantity\n"
+```
+
+Other cases return an array, null, and error `-32603` (`"Definition unavailable"`).
+Preserve the server's error message. The final explanation can vary.
 
 [position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen

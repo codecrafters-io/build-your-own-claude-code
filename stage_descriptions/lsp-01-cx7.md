@@ -1,32 +1,31 @@
-Connect the supplied client, retrieve configuration, and advertise LSP.
+In this stage, you'll connect the supplied LSP client and advertise the `LSP` tool.
+
+### How the connection works
+
 The **[Language Server Protocol (LSP)][lsp]** lets programs ask a language server
 about code, such as where a function is defined.
 
-- **Agent:** your program; executes the model's tool calls.
-- **Client:** supplied file you import; forwards calls to the helper.
-- **Helper:** launched by the tester; starts the server and handles LSP messages.
+- **Agent:** executes the model's tool calls.
+- **Client:** supplied file that forwards calls to the helper.
+- **Helper:** starts the server and handles LSP messages.
 - **Language server:** analyzes project code and answers definition/reference requests.
 
 ```text
 Agent -> supplied client -> helper -> language server
 ```
 
-For example, next stage the model asks where `invoice_total` in the supplied
-[invoice project][example]'s `checkout.py` is defined. Your agent sends a
-definition request through the client. The helper forwards it to the language
-server, which returns a location in `pricing.py`. Your agent returns that
-location to the model. No server installation is needed. These Python test
-inputs work with every agent language.
+In later stages, `invoice_total` in the supplied [invoice project][example]'s
+`checkout.py` resolves to `pricing.py`. Your agent sends a definition request
+through the client, then returns the server's location to the model. The tester
+supplies this Python project for every agent language. No server installation is needed.
 
 ### Your task
 
 Before your first model request:
 
-1. If missing, copy the **entire linked client file** to its shown
-   path, relative to your repository root.
-2. Import/include the client and call `configuration` with `{}` before the agent
-   loop. Store `extensionToLanguage` in a variable or agent field your tool
-   handler can read.
+1. Copy the **entire client file** below to its shown path if missing.
+2. Call `configuration` with `{}` before the agent loop. Save
+   `extensionToLanguage` for your tool handler.
 3. Add the LSP specification below to your model requests' `tools` array
    alongside Read, Write, and Bash.
 
@@ -59,7 +58,7 @@ cJSON *extension_to_language = cJSON_GetObjectItemCaseSensitive(
 ```
 
 There is no client constructor: each `lsp_call` uses the supplied connection.
-Keep `configuration` alive while using `extension_to_language`; call
+Keep `configuration` alive while using `extension_to_language`. Call
 `cJSON_Delete(configuration)` after the agent loop. Keep your existing libcurl
 cleanup after the loop too.
 
@@ -84,7 +83,7 @@ auto extension_to_language = configuration.at("extensionToLanguage");
 ```
 
 The client uses the starter's existing CPR and nlohmann JSON dependencies.
-Constructor, HTTP, and JSON errors propagate as exceptions; handle them with
+Constructor, HTTP, and JSON errors propagate as exceptions. Handle them with
 your agent's existing exception handling.
 
 [client-cpp]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/cpp/lsp_client.hpp
@@ -94,7 +93,7 @@ your agent's existing exception handling.
 {{#lang_is_csharp}}
 
 If missing, copy the **entire [client file][client-csharp]** to `src/LSPClient.cs`. The starter includes `.cs` files under `src/`
-automatically; no client import is needed. Add this using directive:
+automatically. No client import is needed. Add this using directive:
 
 ```csharp
 using System.Text.Json;
@@ -119,7 +118,7 @@ error handling.
 
 {{#lang_is_go}}
 
-If missing, copy the **entire [client file][client-go]** to `app/lsp_client.go`. Keep it in the same `package main` as your agent; no
+If missing, copy the **entire [client file][client-go]** to `app/lsp_client.go`. Keep it in the same `package main` as your agent. No
 client import is needed. Add `encoding/json` and `log` to your imports, then
 place this inside your startup function:
 
@@ -218,7 +217,7 @@ let extension_to_language = configuration["extensionToLanguage"]
     .ok_or("Missing extensionToLanguage mapping")?;
 ```
 
-The type is `LspClient`; both `new` and `call` return a `Result`. The `?`
+The type is `LspClient`. Both `new` and `call` return a `Result`. The `?`
 operator propagates errors from a function returning a compatible `Result`,
 such as the starter's `Result<(), Box<dyn std::error::Error>>`. If your startup
 function returns another type, handle these results explicitly instead.
@@ -231,7 +230,7 @@ function returns another type, handle these results explicitly instead.
 
 If missing, copy the **entire [client file][client-typescript]** to `app/lsp_client.ts`. From another file in `app/`, import the client and await
 the configuration call at module scope or inside your async startup function.
-The client returns `unknown`; give this action's response its expected type:
+The client returns `unknown`. Give this action's response its expected type:
 
 ```typescript
 import { LSPClient } from "./lsp_client.ts";
@@ -273,7 +272,7 @@ const extension_to_language = configuration.value.object
 
 `init` and `call` return error unions, so use `try` from a function returning an
 error union, as the starter does. Keep the response and parsed configuration
-alive until after the agent loop; the deferred cleanup above runs on exit.
+alive until after the agent loop. The deferred cleanup above runs on exit.
 
 [client-zig]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/zig/lsp_client.zig
 
@@ -285,7 +284,7 @@ The helper's `configuration` action returns:
 { "extensionToLanguage": { ".py": "python" } }
 ```
 
-Store `{ ".py": "python" }`; look up `.py` to get language ID `python`.
+Store `{ ".py": "python" }`. Look up `.py` to get language ID `python`.
 
 ### Advertise the LSP tool
 
@@ -294,7 +293,7 @@ Store `{ ".py": "python" }`; look up `.py` to get language ID `python`.
   "type": "function",
   "function": {
     "name": "LSP",
-    "description": "Resolve a symbol using the language server. Accepts one-based input positions. Returns raw LSP results with file URIs and zero-based UTF-16 ranges. Edit files with Write so the language server sees changes.",
+    "description": "Returns raw language-server results with file URIs and zero-based UTF-16 ranges.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -323,12 +322,38 @@ Store `{ ".py": "python" }`; look up `.py` to get language ID `python`.
 }
 ```
 
+Add this guidance to your existing system prompt:
+
+```text
+Use LSP for code navigation. Tool positions are one-based UTF-16.
+Edit files with Write so the language server sees changes.
+```
+
 ### Tests
 
-Run `codecrafters test` to check `configuration` and LSP parameter names, types,
-and `goToDefinition`.
+The tester supplies the invoice project and runs:
 
-Tests request only Read for `checkout.py` and `pricing.py`.
+```bash
+$ ./your_program.sh -p "Use only Read to inspect checkout.py and pricing.py. Explain how checkout uses the pricing function."
+```
+
+The configuration result must be:
+
+```json
+{ "extensionToLanguage": { ".py": "python" } }
+```
+
+The two Read tool results must preserve these exact file contents:
+
+```json
+"from pricing import total as invoice_total\n\n\ndef checkout_total() -> int:\n    return invoice_total(250, 2)\n"
+```
+
+```json
+"def total(price: int, quantity: int) -> int:\n    return price * quantity\n"
+```
+
+The model's final explanation can vary. This stage requests only Read.
 
 Optional: [run locally][local-run].
 

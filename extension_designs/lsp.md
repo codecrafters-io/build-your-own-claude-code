@@ -60,6 +60,9 @@ The payoff is watching the existing agent loop complete a change across files.
 No new code may be needed. The scripted sequence makes 11 tool calls; the base
 loop stage specifies no iteration cap. Stage four already exercises versions 2
 and 3 of one document; the capstone combines per-URI versions with several files.
+Read each file before its own first edit; reads and writes may alternate across
+files. Follow-up references target pricing.total's current definition rather
+than a fixed line. A separate scripted case moves that definition with a comment.
 Its references query opens pricing.py, so that Write requires didChange.
 Reports.py is indexed but closed: after Write, reuse didOpen with the new text.
 Read and returned reference locations do not open documents. A real server may

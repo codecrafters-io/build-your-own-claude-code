@@ -105,13 +105,11 @@ extensions:
   - slug: "lsp"
     name: "Language Server Protocol"
     description_markdown: |-
-      A language server analyzes source code to find definitions, references, and
-      type errors. Language Server Protocol (LSP) lets editors and other coding
-      tools communicate with it.
+      In this challenge extension, you'll add support for [LSP][lsp] to your Claude Code implementation.
 
-      In this extension, you'll connect your agent to a supplied language server,
-      add code navigation, and keep analysis current after edits. Finish by using
-      those capabilities to change an API and update its callers across files.
+      Along the way, you'll learn symbol navigation, document synchronization, and coordinated changes across files.
+
+      [lsp]: https://microsoft.github.io/language-server-protocol/
 
 stages:
   - slug: "yy2"
@@ -206,32 +204,32 @@ stages:
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      Explore the supplied example project, connect with the helper, and advertise the LSP tool. Navigation comes in the next stage.
+      In this stage, you'll connect the supplied LSP client and advertise the `LSP` tool.
 
   - slug: "gz6"
     name: "Find the implementation"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      Open a document and handle goToDefinition so your agent can follow a call to its implementation.
+      In this stage, you'll implement `goToDefinition` so your agent can find the function behind a call.
 
   - slug: "rb6"
     name: "Find the affected callers"
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      Find the callers of a specific symbol before changing its API, including aliased uses and excluding unrelated names.
+      In this stage, you'll implement `findReferences` to find the callers affected by an API change.
 
   - slug: "bn2"
     name: "Keep the analysis current"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      Synchronize successful writes so the language server answers questions about the code your agent just saved.
+      In this stage, you'll synchronize `Write` edits to keep language-server answers current.
 
   - slug: "ql9"
     name: "Change an API across files"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      Bring navigation, synchronized edits, and your existing tools together to migrate an API, update its callers, and run the project tests.
+      In this stage, you'll use your agent to change an API across several files from a single prompt.

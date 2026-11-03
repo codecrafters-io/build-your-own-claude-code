@@ -1,5 +1,28 @@
 # LSP revision verification
 
+## Extension review fixes - 3 November 2026
+
+- All five hooks match their marketing text. Every Tests section shows the
+  tester's command and literal tool results or migration outcomes. References
+  and synchronization have complete worked examples. Model instructions live
+  in the system prompt, and all ten starter schemas match that revised example.
+- The review skill's parser passes for every LSP stage. Per-language prose stays
+  under 350 words. JSON examples parse, reference locations match the controlled
+  server, and Python tokenization independently confirms their offsets.
+- The companion tester requires complete Read results during setup and definition
+  lookup. A broken Read handler is rejected. The capstone accepts reading and
+  editing each file in turn, but still requires each Read before that file's
+  first Write. Follow-up references use the definition's current position.
+- The full offline suite passes with 15 LSP cases, including a migration that
+  moves the definition with a comment. New regression tests were mutation-checked:
+  breaking Read validation, per-file ordering, or dynamic coordinates fails them.
+- The independent Pyright smoke check passes navigation, synchronization,
+  migration, and all five invoice tests. The revised descriptions render in
+  the local course editor.
+- Full `course-sdk compile` remains unverified locally: the installed binary
+  expects the older `starter-repository-definitions.yml` layout. The changed
+  shared schema matches all ten compiled starter copies directly.
+
 Checked locally on 2 November 2026. The companion tester contains the matching
 five-stage registration, reference agent, fixtures, transport and regressions.
 

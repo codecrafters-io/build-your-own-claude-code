@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "LSP",
-    "description": "Resolve a symbol using the language server. Accepts one-based input positions. Returns raw LSP results with file URIs and zero-based UTF-16 ranges. Edit files with Write so the language server sees changes.",
+    "description": "Returns raw language-server results with file URIs and zero-based UTF-16 ranges.",
     "parameters": {
       "type": "object",
       "properties": {
