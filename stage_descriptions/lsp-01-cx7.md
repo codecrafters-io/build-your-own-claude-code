@@ -259,8 +259,9 @@ Inside `main(init: std.process.Init) !void`, after the starter's `allocator` and
 `io` declarations:
 
 ```zig
-const lsp = try LSPClient.init(
+var lsp = try LSPClient.init(
     allocator, io, init.environ_map.get("CODECRAFTERS_LSP_URL"));
+defer lsp.deinit();
 const configuration_json = try lsp.call("configuration", "{}");
 defer allocator.free(configuration_json);
 const configuration = try std.json.parseFromSlice(

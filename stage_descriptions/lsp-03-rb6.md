@@ -15,8 +15,20 @@ with this particular symbol. Your agent can read those locations before editing.
 Add `findReferences` to the operation enum in your tool schema. Reuse document
 opening, file URIs, position conversion, and tool-result handling from definition lookup.
 
-For a call on `pricing.total`, pass this complete object to
-`lsp.call("request", payload)`, as in the definition stage:
+For this model tool call:
+
+```json
+{
+  "operation": "findReferences",
+  "filePath": "pricing.py",
+  "line": 1,
+  "character": 5
+}
+```
+
+Send action `request` with the complete payload below, using your language's
+client-call pattern from the definition stage. The input position 1:5 becomes
+LSP position 0:4:
 
 ```json
 {

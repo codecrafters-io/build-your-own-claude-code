@@ -39,6 +39,12 @@ The other clients accept their language's JSON values. Go returns
 Check the helper's error before using its result. JavaScript, TypeScript, and
 C# calls are asynchronous.
 
+After a C call returns NULL, `lsp_last_error()` exposes the helper's error text
+until the next call. Zig exposes that text through `lsp.lastError()` after
+`error.LSPTransportFailure`; use a mutable client and call `lsp.deinit()` on
+exit. These error strings are borrowed; copy them into the tool result before
+another call. For other Zig failures, use `@errorName(err)`.
+
 Send a notification:
 
 ```json

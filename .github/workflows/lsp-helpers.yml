@@ -27,6 +27,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y clang libcurl4-openssl-dev
       - name: Install Rust client dependencies
         run: rustup toolchain install stable --profile minimal --no-self-update && rustup default stable
+      - name: Install Zig client dependencies
+        run: |
+          curl -fsSL https://ziglang.org/download/0.17.0/zig-x86_64-linux-0.17.0.tar.xz -o "$RUNNER_TEMP/zig.tar.xz"
+          echo "1cbe9df9f27e6b78d14ccbca43b6703a404ef79ef1c463de901d7f088d4e2026  $RUNNER_TEMP/zig.tar.xz" | sha256sum -c -
+          tar -xf "$RUNNER_TEMP/zig.tar.xz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/zig-x86_64-linux-0.17.0" >> "$GITHUB_PATH"
       - name: Build and check the supplied transport
         working-directory: extension_helpers/lsp_transport
         run: |
@@ -34,3 +40,5 @@ jobs:
           go vet ./...
       - name: Exercise native clients
         run: python3 extension_helpers/verify_clients.py
+      - name: Verify client error handling
+        run: python3 extension_helpers/verify_client_errors.py

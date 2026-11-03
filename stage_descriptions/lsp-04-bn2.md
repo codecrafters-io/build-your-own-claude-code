@@ -3,28 +3,28 @@ through Write.
 
 ### Why is the answer still pointing to the old file?
 
-Your agent changes checkout's import from `pricing` to `discounts`, preserving
-the local name `invoice_total`. The file on disk is correct, but definition
-lookup still points to pricing: the server has its own copy from didOpen.
-
-Send the edit to that same server and repeat the query. It should now point to
-`discounts.total`. In the final stage, the same synchronization keeps analysis
-current while your agent updates several files.
+After your agent changes checkout's import from `pricing` to `discounts`,
+`invoice_total` should resolve to `discounts.total`. The server still sees the
+contents sent through `didOpen` until you synchronize the edit.
 
 Bash edits aren't synchronized in this stage. Include this guidance in your
 LSP tool description: "Edit files with Write so the language server sees changes."
 
 ### Extend your Write handler
 
-Compute the URI with the same function as your navigation handler so both
-handlers identify the same open document.
+An **open document** is a URI you've successfully sent with `didOpen`.
+Reading a file with Read does not open it in the language server.
+
+Reuse navigation's URI builder and document tracking.
 
 After a successful write to an open document, send a
 [didChange notification][did-change]:
 
 1. Increment that URI's document version.
-2. Pass the complete object below to `lsp.call("notify", payload)`.
-3. Continue the existing agent loop.
+2. Send action `notify` with the complete object below, using your language's
+   client-call pattern from definition lookup.
+3. Wait for notification completion before returning Write's tool result or
+   continuing the agent loop. Use `await` with asynchronous clients.
 
 ```json
 {
@@ -42,20 +42,19 @@ store a version for each URI. `didOpen` uses version 1, followed by 2, 3, and so
 
 After a successful Write to a supported closed file, send didOpen with its new
 contents. References may have indexed it; opening refreshes that copy even when
-the next query targets another file. Don't notify after failed writes. Reuse
-the supplied connection.
+the next query targets another file. Record it as open at version 1 and wait for
+notification completion here too. A supported file has an extension in setup's
+mapping; other files use ordinary Write without LSP notifications.
+
+Don't notify after failed writes. Report synchronization failures in Write's
+tool result. Reuse the supplied connection.
 
 ### Tests
 
-The tester requests a definition lookup, changes the import with Write, and
-requests the same lookup again. The targets must change from pricing to
-discounts. Another case restores the import and expects pricing again.
-
-It also checks writing before the first lookup and a failed write to a
-directory. Every successful open-document edit must reach the server, and failed
-writes must leave its analysis unchanged.
-
-The test output shows the updated target. Restarting the server or returning
-the old location doesn't satisfy synchronization.
+Run `codecrafters test`. It looks up a definition, changes the import with Write,
+then repeats the lookup. The target must change from pricing to discounts and
+back when restored. It also tests Write before lookup and a failed directory
+write. Successful edits must update analysis; failed writes must leave it
+unchanged.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
