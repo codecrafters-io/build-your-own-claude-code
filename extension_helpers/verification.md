@@ -1,5 +1,33 @@
 # LSP revision verification
 
+## Setup split - 3 November 2026
+
+The combined setup stage cx7 is replaced by two stages using the supplied slugs:
+
+- dz5 connects the supplied client and reads configuration before the first model
+  request. It passes without an advertised LSP tool.
+- iy3 advertises the LSP schema in every model request and adds a temporary
+  handler. It passes before navigation is implemented.
+
+The later IDs remain gz6, rb6, bn2, and ql9, now numbered 3-6. Course registration,
+description filenames, cross-references, the design, and the companion tester's
+registration and course YAML agree on the six-stage order.
+
+- The two setup descriptions have 400 and 431 prose words in the Python view.
+  All ten client setup blocks and the tool schema are preserved. All 60
+  stage/language variants render with valid JSON examples and resolved links.
+  Both setup pages were inspected in Python and Go browser previews.
+- New boundary regressions verify connection without LSP advertisement,
+  advertisement without navigation, rejection of late configuration, and schema
+  advertisement in subsequent model requests.
+- All six stages pass the reference-agent offline sequence, now 16 graded cases.
+  Recorded output was regenerated. The full offline suite passed with
+  `go test -count=1 -skip '^TestStages$' ./...` in a temporary copy of the
+  companion tester before applying its verified changes to that checkout.
+
+The dated sections below record earlier revisions. Their stage counts and
+numbering describe the pre-split course.
+
 ## Extension review fixes - 3 November 2026
 
 - All five hooks match their marketing text. Every Tests section shows the
@@ -150,8 +178,9 @@ reference results can omit callers even while the controlled fixture passes.
 - A learner pacing trial, especially the first navigation stage and the coordinated
   API migration in the finale.
 - Deploy matching course content and tester registration with the allocated
-  stage IDs cx7, gz6, rb6, bn2 and ql9. These use the first five slugs supplied
-  from the backend generator on 2 November 2026. No publication was performed.
+  stage IDs dz5, iy3, gz6, rb6, bn2, and ql9. The setup split uses the first two
+  slugs supplied on 3 November 2026; later stages keep their existing IDs.
+  No publication was performed.
 
 Scripted integration runs prove the tool wiring and migration checks. They do not
 prove that a live model will reliably choose the required navigation and edits.

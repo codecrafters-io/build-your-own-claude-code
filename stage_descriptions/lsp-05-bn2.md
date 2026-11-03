@@ -35,7 +35,7 @@ An **open document** is a URI you've successfully sent with `didOpen`.
 Reading a file with Read, or receiving its location in an LSP result, doesn't
 open it in the language server.
 
-Extend the opened-document tracking from Stage 2 to store a version for each
+Extend the opened-document tracking from Stage 3 to store a version for each
 URI. `didOpen` starts at version 1. Each later change to that document uses a
 higher version: 2, then 3, and so on. The version identifies which revision of
 the document you're sending.
@@ -68,7 +68,7 @@ After a successful write to an open document, send a
 
 1. Increment that URI's document version. Here, version 1 becomes version 2.
 2. Send the helper action `notify` with the complete object below, using your
-   language's client-call pattern from Stage 2. The LSP method is
+   language's client-call pattern from Stage 3. The LSP method is
    `textDocument/didChange`.
 3. Wait for notification completion before returning Write's tool result or
    continuing the agent loop. Use `await` with asynchronous clients.
@@ -101,7 +101,7 @@ references request on `pricing.py` can discover uses in `reports.py` without you
 agent opening `reports.py` in the server.
 
 After a successful Write to such a file, send `didOpen` with its URI, mapped
-language ID, complete new contents, and version 1, using Stage 2's payload. Once
+language ID, complete new contents, and version 1, using Stage 3's payload. Once
 that call succeeds, record the URI as open at version 1. Later writes to it use
 `didChange` with increasing versions. Wait for the notification call to complete
 before returning Write's result here too.

@@ -199,12 +199,19 @@ stages:
       In this stage, you'll add support for skills that are handed to a subagent, which works through them and reports back a single answer.
 
   # Extension: Language Server Protocol
-  - slug: "cx7"
-    name: "Set up the LSP connection"
+  - slug: "dz5"
+    name: "Connect the LSP client"
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll connect the supplied LSP client and advertise the `LSP` tool.
+      In this stage, you'll connect the supplied LSP client and read its configuration.
+
+  - slug: "iy3"
+    name: "Advertise the LSP tool"
+    difficulty: easy
+    primary_extension_slug: "lsp"
+    marketing_md: |-
+      In this stage, you'll advertise the `LSP` tool to the model.
 
   - slug: "gz6"
     name: "Find the implementation"

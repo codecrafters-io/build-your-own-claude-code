@@ -1,5 +1,5 @@
 In this stage, you'll implement `goToDefinition` so your agent can find the function behind a call.
-You'll replace Stage 1's temporary LSP response with a working lookup, then let
+You'll replace Stage 2's temporary LSP response with a working lookup, then let
 the model use Read to inspect the implementation it finds.
 
 ### Why look up a definition?
@@ -29,8 +29,8 @@ to call Read. The LSP handler itself doesn't need to execute Read.
 ### Implement your LSP handler
 
 Replace the "not implemented yet" branch with definition handling. Reuse the
-client, extension mapping, and tool specification from Stage 1. Handle this model
-tool call:
+client and extension mapping from Stage 1 and the tool specification from
+Stage 2. Handle this model tool call:
 
 ```json
 {
@@ -86,7 +86,7 @@ look up the file's extension in the mapping saved in Stage 1 to get `languageId`
 ```
 
 `version: 1` identifies the initial contents you send. You'll use later versions
-when you add edit synchronization in Stage 4.
+when you add edit synchronization in Stage 5.
 
 Keep a record of successfully opened URIs for the lifetime of this connection.
 Send `didOpen` once per URI, before its first query. Later queries reuse that open

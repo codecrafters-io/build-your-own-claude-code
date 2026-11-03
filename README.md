@@ -9,8 +9,8 @@ Read its README for language support and submission workflows.
 
 ## LSP extension
 
-Five short stages start with connecting the supplied helper and advertising the
-LSP tool. Definition lookup, references, and document synchronization build on
+Six stages start with connecting the supplied LSP client, followed by advertising
+the LSP tool. Definition lookup, references, and document synchronization build on
 that setup. A final capstone combines them to migrate an API and its callers,
 then run project tests. The helper handles server startup and transport.
 

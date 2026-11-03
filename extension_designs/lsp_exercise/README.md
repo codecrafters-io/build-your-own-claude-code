@@ -5,15 +5,16 @@ Preview has an unrelated total function. The task is to change pricing.total to
 return a Price TypedDict containing cents, then update both callers while
 preserving their integer results.
 
-## Five visible milestones
+## Six visible milestones
 
-1. Connect the supplied helper, read configuration, advertise LSP, and inspect
-   this project with the agent's existing Read tool.
-2. Follow checkout's invoice_total alias to pricing.total.
-3. Find pricing's callers in checkout and reporting, excluding preview.total.
-4. Temporarily change checkout's import from pricing to discounts and watch
+1. Connect the supplied LSP client, read configuration, and inspect this project
+   with the agent's existing Read tool.
+2. Advertise the LSP tool and add a temporary handler before implementing navigation.
+3. Follow checkout's invoice_total alias to pricing.total.
+4. Find pricing's callers in checkout and reporting, excluding preview.total.
+5. Temporarily change checkout's import from pricing to discounts and watch
    definition lookup follow the new target. Restore pricing before migration.
-5. Use navigation, Read, Write, and Bash together to migrate pricing and its
+6. Use navigation, Read, Write, and Bash together to migrate pricing and its
    callers, keep analysis current, and run the project tests.
 
 Text search remains useful. A search for total also finds unrelated code, and

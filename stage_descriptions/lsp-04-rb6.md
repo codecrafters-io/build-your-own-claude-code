@@ -51,7 +51,7 @@ model needs both ways to navigate. The file path, line, and character arguments
 stay the same because both operations ask about a symbol at a position.
 
 In your handler, route `findReferences` to a references request. Reuse document
-opening, file URIs, position conversion, and tool-result handling from Stage 2.
+opening, file URIs, position conversion, and tool-result handling from Stage 3.
 The new operation changes the question you send, while keeping the same connection
 and document tracking.
 
@@ -79,7 +79,7 @@ Opening `checkout.py` in an earlier lookup doesn't open `pricing.py`; your recor
 of open documents is per URI.
 
 Send the helper action `request` with the complete payload below, using your
-language's client-call pattern from Stage 2. Convert the one-based tool position
+language's client-call pattern from Stage 3. Convert the one-based tool position
 1:5 to the zero-based LSP position 0:4:
 
 ```json
@@ -133,7 +133,7 @@ locations or filtering them by spelling.
 ### Return the answer to the model
 
 Serialize the result as the tool message's `content` and use the matching
-`tool_call_id`, following Stage 2's pattern. If your client already returns JSON
+`tool_call_id`, following Stage 3's pattern. If your client already returns JSON
 text, use that text directly. Return every location, preserving the array order,
 URIs, and ranges. Don't collapse several references in one file into a single
 entry or convert the result positions to one-based.

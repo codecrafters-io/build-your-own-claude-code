@@ -1,8 +1,9 @@
 # Language Server Protocol - extension design
 
-**Status:** An introduction followed by four implementation stages and a capstone.
-Stage IDs use the first five slugs supplied from the backend generator on
-2 November 2026. Publication is deferred. No production release is authorized.
+**Status:** Five implementation stages followed by a capstone.
+The setup split uses dz5 and iy3 from the slugs supplied on 3 November 2026;
+the four later stages keep their existing IDs. Publication is deferred.
+No production release is authorized.
 
 **Promise:** Give your existing agent precise code navigation and current analysis
 so it can change an API and update its callers across files from a single prompt.
@@ -10,40 +11,35 @@ so it can change an API and update its callers across files from a single prompt
 **Prerequisites:** The base agent loop, Read, Write, and Bash. Skills is not needed.
 The learner builds an agent integration, not a language analyzer or editor.
 
-## Introduce the server and helper before coding
+## Introduce the supplied client before coding
 
-The Configure Extensions description is a short overview of LSP and the
-capabilities learners will add. Keep setup instructions, code examples, and the
-exercise details in the stages.
+The Configure Extensions description gives a short LSP overview. Stage one
+explains why symbol navigation helps, using checkout's invoice_total alias and
+the pricing implementation in the test-supplied Python project. Learners connect
+the supplied client and read its extension-to-language mapping before their first
+model request. The existing Read tool inspects the project. No LSP advertisement
+or navigation handler is required yet.
 
-Stage one explains the server and shows the route from a model tool call through
-the learner's handler and supplied connection to the language server, and back as
-a tool result. The helper owns starting the server and delivering messages. The
-learner owns document contents, queries, synchronization and model-visible results.
+Stage two advertises the LSP schema, adds system-prompt guidance, and installs a
+temporary handler. Its test checks advertisement while still requesting only
+Read. Navigation can remain unimplemented. The setup split separates a working
+client call from the model-facing tool interface without introducing a temporary
+command-line flag.
 
-It also shows pricing.py and checkout.py from the test-supplied invoice project,
-including the aliased import. These are files the agent analyzes in its test
-working directory, not extra files the learner must build into the agent.
+Stage three follows invoice_total to pricing.total. It reuses the connection and
+schema, adding document opening, definition routing, and matching tool results.
+Stage four locates callers in checkout and reporting, excluding preview.total.
+Stage five changes checkout's import to discounts and synchronizes the edit so
+definition lookup follows the new target. The same invoice project continues
+through all six stages, independent of the agent's implementation language.
 
-Stage one links to the example files, connects the supplied client, retrieves
-the extension-to-language mapping, and shows the JSON schema to add directly
-to the learner's existing tool list.
-It uses the existing Read tool to inspect the example; it does not require an
-LSP tool handler, file URIs, coordinates, or document messages. Every LSP test
-supplies a connection; learners construct the client without an environment check.
-
-Stage two focuses on following invoice_total to pricing.total. It reuses the
-connection and schema, adding only document opening, definition routing, and
-matching tool results. It introduces notify and request payloads when needed.
-
-The same invoice project continues through all five stages. Stage three finds
-pricing's callers in checkout and reporting, excluding the unrelated preview.total.
-Stage four demonstrates stale server text by changing checkout's import to
-discounts, then synchronizing the edit so definition lookup follows the new target.
+Learners see the supplied LSP client as their interface. Server startup and
+message delivery are provided; helper transport internals stay in the optional
+guide. Every LSP test supplies a connection.
 
 ## Finish with a coordinated change
 
-Stage five is a capstone using the preceding four stages and the base tools.
+Stage six is a capstone using the preceding five stages and the base tools.
 It introduces no new LSP operation, notification handling, or Write result format.
 The agent changes pricing.total from integer cents to a Price TypedDict with a
 cents field, then updates checkout and both reporting calls to extract that field.
@@ -58,7 +54,7 @@ Check:  Keep later lookups current; run the project tests through Bash.
 
 The payoff is watching the existing agent loop complete a change across files.
 No new code may be needed. The scripted sequence makes 11 tool calls; the base
-loop stage specifies no iteration cap. Stage four already exercises versions 2
+loop stage specifies no iteration cap. Stage five already exercises versions 2
 and 3 of one document; the capstone combines per-URI versions with several files.
 Read each file before its own first edit; reads and writes may alternate across
 files. Follow-up references target pricing.total's current definition rather
@@ -77,21 +73,21 @@ finds unrelated preview code and imports, while the alias invoice_total needs
 interpretation. Do not claim grep cannot solve it. References supply resolved
 locations; the completed migration shows why those locations are useful.
 
-## Five short stages
+## Six stages
 
-| #   | Current ID | Stage                      | New implementation                                                         | Visible evidence                                                          |
-| --- | ---------- | -------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 1   | cx7        | Set up the LSP connection  | Connect supplied client; read configuration; advertise supplied LSP schema | Inspect the invoice project with Read; advertise LSP in the model request |
-| 2   | gz6        | Find the implementation    | didOpen; definition routing and tool results                               | Follow invoice_total to pricing.total and read the implementation         |
-| 3   | rb6        | Find the affected callers  | References routing with includeDeclaration true                            | Return pricing callers across checkout/reporting, excluding preview.total |
-| 4   | bn2        | Keep the analysis current  | Successful Write sends full didChange with increasing per-file versions    | An edited import changes the definition target without a server restart   |
-| 5   | ql9        | Change an API across files | Combine stages 1-4 with the existing Read, Write, Bash and agent loop      | Migrate pricing and its callers, leave preview unchanged, and pass tests  |
+| # | ID | Stage | New implementation | Visible evidence |
+| --- | --- | --- | --- | --- |
+| 1 | dz5 | Connect the LSP client | Connect the supplied client and save configuration | Configuration requested before the model; existing Read still works |
+| 2 | iy3 | Advertise the LSP tool | Register the schema, prompt guidance, and temporary handler | LSP advertised in model requests; navigation not required |
+| 3 | gz6 | Find the implementation | didOpen; definition routing and tool results | Follow invoice_total to pricing.total and read the implementation |
+| 4 | rb6 | Find the affected callers | References with includeDeclaration true | Return pricing callers across files, excluding preview.total |
+| 5 | bn2 | Keep the analysis current | Per-URI versions and synchronized successful writes | The edited import changes the definition target without a restart |
+| 6 | ql9 | Change an API across files | Combine stages 1-5 with Read, Write, Bash and the agent loop | Migrate pricing and callers, preserve unrelated code, pass project tests |
 
-Stage one establishes the roles before any implementation. Each of the first
-four stages introduces one learner-owned behavior. Descriptions stay under 350
-prose words. Setup has no protocol payloads; definition lookup shows its two
-messages together. Synchronization remains its own stage to show why a server
-can have stale text before the capstone uses several edits and follow-up queries.
+Keep each setup stage focused on its own tested behavior and retain the
+motivation beside the instructions it explains. The setup stages have no LSP
+document payloads. Definition lookup introduces opening and querying together;
+synchronization remains its own stage before the capstone combines several edits.
 
 ## Supply the connection
 
@@ -120,8 +116,8 @@ The prior independent product check used Claude Code 2.1.266. Retain a separate
 native-product smoke check.
 
 Hover, standalone initialization and response-reading stages are removed. Their
-IDs ls1, ir2, hv2 are retired, not repurposed. All five stages use backend-generated
-IDs; ql9 now grades the migration capstone instead of asynchronous diagnostics.
+IDs ls1, ir2, hv2 and the combined setup ID cx7 are retired, not repurposed.
+All six stages use backend-generated IDs; ql9 now grades the migration capstone instead of asynchronous diagnostics.
 Rename remains outside the built-in LSP tool's course scope.
 
 The fixture recognizes the documented invoice project; it is not a Python

@@ -62,7 +62,7 @@ positions; the server receives zero-based positions.
 
 ## Optional: read server notifications
 
-The five graded stages do not require reading server notifications. The final
+The six graded stages do not require reading server notifications. The final
 capstone combines navigation, synchronized edits, and Bash test results to check
 an API migration. The helper also exposes queued notifications for optional
 advanced work, such as diagnostic feedback.
