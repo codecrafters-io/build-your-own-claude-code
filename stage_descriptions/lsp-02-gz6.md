@@ -1,8 +1,12 @@
 In this stage, you'll implement `goToDefinition` so your agent can find the function behind a call.
+You'll replace Stage 1's temporary LSP response with a working lookup, then let
+the model use Read to inspect the implementation it finds.
 
 ### Why look up a definition?
 
-To explain checkout's calculation, the model reads `checkout.py`:
+In Stage 1, the model read `checkout.py` and `pricing.py` directly. This time,
+you'll give it a way to discover which implementation to read. The starting point
+is the call in `checkout.py`:
 
 ```python
 from pricing import total as invoice_total
@@ -12,13 +16,21 @@ def checkout_total() -> int:
     return invoice_total(250, 2)
 ```
 
-`goToDefinition` resolves `invoice_total` to `pricing.total`. Read retrieves
-its implementation.
+The name `invoice_total` is an alias for `pricing.total`. Searching for the alias
+finds the import and call, so the model can follow that import manually. Searching
+for `total` can also find unrelated functions, such as `preview.total`.
+
+Definition lookup asks a more precise question: "Which definition does the symbol
+at this position refer to?" The language server follows the alias and returns a
+location in `pricing.py`. **LSP finds the implementation; Read retrieves its
+contents.** Your handler returns the location to the model, which can then choose
+to call Read. The LSP handler itself doesn't need to execute Read.
 
 ### Implement your LSP handler
 
-Replace setup's "not implemented yet" branch with definition handling. Reuse
-its client and extension mapping. Handle this model tool call:
+Replace the "not implemented yet" branch with definition handling. Reuse the
+client, extension mapping, and tool specification from Stage 1. Handle this model
+tool call:
 
 ```json
 {
@@ -29,15 +41,35 @@ its client and extension mapping. Handle this model tool call:
 }
 ```
 
+Line 5, character 12 points to the first character of `invoice_total` in the
+return statement. A position tells the server which occurrence to resolve, even
+when several symbols share a name.
+
+Your handler will give the server the source text, ask for the definition at that
+position, and return the answer as a tool result. The helper handles message
+delivery; your agent supplies the document and the question.
+
 ### 1. Give the server the source file
 
-Reuse Read's path resolution and UTF-8 reading. Resolve relative paths against
-the agent's working directory, which the tester sets to the invoice project.
-Resolve symlinks, then convert the absolute path to a file URI, encoding special characters:
-`/project/cart notes.py` becomes `file:///project/cart%20notes.py`.
+Reading a file with Read gives its contents to the model. It doesn't send those
+contents to the language server. Use a `textDocument/didOpen` notification to give
+the server the document your query will refer to. Here, "open" means your agent
+has sent the document to the server; it doesn't mean opening an editor window.
 
-Send action `notify` with this [`didOpen` payload][did-open] once per URI.
-Substitute the actual URI, complete text, and mapped `languageId`:
+Reuse Read's path resolution and UTF-8 reading to load the source file. Resolve
+relative paths against the agent's working directory, which the tester sets to
+the invoice project. Resolve symlinks so two paths to the same file use the same
+document identity.
+
+LSP identifies files with URIs. Convert the resolved absolute path to a file URI,
+encoding special characters: `/project/cart notes.py` becomes
+`file:///project/cart%20notes.py`. Use your language's file-URI conversion rather
+than just adding `file://` to the path.
+
+Send the helper action `notify` with this complete [`didOpen` payload][did-open].
+The helper action says how to deliver the message; `method` identifies the LSP
+notification to send. Substitute the actual URI and complete file contents, and
+look up the file's extension in the mapping saved in Stage 1 to get `languageId`:
 
 ```json
 {
@@ -53,13 +85,25 @@ Substitute the actual URI, complete text, and mapped `languageId`:
 }
 ```
 
-Track successfully opened URIs. Wait for notification completion before requesting.
+`version: 1` identifies the initial contents you send. You'll use later versions
+when you add edit synchronization in Stage 4.
+
+Keep a record of successfully opened URIs for the lifetime of this connection.
+Send `didOpen` once per URI, before its first query. Later queries reuse that open
+document. Wait for the client call to complete before sending the definition
+request, and mark the URI open only if the notification call succeeds.
 
 ### 2. Ask where the function is defined
 
-Send action `request` with this [`definition` payload][definition]. Reuse the
-URI. Subtract one from the input line and character. LSP [positions][position]
-use zero-based UTF-16 columns.
+Now send the helper action `request` with this complete
+[`definition` payload][definition]. Unlike a notification, a request asks the
+server to return an answer. Your model-facing operation `goToDefinition` becomes
+the LSP method `textDocument/definition`.
+
+Reuse the URI from `didOpen`. The tool's line and character inputs start at 1,
+while LSP [positions][position] start at 0. Subtract one from each: input line 5,
+character 12 becomes line 4, character 11. Both interfaces count columns in UTF-16
+code units, which match character counts for the ASCII text in this example.
 
 ```json
 {
@@ -73,8 +117,12 @@ use zero-based UTF-16 columns.
 
 ### 3. Call your client and return the result
 
-Use the complete payloads above. `isOpen`/`is_open` is the current URI's stored
-flag. Save its updated value even if the request fails.
+Use the two complete payloads above with your language's client-call pattern
+below. `isOpen`/`is_open` is the flag stored for the current URI, not a single flag
+shared by all files.
+
+Save its updated value even if the definition request fails. If `didOpen`
+succeeded, the document is already open; a failed lookup doesn't undo that.
 
 {{#lang_is_python}}
 
@@ -294,7 +342,7 @@ Copy `content` into the tool message before freeing it.
 
 {{/lang_is_zig}}
 
-A definition result can be:
+For the example call, a definition result can be:
 
 ```json
 {
@@ -306,12 +354,26 @@ A definition result can be:
 }
 ```
 
-Use the computed `content` and matching `tool_call_id`. Preserve locations,
-arrays, and null. Keep returned URIs and ranges unchanged. The model decodes
-URIs for Read and converts positions back to one-based for later LSP calls.
+The URI identifies `pricing.py`. The zero-based range starts at line 0, character
+4: the `t` in `def total`. Its end position, character 9, is just after `total`.
+This is the symbol's location, not the function's source text.
+
+Put the computed `content` in a tool message with the matching `tool_call_id`,
+then continue the agent loop so the model receives the answer. The content must
+be a string containing the JSON result. If your client already returns JSON text,
+use it directly; serializing that text again would turn the result into a JSON
+string instead of a location object.
+
+Preserve the server's response shape: a single location stays an object, an array
+stays an array, and `null` stays `null`. A null result means no definition was
+found; it isn't a transport error. Keep returned URIs and ranges unchanged. The
+model decodes the file URI to obtain a path for Read. If it uses a returned
+position in another LSP tool call, it converts that position back to one-based.
 
 Use the same error-result pattern for unknown operations, missing files, and
-unmapped extensions. Preserve the helper's error message and continue the loop.
+unmapped extensions. Return an error instead of inventing a language ID for an
+unsupported extension. Preserve the helper's error message when a call fails and
+continue the loop, so the model can see what went wrong and decide what to do next.
 
 ### Tests
 
@@ -334,8 +396,14 @@ The subsequent Read result must preserve:
 "def total(price: int, quantity: int) -> int:\n    return price * quantity\n"
 ```
 
+Together, these results show the complete navigation flow: the model asks about
+the alias in checkout, receives pricing's definition location, and reads that
+implementation. `preview.total` is unrelated and should not be chosen just
+because it has the same function name.
+
 Other cases return an array, null, and error `-32603` (`"Definition unavailable"`).
-Preserve the server's error message. The final explanation can vary.
+These exercise the response and error handling above. Preserve the server's error
+message. The final explanation can vary.
 
 [position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen

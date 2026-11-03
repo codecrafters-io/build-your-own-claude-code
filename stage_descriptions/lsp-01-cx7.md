@@ -1,40 +1,80 @@
 In this stage, you'll connect the supplied LSP client and advertise the `LSP` tool.
+You'll prepare the connection here and implement navigation in the next stage.
+
+### Why LSP?
+
+Your agent can already read files, search with Bash, and write changes. But finding
+the right code can still require several steps: searching for a name, reading its
+import, and following that import to another file.
+
+The **[Language Server Protocol (LSP)][lsp]** lets your agent ask a language server
+questions about code, such as "Where is this function defined?" and "Which parts
+of the project refer to it?" A language server analyzes the code to understand
+relationships between definitions, imports, and uses.
+
+Consider the supplied [invoice project][example]. Its `checkout.py` contains:
+
+```python
+from pricing import total as invoice_total
+
+
+def checkout_total() -> int:
+    return invoice_total(250, 2)
+```
+
+Suppose the model wants to understand what `invoice_total(250, 2)` does. Searching
+for `invoice_total` finds the call and the import, but the implementation has a
+different name. The model must follow the import to `pricing.py`, where it finds:
+
+```python
+def total(price: int, quantity: int) -> int:
+    return price * quantity
+```
+
+A language server understands that `invoice_total` refers to `pricing.total`.
+Your agent can ask for the definition at the call site and receive its location
+directly. **LSP finds the implementation; Read retrieves its contents.** Later,
+you'll also use LSP to find references, helping the model identify callers that
+may need updating when it changes a function.
 
 ### How the connection works
-
-The **[Language Server Protocol (LSP)][lsp]** lets programs ask a language server
-about code, such as where a function is defined.
-
-- **Agent:** executes the model's tool calls.
-- **Client:** supplied file that forwards calls to the helper.
-- **Helper:** starts the server and handles LSP messages.
-- **Language server:** analyzes project code and answers definition/reference requests.
 
 ```text
 Agent -> supplied client -> helper -> language server
 ```
 
-In later stages, `invoice_total` in the supplied [invoice project][example]'s
-`checkout.py` resolves to `pricing.py`. Your agent sends a definition request
-through the client, then returns the server's location to the model. The tester
-supplies this Python project for every agent language. No server installation is needed.
+- **Your agent** handles the model's tool calls and sends calls through the client.
+- **The supplied client** connects to the helper and forwards each call to it.
+- **The helper** starts and initializes the language server and handles LSP's
+  JSON-RPC message framing, so you don't have to implement that transport yourself.
+- **The language server** analyzes the project and answers definition and reference
+  requests.
+
+During course tests, the environment runs the helper and language server before
+starting your agent. It supplies the same Python project in your agent's working
+directory regardless of the language you use to implement your agent. You don't
+need to install or launch a server for these tests.
 
 ### Your task
 
-Before your first model request:
+Complete this setup before your first model request:
 
-1. Copy the **entire client file** below to its shown path if missing.
-2. Call `configuration` with `{}` before the agent loop. Save
-   `extensionToLanguage` for your tool handler.
+1. Copy the **entire client file** for your language to its shown path if missing.
+2. Call `configuration` with `{}` and save `extensionToLanguage`.
 3. Add the LSP specification below to your model requests' `tools` array
    alongside Read, Write, and Bash.
+4. Update your system prompt with the guidance below.
+5. Add a temporary handler for LSP calls. You'll replace it in the next stage.
 
-Return a "not implemented yet" tool result for LSP calls, with the matching
-`tool_call_id`.
+### Connect the client and read configuration
 
-### Connect the client
+The helper's `configuration` action tells you which file extensions the server
+handles and the language ID for each. The empty `{}` means this action needs no
+additional arguments. It reads the helper's configuration; the server has already
+been initialized for you.
 
-Use the supplied file with this setup:
+Use the supplied client file with the setup below. You won't need to edit the
+client itself.
 
 {{#lang_is_c}}
 
@@ -194,6 +234,9 @@ configuration = lsp.call("configuration", {})
 extension_to_language = configuration["extensionToLanguage"]
 ```
 
+`call(action, payload)` returns the decoded JSON response. `configuration` returns
+a dict; other actions can return lists or `None`. Failed calls raise exceptions.
+
 [client-python]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/python/lsp_client.py
 
 {{/lang_is_python}}
@@ -284,9 +327,16 @@ The helper's `configuration` action returns:
 { "extensionToLanguage": { ".py": "python" } }
 ```
 
-Store `{ ".py": "python" }`. Look up `.py` to get language ID `python`.
+Save the `extensionToLanguage` mapping during startup so it's available when your
+agent begins handling LSP tool calls. In the next stage, you'll send a file's
+contents to the server before asking about it. Use the mapping to tell the server
+which language the file contains: look up `.py` to get language ID `python`.
 
 ### Advertise the LSP tool
+
+Add this specification to your `tools` array alongside Read, Write, and Bash.
+It tells the model what arguments to supply when it wants to navigate code.
+Only `goToDefinition` is offered for now; later stages add reference lookup.
 
 ```json
 {
@@ -322,12 +372,46 @@ Store `{ ".py": "python" }`. Look up `.py` to get language ID `python`.
 }
 ```
 
+The tool accepts **one-based** line and character positions: the first line and
+column are both 1. LSP uses **zero-based** positions, where both start at 0. In the
+next stage, you'll convert the tool's inputs before sending them to the server
+and return the server's results unchanged.
+
+Columns are counted in UTF-16 code units. For the ASCII text in these examples,
+that's the same as counting characters.
+
+### Update your system prompt
+
 Add this guidance to your existing system prompt:
 
 ```text
 Use LSP for code navigation. Tool positions are one-based UTF-16.
 Edit files with Write so the language server sees changes.
 ```
+
+The second line prepares for Stage 4. Changing a file on disk doesn't necessarily
+update the server's view of it. You'll extend your Write handler to send updated
+contents to the server. Bash edits won't pass through that handler, so they can
+leave the server with an outdated view of an open file.
+
+### Add a temporary LSP handler
+
+Advertising a tool makes it available to the model immediately. Even though this
+stage asks the model to use only Read, your agent should be able to respond if it
+calls LSP. Return a tool message with content `LSP is not implemented yet` and a
+`tool_call_id` matching the model's call. This lets the agent loop continue.
+
+{{#lang_is_python}}
+
+For a tool call stored in `call`, the message is:
+
+```python
+{"role": "tool", "tool_call_id": call.id, "content": "LSP is not implemented yet"}
+```
+
+{{/lang_is_python}}
+
+In the next stage, you'll replace this temporary response with a definition lookup.
 
 ### Tests
 
@@ -337,7 +421,9 @@ The tester supplies the invoice project and runs:
 $ ./your_program.sh -p "Use only Read to inspect checkout.py and pricing.py. Explain how checkout uses the pricing function."
 ```
 
-The configuration result must be:
+Your agent must call `configuration` before its first model request and include
+the `LSP` tool alongside Read, Write, and Bash in its model requests. The
+configuration result must be:
 
 ```json
 { "extensionToLanguage": { ".py": "python" } }
@@ -353,7 +439,9 @@ The two Read tool results must preserve these exact file contents:
 "def total(price: int, quantity: int) -> int:\n    return price * quantity\n"
 ```
 
-The model's final explanation can vary. This stage requests only Read.
+The prompt limits the model to Read so you can verify the setup before implementing
+navigation. Your temporary LSP handler may not run during this test, but it should
+be in place in case the model calls LSP. The model's final explanation can vary.
 
 Optional: [run locally][local-run].
 
