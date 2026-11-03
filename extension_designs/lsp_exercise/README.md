@@ -40,7 +40,7 @@ sequence. For an independent language analyzer, run `make test_lsp_with_pyright`
 ## Try your completed agent
 
 The course supplies the server automatically during grading. For an optional
-local run with your own server, use the [helper guide](../../extension_helpers/README.md).
+local run with your own server, use the [local-server guide](../../extension_helpers/advanced_usage.md#run-with-your-own-server).
 This directory already contains .lsp.json and pyrightconfig.json.
 
 Try this prompt:

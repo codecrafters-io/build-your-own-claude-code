@@ -1,19 +1,191 @@
-In this stage, you'll connect the supplied LSP client, retrieve configuration,
-and advertise the LSP tool. The definition handler comes next.
+Connect the supplied client, retrieve configuration, and advertise LSP.
+The **[Language Server Protocol (LSP)][lsp]** lets programs ask a language server
+about code, such as where a function is defined.
+
+- **Agent:** your program; executes the model's tool calls.
+- **Client:** supplied file you import; forwards calls to the helper.
+- **Helper:** launched by the tester; starts the server and handles LSP messages.
+- **Language server:** analyzes project code and answers definition/reference requests.
+
+```text
+Agent -> supplied client -> helper -> language server
+```
+
+For example, next stage the model asks where `invoice_total` in the supplied
+[invoice project][example]'s `checkout.py` is defined. Your agent sends a
+definition request through the client. The helper forwards it to the language
+server, which returns a location in `pricing.py`. Your agent returns that
+location to the model. No server installation is needed. These Python test
+inputs work with every agent language.
 
 ### Your task
 
 Before your first model request:
 
-1. Import your language's client from the [client guide][helper]
-   (Python: `app/lsp_client.py`). Current starters include it; older checkouts
-   may need to copy the linked file to that path.
-2. Create one client before the agent loop. Call `configuration` with `{}` and
-   save the returned `extensionToLanguage` mapping alongside the client.
-3. Add the tool specification below to your existing `tools` list alongside
-   Read, Write, and Bash. Include it in your model requests.
+1. If missing, copy the **entire linked client file** to its shown
+   path, relative to your repository root.
+2. Import/include the client and call `configuration` with `{}` before the agent
+   loop. Store `extensionToLanguage` in a variable or agent field your tool
+   handler can read.
+3. Add the LSP specification below to your model requests' `tools` array
+   alongside Read, Write, and Bash.
 
-Python setup:
+Return a "not implemented yet" tool result for LSP calls, with the matching
+`tool_call_id`.
+
+### Connect the client
+
+Use the supplied file with this setup:
+
+{{#lang_is_c}}
+
+If missing, copy the **entire [client file][client-c]** to `src/lsp_client.h`. At the top of your agent's C source, add:
+
+```c
+#include "lsp_client.h"
+#include <cjson/cJSON.h>
+```
+
+Inside `main`, after your existing `curl_global_init` and before the agent loop:
+
+```c
+char *configuration_json = lsp_call("configuration", "{}");
+if (!configuration_json) return 1;
+cJSON *configuration = cJSON_Parse(configuration_json);
+free(configuration_json);
+if (!configuration) return 1;
+cJSON *extension_to_language = cJSON_GetObjectItemCaseSensitive(
+    configuration, "extensionToLanguage");
+```
+
+There is no client constructor: each `lsp_call` uses the supplied connection.
+Keep `configuration` alive while using `extension_to_language`; call
+`cJSON_Delete(configuration)` after the agent loop. Keep your existing libcurl
+cleanup after the loop too.
+
+[client-c]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/c/lsp_client.h
+
+{{/lang_is_c}}
+
+{{#lang_is_cpp}}
+
+If missing, copy the **entire [client file][client-cpp]** to `src/lsp_client.hpp`. At the top of your C++ source, add:
+
+```cpp
+#include "lsp_client.hpp"
+```
+
+Before the agent loop:
+
+```cpp
+LSPClient lsp;
+auto configuration = lsp.call("configuration", nlohmann::json::object());
+auto extension_to_language = configuration.at("extensionToLanguage");
+```
+
+The client uses the starter's existing CPR and nlohmann JSON dependencies.
+Constructor, HTTP, and JSON errors propagate as exceptions; handle them with
+your agent's existing exception handling.
+
+[client-cpp]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/cpp/lsp_client.hpp
+
+{{/lang_is_cpp}}
+
+{{#lang_is_csharp}}
+
+If missing, copy the **entire [client file][client-csharp]** to `src/LSPClient.cs`. The starter includes `.cs` files under `src/`
+automatically; no client import is needed. Add this using directive:
+
+```csharp
+using System.Text.Json;
+```
+
+In your top-level startup code or an async startup method:
+
+```csharp
+var lsp = new LSPClient();
+string configurationJson = await lsp.Call("configuration", "{}");
+using var configuration = JsonDocument.Parse(configurationJson);
+var extensionToLanguage = configuration.RootElement.GetProperty("extensionToLanguage");
+```
+
+`Call` returns a `Task<string>` and must be awaited. Keep `configuration` alive
+while using `extensionToLanguage`. Handle exceptions with your agent's existing
+error handling.
+
+[client-csharp]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/csharp/LSPClient.cs
+
+{{/lang_is_csharp}}
+
+{{#lang_is_go}}
+
+If missing, copy the **entire [client file][client-go]** to `app/lsp_client.go`. Keep it in the same `package main` as your agent; no
+client import is needed. Add `encoding/json` and `log` to your imports, then
+place this inside your startup function:
+
+```go
+lsp, err := NewLSPClient()
+if err != nil {
+    log.Fatal(err)
+}
+configurationJSON, err := lsp.Call("configuration", map[string]any{})
+if err != nil {
+    log.Fatal(err)
+}
+var configuration struct {
+    ExtensionToLanguage map[string]string `json:"extensionToLanguage"`
+}
+if err := json.Unmarshal(configurationJSON, &configuration); err != nil {
+    log.Fatal(err)
+}
+```
+
+Use `configuration.ExtensionToLanguage` in your tool handler. Run the whole
+package with `go run ./app`, rather than compiling only `app/main.go`.
+
+[client-go]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/go/lsp_client.go
+
+{{/lang_is_go}}
+
+{{#lang_is_java}}
+
+If missing, copy the **entire [client file][client-java]** to `src/main/java/LSPClient.java`. It shares the starter's default package with
+`Main`, so no client import is needed. Inside your startup method:
+
+```java
+var lsp = new LSPClient();
+String configurationJson = lsp.call("configuration", "{}");
+```
+
+The response is a JSON string. Parse it with your agent's JSON library and save
+its `extensionToLanguage` object. `call` throws checked exceptions: catch them
+with your existing error handling, or declare `throws Exception` on your
+startup method, including `main` if you put this code there.
+
+[client-java]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/java/LSPClient.java
+
+{{/lang_is_java}}
+
+{{#lang_is_javascript}}
+
+If missing, copy the **entire [client file][client-javascript]** to `app/lsp_client.js`. From another file in `app/`, import the client and await
+the configuration call at module scope or inside your async startup function:
+
+```javascript
+import { LSPClient } from "./lsp_client.js";
+
+const lsp = new LSPClient();
+const configuration = await lsp.call("configuration", {});
+const extensionToLanguage = configuration.extensionToLanguage;
+```
+
+[client-javascript]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/javascript/lsp_client.js
+
+{{/lang_is_javascript}}
+
+{{#lang_is_python}}
+
+If missing, copy the **entire [client file][client-python]** to `app/lsp_client.py`. In your agent's Python module:
 
 ```python
 from app.lsp_client import LSPClient
@@ -23,14 +195,96 @@ configuration = lsp.call("configuration", {})
 extension_to_language = configuration["extensionToLanguage"]
 ```
 
-`configuration` is a helper action, not an LSP message. It takes no arguments
-and returns:
+[client-python]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/python/lsp_client.py
+
+{{/lang_is_python}}
+
+{{#lang_is_rust}}
+
+If missing, copy the **entire [client file][client-rust]** to `src/lsp_client.rs`. At the top level of `src/main.rs`, add:
+
+```rust
+mod lsp_client;
+use lsp_client::LspClient;
+```
+
+Inside your existing `main` or startup function:
+
+```rust
+let lsp = LspClient::new()?;
+let configuration = lsp.call("configuration", &serde_json::json!({}))?;
+let extension_to_language = configuration["extensionToLanguage"]
+    .as_object()
+    .ok_or("Missing extensionToLanguage mapping")?;
+```
+
+The type is `LspClient`; both `new` and `call` return a `Result`. The `?`
+operator propagates errors from a function returning a compatible `Result`,
+such as the starter's `Result<(), Box<dyn std::error::Error>>`. If your startup
+function returns another type, handle these results explicitly instead.
+
+[client-rust]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/rust/lsp_client.rs
+
+{{/lang_is_rust}}
+
+{{#lang_is_typescript}}
+
+If missing, copy the **entire [client file][client-typescript]** to `app/lsp_client.ts`. From another file in `app/`, import the client and await
+the configuration call at module scope or inside your async startup function.
+The client returns `unknown`; give this action's response its expected type:
+
+```typescript
+import { LSPClient } from "./lsp_client.ts";
+
+const lsp = new LSPClient();
+const configuration = await lsp.call("configuration", {}) as {
+  extensionToLanguage: Record<string, string>;
+};
+const extensionToLanguage = configuration.extensionToLanguage;
+```
+
+[client-typescript]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/typescript/lsp_client.ts
+
+{{/lang_is_typescript}}
+
+{{#lang_is_zig}}
+
+If missing, copy the **entire [client file][client-zig]** to `src/lsp_client.zig`. At the top of `src/main.zig`, add:
+
+```zig
+const LSPClient = @import("lsp_client.zig").LSPClient;
+```
+
+Inside `main(init: std.process.Init) !void`, after the starter's `allocator` and
+`io` declarations:
+
+```zig
+const lsp = try LSPClient.init(
+    allocator, io, init.environ_map.get("CODECRAFTERS_LSP_URL"));
+const configuration_json = try lsp.call("configuration", "{}");
+defer allocator.free(configuration_json);
+const configuration = try std.json.parseFromSlice(
+    std.json.Value, allocator, configuration_json, .{});
+defer configuration.deinit();
+const extension_to_language = configuration.value.object
+    .get("extensionToLanguage").?.object;
+```
+
+`init` and `call` return error unions, so use `try` from a function returning an
+error union, as the starter does. Keep the response and parsed configuration
+alive until after the agent loop; the deferred cleanup above runs on exit.
+
+[client-zig]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/zig/lsp_client.zig
+
+{{/lang_is_zig}}
+
+The helper's `configuration` action returns:
 
 ```json
 { "extensionToLanguage": { ".py": "python" } }
 ```
 
-Keep this mapping accessible to your future tool handler.
+Store `{ ".py": "python" }`; look up `.py` to get language ID `python`.
 
 ### Advertise the LSP tool
 
@@ -68,53 +322,15 @@ Keep this mapping accessible to your future tool handler.
 }
 ```
 
-### How the pieces connect
-
-A language server analyzes code to locate definitions, callers, and type errors.
-Editors communicate with it using the **Language Server Protocol (LSP)**;
-see the [official introduction][lsp].
-
-The model chooses tool calls. Your agent executes them through this connection:
-
-```text
-Agent -> supplied client -> helper -> language server
-```
-
-The tester starts the helper and server and supplies the connection. The client
-sends your calls to the helper, which handles startup and message delivery.
-Results travel back to your agent, which returns tool results to the model.
-No server installation is needed.
-
-### Where this is going
-
-The supplied [invoice project][example] contains:
-
-```python
-from pricing import total as invoice_total
-
-
-def checkout_total() -> int:
-    return invoice_total(250, 2)
-```
-
-Next stage, the model can Read `checkout.py`, call LSP on `invoice_total`, then
-Read the returned definition in `pricing.py`. These are Python test inputs;
-your agent can use any supported course language.
-
 ### Tests
 
-Run `codecrafters test`. It observes the `configuration` call and inspects the
-first model request's `tools` array for the required parameter names, types,
-and `goToDefinition` enum value. Descriptions need not match exactly.
+Run `codecrafters test` to check `configuration` and LSP parameter names, types,
+and `goToDefinition`.
 
-The test prompt tells the model to use only Read for `checkout.py` and
-`pricing.py`; no LSP lookup is required.
+Tests request only Read for `checkout.py` and `pricing.py`.
 
-For local runs, follow the [local-server guide][local-run]. If a live model
-calls LSP before stage 2, return a "not implemented yet" tool result with the
-matching `tool_call_id`.
+Optional: [run locally][local-run].
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
-[helper]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_helpers/README.md#connect-in-one-line
-[local-run]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_helpers/README.md#run-with-your-own-server
+[local-run]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_helpers/advanced_usage.md#run-with-your-own-server
 [lsp]: https://microsoft.github.io/language-server-protocol/

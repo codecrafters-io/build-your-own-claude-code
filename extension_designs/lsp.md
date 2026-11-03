@@ -92,7 +92,7 @@ can have stale text before the capstone uses several edits and follow-up queries
 
 ## Supply the connection
 
-[The helper](../extension_helpers/README.md) owns server startup, framing,
+[The helper](../extension_helpers/advanced_usage.md) owns server startup, framing,
 initialization, response IDs, notification queuing, and process cleanup. Native
 starter clients for all ten course languages connect to its supplied URL. The
 course starts it automatically; no manual server installation is required for
