@@ -1,7 +1,7 @@
-"""Round-trip six native clients through a local HTTP transport endpoint.
+"""Round-trip seven native clients through a local HTTP transport endpoint.
 
-Requires Python, Node 24+, Go 1.25+, a JDK, and Clang with libcurl.
-C++, C#, Rust and Zig clients require their respective build environments.
+Requires Python, Node 24+, Go 1.25+, a JDK, Clang with libcurl, and Cargo.
+C++, C# and Zig clients require their respective build environments.
 """
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -18,12 +18,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class EchoHandler(BaseHTTPRequestHandler):
+    request_path = "/session/request"
+
     def log_message(self, *args):
         pass
 
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-        if self.path != "/session/request" or body != {
+        # BaseHTTPRequestHandler normalizes leading double slashes in self.path.
+        if self.requestline.split()[1] != self.request_path or body != {
             "method": "test/echo", "params": {"value": 42}
         }:
             self.send_error(400, "Unexpected request")
@@ -55,7 +58,69 @@ def verify_client(name, command, environment):
     print(f"{name}: round-trip passed", flush=True)
 
 
+# Rust clients must route requests with and without a base path.
+def verify_rust_client():
+    # Arrange
+    with tempfile.TemporaryDirectory(prefix="lsp-rust-client-") as folder:
+        directory = Path(folder)
+        source = ROOT / "starter_templates/rust/code/src/lsp_client.rs"
+        compiled = ROOT / "compiled_starters/rust/src/lsp_client.rs"
+        assert source.read_bytes() == compiled.read_bytes(), "Rust client copies differ"
+        shutil.copyfile(source, directory / "lsp_client.rs")
+        (directory / "Cargo.toml").write_text('''[package]
+name = "lsp-client-check"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+serde_json = "1.0.149"
+
+[[bin]]
+name = "lsp-client-check"
+path = "main.rs"
+''')
+        (directory / "main.rs").write_text('''mod lsp_client;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = lsp_client::LspClient::new()?;
+    let result = client.call("request", &serde_json::json!({
+        "method": "test/echo", "params": {"value": 42}
+    }))?;
+    println!("{result}");
+    Ok(())
+}
+''')
+        subprocess.run(
+            ["cargo", "build", "--quiet", "--manifest-path", str(directory / "Cargo.toml")],
+            check=True, timeout=180,
+        )
+        command = [str(directory / "target/debug/lsp-client-check")]
+        for suffix, expected_path in [
+            ("", "/request"),
+            ("/", "/request"),
+            ("/session", "/session/request"),
+            ("/session/nested", "/session/nested/request"),
+        ]:
+            class Handler(EchoHandler):
+                request_path = expected_path
+
+            server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            environment = os.environ.copy()
+            environment["CODECRAFTERS_LSP_URL"] = (
+                f"http://127.0.0.1:{server.server_port}{suffix}"
+            )
+            try:
+                # Act and Assert
+                verify_client(f"Rust URL suffix {suffix!r}", command, environment)
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join()
+
+
 def main():
+    verify_rust_client()
     server = ThreadingHTTPServer(("127.0.0.1", 0), EchoHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()

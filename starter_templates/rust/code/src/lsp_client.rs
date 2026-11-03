@@ -16,10 +16,14 @@ impl LspClient {
         let local = url
             .strip_prefix("http://127.0.0.1:")
             .ok_or("Expected local LSP transport")?;
-        let (port, path) = local.split_once('/').ok_or("Invalid LSP transport URL")?;
+        let (port, path) = local.split_once('/').unwrap_or((local, ""));
         Ok(Self {
             address: format!("127.0.0.1:{port}"),
-            path: format!("/{path}"),
+            path: if path.is_empty() {
+                String::new()
+            } else {
+                format!("/{path}")
+            },
         })
     }
 
