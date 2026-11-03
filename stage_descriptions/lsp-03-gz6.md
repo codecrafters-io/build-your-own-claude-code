@@ -1,12 +1,9 @@
 In this stage, you'll implement `goToDefinition` so your agent can find the function behind a call.
-You'll replace Stage 2's temporary LSP response with a working lookup, then let
-the model use Read to inspect the implementation it finds.
 
 ### Why look up a definition?
 
-In Stage 1, the model read `checkout.py` and `pricing.py` directly. This time,
-you'll give it a way to discover which implementation to read. The starting point
-is the call in `checkout.py`:
+`checkout.py` imports the `total` function from `pricing.py` as `invoice_total`,
+then calls it using that alias:
 
 ```python
 from pricing import total as invoice_total
@@ -16,21 +13,14 @@ def checkout_total() -> int:
     return invoice_total(250, 2)
 ```
 
-The name `invoice_total` is an alias for `pricing.total`. Searching for the alias
-finds the import and call, so the model can follow that import manually. Searching
-for `total` can also find unrelated functions, such as `preview.total`.
+Definition lookup asks where `invoice_total` in the return statement is defined.
+The server resolves the alias to `pricing.total` and returns its location in
+`pricing.py`. The model can then use Read to inspect that file. The unrelated
+`preview.total` has the same function name but isn't the target of checkout's import.
 
-Definition lookup asks a more precise question: "Which definition does the symbol
-at this position refer to?" The language server follows the alias and returns a
-location in `pricing.py`. **LSP finds the implementation; Read retrieves its
-contents.** Your handler returns the location to the model, which can then choose
-to call Read. The LSP handler itself doesn't need to execute Read.
-
-### Implement your LSP handler
-
-Replace the "not implemented yet" branch with definition handling. Reuse the
-client and extension mapping from Stage 1 and the tool specification from
-Stage 2. Handle this model tool call:
+Replace Stage 2's temporary LSP handler with definition handling. Reuse Stage 1's
+client and `extensionToLanguage` mapping and Stage 2's tool specification. Your
+handler must accept this `LSP` tool call from the model:
 
 ```json
 {
@@ -41,35 +31,23 @@ Stage 2. Handle this model tool call:
 }
 ```
 
-Line 5, character 12 points to the first character of `invoice_total` in the
-return statement. A position tells the server which occurrence to resolve, even
-when several symbols share a name.
+Line 5, character 12 identifies the first character of `invoice_total` in
+`checkout.py`'s return statement.
 
-Your handler will give the server the source text, ask for the definition at that
-position, and return the answer as a tool result. The helper handles message
-delivery; your agent supplies the document and the question.
+### 1. Send the source document
 
-### 1. Give the server the source file
+Your Read tool returns file contents to the model. To query `checkout.py`, send
+its full contents to the language server in a `textDocument/didOpen` notification.
 
-Reading a file with Read gives its contents to the model. It doesn't send those
-contents to the language server. Use a `textDocument/didOpen` notification to give
-the server the document your query will refer to. Here, "open" means your agent
-has sent the document to the server; it doesn't mean opening an editor window.
+Load `filePath` using your Read handler's path resolution and UTF-8 reading.
+Resolve relative paths against the agent's working directory, which the tester
+sets to the invoice project. Convert the absolute path to a file URI, encoding
+special characters:
+`/project/cart notes.py` becomes `file:///project/cart%20notes.py`.
 
-Reuse Read's path resolution and UTF-8 reading to load the source file. Resolve
-relative paths against the agent's working directory, which the tester sets to
-the invoice project. Resolve symlinks so two paths to the same file use the same
-document identity.
-
-LSP identifies files with URIs. Convert the resolved absolute path to a file URI,
-encoding special characters: `/project/cart notes.py` becomes
-`file:///project/cart%20notes.py`. Use your language's file-URI conversion rather
-than just adding `file://` to the path.
-
-Send the helper action `notify` with this complete [`didOpen` payload][did-open].
-The helper action says how to deliver the message; `method` identifies the LSP
-notification to send. Substitute the actual URI and complete file contents, and
-look up the file's extension in the mapping saved in Stage 1 to get `languageId`:
+Pass this complete [`didOpen` object][did-open] to the client's `notify` action.
+Replace `uri` with the resolved file URI and `text` with the complete file contents.
+Set `languageId` from `extensionToLanguage` (`.py` maps to `python`):
 
 ```json
 {
@@ -85,25 +63,15 @@ look up the file's extension in the mapping saved in Stage 1 to get `languageId`
 }
 ```
 
-`version: 1` identifies the initial contents you send. You'll use later versions
-when you add edit synchronization in Stage 5.
+Version 1 identifies the file's initial contents. Stage 5 adds edit synchronization.
 
-Keep a record of successfully opened URIs for the lifetime of this connection.
-Send `didOpen` once per URI, before its first query. Later queries reuse that open
-document. Wait for the client call to complete before sending the definition
-request, and mark the URI open only if the notification call succeeds.
+### 2. Request the definition
 
-### 2. Ask where the function is defined
-
-Now send the helper action `request` with this complete
-[`definition` payload][definition]. Unlike a notification, a request asks the
-server to return an answer. Your model-facing operation `goToDefinition` becomes
-the LSP method `textDocument/definition`.
-
-Reuse the URI from `didOpen`. The tool's line and character inputs start at 1,
-while LSP [positions][position] start at 0. Subtract one from each: input line 5,
-character 12 becomes line 4, character 11. Both interfaces count columns in UTF-16
-code units, which match character counts for the ASCII text in this example.
+The `notify` action sends document contents; `request` asks for a definition
+location. Pass the complete [`definition` object][definition] below to `request`.
+Use the same `checkout.py` URI as `didOpen`. Subtract one from the tool's `line`
+and `character`: line 5, character 12 becomes zero-based LSP
+[position][position] 4:11. Both interfaces count columns in UTF-16 code units.
 
 ```json
 {
@@ -115,26 +83,24 @@ code units, which match character counts for the ASCII text in this example.
 }
 ```
 
-### 3. Call your client and return the result
+### 3. Track open documents and return the result
 
-Use the two complete payloads above with your language's client-call pattern
-below. `isOpen`/`is_open` is the flag stored for the current URI, not a single flag
-shared by all files.
+Keep a record of opened files keyed by URI for the current server connection.
+Send `didOpen` before a file's first query and mark its URI open only after the
+client's `notify` call succeeds. Later queries for that URI skip `didOpen`.
 
-Save its updated value even if the definition request fails. If `didOpen`
-succeeded, the document is already open; a failed lookup doesn't undo that.
+In the code below, `isOpen`/`is_open` is the flag for the queried file's URI.
+Start with a false flag for a URI you haven't opened. Save the updated flag in
+that URI's record after the client calls.
 
 {{#lang_is_python}}
 
 ```python
-try:
-    if not is_open:
-        lsp.call("notify", open_payload)
-        is_open = True
-    result = lsp.call("request", definition_payload)
-    content = json.dumps(result)
-except Exception as error:
-    content = json.dumps({"error": str(error)})
+if not is_open:
+    lsp.call("notify", open_payload)
+    is_open = True
+result = lsp.call("request", definition_payload)
+content = json.dumps(result)
 ```
 
 Use the standard `json` module.
@@ -144,17 +110,12 @@ Use the standard `json` module.
 {{#lang_is_javascript}}
 
 ```javascript
-let content;
-try {
-  if (!isOpen) {
-    await lsp.call("notify", openPayload);
-    isOpen = true;
-  }
-  const result = await lsp.call("request", definitionPayload);
-  content = JSON.stringify(result);
-} catch (error) {
-  content = JSON.stringify({ error: String(error) });
+if (!isOpen) {
+  await lsp.call("notify", openPayload);
+  isOpen = true;
 }
+const result = await lsp.call("request", definitionPayload);
+const content = JSON.stringify(result);
 ```
 
 {{/lang_is_javascript}}
@@ -162,19 +123,12 @@ try {
 {{#lang_is_typescript}}
 
 ```typescript
-let content: string;
-try {
-  if (!isOpen) {
-    await lsp.call("notify", openPayload);
-    isOpen = true;
-  }
-  const result = await lsp.call("request", definitionPayload);
-  content = JSON.stringify(result)!;
-} catch (error) {
-  content = JSON.stringify({
-    error: error instanceof Error ? error.message : String(error),
-  });
+if (!isOpen) {
+  await lsp.call("notify", openPayload);
+  isOpen = true;
 }
+const result = await lsp.call("request", definitionPayload);
+const content = JSON.stringify(result)!;
 ```
 
 {{/lang_is_typescript}}
@@ -182,25 +136,20 @@ try {
 {{#lang_is_go}}
 
 ```go
-var result json.RawMessage
-var callErr error
 if !isOpen {
-    _, callErr = lsp.Call("notify", openPayload)
-    if callErr == nil {
-        isOpen = true
+    if _, err := lsp.Call("notify", openPayload); err != nil {
+        log.Fatal(err)
     }
+    isOpen = true
 }
-if callErr == nil {
-    result, callErr = lsp.Call("request", definitionPayload)
+result, err := lsp.Call("request", definitionPayload)
+if err != nil {
+    log.Fatal(err)
 }
 content := string(result)
-if callErr != nil {
-    failure, _ := json.Marshal(map[string]string{"error": callErr.Error()})
-    content = string(failure)
-}
 ```
 
-Import `encoding/json`. The successful result is already serialized JSON.
+Use the `log` import from Stage 1. `result` already contains serialized JSON.
 
 {{/lang_is_go}}
 
@@ -208,69 +157,50 @@ Import `encoding/json`. The successful result is already serialized JSON.
 
 ```java
 var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-String content;
-try {
-    if (!isOpen) {
-        lsp.call("notify", mapper.writeValueAsString(openPayload));
-        isOpen = true;
-    }
-    content = lsp.call("request", mapper.writeValueAsString(definitionPayload));
-} catch (Exception error) {
-    content = mapper.writeValueAsString(java.util.Map.of("error", error.toString()));
+if (!isOpen) {
+    lsp.call("notify", mapper.writeValueAsString(openPayload));
+    isOpen = true;
 }
+String content = lsp.call("request", mapper.writeValueAsString(definitionPayload));
 ```
 
-Jackson is included by the starter. Successful responses are already JSON text.
+Jackson is included by the starter. Successful `lsp.call` results are JSON text.
 
 {{/lang_is_java}}
 
 {{#lang_is_rust}}
 
 ```rust
-let response = (|| -> Result<serde_json::Value, Box<dyn std::error::Error>> {
-    if !is_open {
-        lsp.call("notify", &open_payload)?;
-        is_open = true;
-    }
-    lsp.call("request", &definition_payload)
-})();
-let content = match response {
-    Ok(result) => result.to_string(),
-    Err(error) => serde_json::json!({"error": error.to_string()}).to_string(),
-};
+if !is_open {
+    lsp.call("notify", &open_payload)?;
+    is_open = true;
+}
+let result = lsp.call("request", &definition_payload)?;
+let content = result.to_string();
 ```
 
-The closure captures errors for the tool result, keeping the agent loop running.
+Use `?` in a function returning a compatible `Result`, as in Stage 1.
 
 {{/lang_is_rust}}
 
 {{#lang_is_c}}
 
-Serialize the payloads as `open_json` and `definition_json` first.
+Serialize the `didOpen` object as `open_json` and the definition request object
+as `definition_json`.
 
 ```c
-char *result = NULL;
 if (!is_open) {
     char *ack = lsp_call("notify", open_json);
-    if (ack) {
-        free(ack);
-        is_open = 1;
-    }
+    if (!ack) exit(1);
+    free(ack);
+    is_open = 1;
 }
-if (is_open) result = lsp_call("request", definition_json);
-char *content;
-if (result) {
-    content = result;
-} else {
-    cJSON *failure = cJSON_CreateObject();
-    cJSON_AddStringToObject(failure, "error", lsp_last_error());
-    content = cJSON_PrintUnformatted(failure);
-    cJSON_Delete(failure);
-}
+char *content = lsp_call("request", definition_json);
+if (!content) exit(1);
 ```
 
-Use the updated [client][client-c] for `lsp_last_error()`. Copy `content` into
-the tool message, then free it.
+The supplied [C client][client-c] returns allocated JSON text. Copy `content`
+into the tool message, then free it.
 
 [client-c]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/c/lsp_client.h
 
@@ -279,18 +209,11 @@ the tool message, then free it.
 {{#lang_is_cpp}}
 
 ```cpp
-std::string content;
-try {
-    if (!is_open) {
-        lsp.call("notify", open_payload);
-        is_open = true;
-    }
-    content = lsp.call("request", definition_payload).dump();
-} catch (const std::exception& error) {
-    auto failure = nlohmann::json::object();
-    failure["error"] = error.what();
-    content = failure.dump();
+if (!is_open) {
+    lsp.call("notify", open_payload);
+    is_open = true;
 }
+std::string content = lsp.call("request", definition_payload).dump();
 ```
 
 {{/lang_is_cpp}}
@@ -298,51 +221,40 @@ try {
 {{#lang_is_csharp}}
 
 ```csharp
-string content;
-try {
-    if (!isOpen) {
-        await lsp.Call("notify", JsonSerializer.Serialize(openPayload));
-        isOpen = true;
-    }
-    content = await lsp.Call("request", JsonSerializer.Serialize(definitionPayload));
-} catch (Exception error) {
-    content = JsonSerializer.Serialize(new { error = error.Message });
+if (!isOpen) {
+    await lsp.Call("notify", JsonSerializer.Serialize(openPayload));
+    isOpen = true;
 }
+string content = await lsp.Call("request", JsonSerializer.Serialize(definitionPayload));
 ```
 
-Use `System.Text.Json`. Successful responses are already JSON text.
+Use `System.Text.Json`. Successful `lsp.Call` results are JSON text.
 
 {{/lang_is_csharp}}
 
 {{#lang_is_zig}}
 
-Serialize the payloads as `open_json` and `definition_json` first.
+Serialize the `didOpen` object as `open_json` and the definition request object
+as `definition_json`.
 
 ```zig
-const content = response: {
-    if (!is_open) {
-        const ack = lsp.call("notify", open_json) catch |err| {
-            break :response try std.json.Stringify.valueAlloc(allocator,
-                .{ .@"error" = lsp.lastError() orelse @errorName(err) }, .{});
-        };
-        allocator.free(ack);
-        is_open = true;
-    }
-    break :response lsp.call("request", definition_json) catch |err|
-        try std.json.Stringify.valueAlloc(allocator,
-            .{ .@"error" = lsp.lastError() orelse @errorName(err) }, .{});
-};
+if (!is_open) {
+    const ack = try lsp.call("notify", open_json);
+    allocator.free(ack);
+    is_open = true;
+}
+const content = try lsp.call("request", definition_json);
 defer allocator.free(content);
 ```
 
-Use the updated [client][client-zig] with `var lsp` and `defer lsp.deinit()`.
+Use the supplied [Zig client][client-zig] with `var lsp` and `defer lsp.deinit()`.
 Copy `content` into the tool message before freeing it.
 
 [client-zig]: https://github.com/codecrafters-io/claude-code-lsp-snippets/blob/main/zig/lsp_client.zig
 
 {{/lang_is_zig}}
 
-For the example call, a definition result can be:
+For the call in `checkout.py`, the server can return this definition location:
 
 ```json
 {
@@ -354,56 +266,36 @@ For the example call, a definition result can be:
 }
 ```
 
-The URI identifies `pricing.py`. The zero-based range starts at line 0, character
-4: the `t` in `def total`. Its end position, character 9, is just after `total`.
-This is the symbol's location, not the function's source text.
+The returned URI points to `pricing.py`. The zero-based range covers the name
+`total` in its definition, starting at the `t` and ending just after the name.
 
-Put the computed `content` in a tool message with the matching `tool_call_id`,
-then continue the agent loop so the model receives the answer. The content must
-be a string containing the JSON result. If your client already returns JSON text,
-use it directly; serializing that text again would turn the result into a JSON
-string instead of a location object.
+Put the code's `content` string in a tool message's `content` field. Set
+`tool_call_id` to the ID of the model's LSP call and continue the agent loop.
+Serialize the server result once; clients returning JSON text need no additional
+serialization.
 
-Preserve the server's response shape: a single location stays an object, an array
-stays an array, and `null` stays `null`. A null result means no definition was
-found; it isn't a transport error. Keep returned URIs and ranges unchanged. The
-model decodes the file URI to obtain a path for Read. If it uses a returned
-position in another LSP tool call, it converts that position back to one-based.
-
-Use the same error-result pattern for unknown operations, missing files, and
-unmapped extensions. Return an error instead of inventing a language ID for an
-unsupported extension. Preserve the helper's error message when a call fails and
-continue the loop, so the model can see what went wrong and decide what to do next.
+Keep the returned URI and range unchanged. The model decodes the file URI to
+obtain a path for Read. Your LSP handler returns the location; the model chooses
+the subsequent Read call.
 
 ### Tests
 
-The tester writes the invoice project and runs:
+The tester supplies the invoice project and runs:
 
 ```bash
 $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Read the returned implementation and explain which total is called; preview.total is unrelated."
 ```
 
-With `/project` representing the actual project directory, the matching LSP tool
-result must preserve:
-
-```json
-{"uri":"file:///project/pricing.py","range":{"start":{"line":0,"character":4},"end":{"line":0,"character":9}}}
-```
-
-The subsequent Read result must preserve:
+The LSP tool result must contain pricing's definition location shown above, with
+the tester's actual project URI. The following Read result must contain:
 
 ```json
 "def total(price: int, quantity: int) -> int:\n    return price * quantity\n"
 ```
 
-Together, these results show the complete navigation flow: the model asks about
-the alias in checkout, receives pricing's definition location, and reads that
-implementation. `preview.total` is unrelated and should not be chosen just
-because it has the same function name.
-
-Other cases return an array, null, and error `-32603` (`"Definition unavailable"`).
-These exercise the response and error handling above. Preserve the server's error
-message. The final explanation can vary.
+This stage tests one successful lookup followed by Read, using valid Python
+files and a single definition location. Multiple definitions, missing definitions,
+and server-error tool results aren't required here. The final explanation can vary.
 
 [position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen

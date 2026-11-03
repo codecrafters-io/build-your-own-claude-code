@@ -111,21 +111,12 @@ imports and references. Sending its new contents refreshes that view even if the
 next query targets a different file. Waiting until the model queries the edited
 file itself could leave answers about other files based on the old code.
 
-A supported file has an extension in the mapping you saved in Stage 1. Files
-with other extensions continue to use ordinary Write without LSP notifications.
+A supported file has an extension in the mapping you saved in Stage 1. The
+exercise edits Python files, whose `.py` extension maps to `python`.
 
-### Handle failures in the right order
-
-Save the file before notifying the server. If the write fails, return the Write
-error without sending a notification or advancing the document's version.
-Otherwise, the server could analyze contents that were never saved.
-
-If the save succeeds but synchronization fails, report that synchronization
-failure in Write's tool result. The file has changed on disk, but you can't claim
-the server's view was updated. Preserve the helper's error message so the model
-can see what went wrong. Completing a notification call sends the update; it
-doesn't tell you whether the edited program is correct. You'll check program
-behavior with tests in the final stage.
+Save the file before notifying the server so the update contains the saved text.
+Completing the notification sends that update; it doesn't tell you whether the
+edited program is correct. You'll check program behavior in the final stage.
 
 ### Tests
 
@@ -151,9 +142,9 @@ The call's position and alias are unchanged. Only the import changed, so the new
 target shows that the server received and used the edited contents. Returning
 `pricing.py` again would show that the lookup still used the old document.
 
-Substitute the actual project URI. Other cases restore the import, write before
-lookup, and attempt a directory write. Failed writes must leave analysis unchanged.
-These exercise repeated versions, opening a file after Write, and keeping failed
-edits out of the server's view. The final explanation can vary.
+Substitute the actual project URI. Other cases restore the import and write
+before the first lookup. These check increasing versions and opening a file with
+its new contents after Write. All cases use successful writes to supported Python
+files. The final explanation can vary.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange

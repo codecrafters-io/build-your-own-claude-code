@@ -138,11 +138,8 @@ text, use that text directly. Return every location, preserving the array order,
 URIs, and ranges. Don't collapse several references in one file into a single
 entry or convert the result positions to one-based.
 
-An empty array or `null` means the server returned no reference locations. Pass
-that result through unchanged. If a file can't be read, its extension isn't
-supported, or a helper call fails, return an error using the same handling as
-definition lookup. Keep the agent loop running so the model receives the result
-and can decide what to do next.
+An empty array means the server returned no reference locations. Pass it through
+unchanged, using the same tool-result handling as a nonempty array.
 
 ### Tests
 

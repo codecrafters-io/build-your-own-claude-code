@@ -28,10 +28,14 @@ command-line flag.
 
 Stage three follows invoice_total to pricing.total. It reuses the connection and
 schema, adding document opening, definition routing, and matching tool results.
+Its exercise makes one successful lookup followed by Read; multiple definitions,
+missing definitions, and server-error tool results are outside this stage.
 Stage four locates callers in checkout and reporting, excluding preview.total.
-Stage five changes checkout's import to discounts and synchronizes the edit so
-definition lookup follows the new target. The same invoice project continues
-through all six stages, independent of the agent's implementation language.
+Stage five changes checkout's import to discounts and synchronizes successful
+writes so definition lookup follows the new target. It covers repeated versions
+and writes before opening a file; failure recovery is outside this stage.
+The same invoice project continues through all six stages, independent of the
+agent's implementation language.
 
 Learners see the supplied LSP client as their interface. Server startup and
 message delivery are provided; helper transport internals stay in the optional

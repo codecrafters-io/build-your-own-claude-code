@@ -1,5 +1,46 @@
 # LSP revision verification
 
+## References and synchronization scope - 3 November 2026
+
+Stage rb6 now requires reference arrays, including an empty array, without adding
+null-result, unreadable-file, unsupported-extension, or client-error handling.
+Stage bn2 now covers successful writes to supported Python files. Its description
+keeps save-before-notify ordering, increasing versions, and synchronization for
+files that have not been opened. Write failures and synchronization recovery are
+outside the exercise.
+
+- Removed the failed-directory-write case and its obsolete final-file-check
+  exception. The repeated-version and write-before-open cases remain.
+- A new integration regression passes Stage bn2 with an agent that cannot convert
+  failed tool calls into error results. Existing stale-update regressions pass.
+- Regenerated recorded output: all six stages pass, now 12 graded cases. The full
+  offline suite passed with `go test -count=1 -skip '^TestStages$' ./...` in a
+  temporary copy of the companion tester before applying the verified changes.
+- Both revised descriptions render in browser previews. Their JSON examples are
+  unchanged and their Markdown reference links resolve.
+
+## Definition exercise scope - 3 November 2026
+
+Stage gz6 now grades one successful alias lookup followed by Read. Array, null,
+and server-error definition cases are removed. The description keeps the alias
+example and explains document opening, URI encoding, position conversion, and
+returning the location to the model. All ten client examples follow that flow.
+Stage rb6's error-handling instruction now stands alone instead of referring to
+handling that gz6 no longer requires.
+
+- A new integration regression passes with an agent that accepts only a successful
+  location object and cannot return tool errors. Existing regressions still reject
+  wrong coordinates, a discarded definition result, and a missing Read result.
+- The reference-agent sequence passes all six stages, now 13 graded cases. Recorded
+  output was regenerated. The complete offline suite passed with
+  `go test -count=1 -skip '^TestStages$' ./...` in a temporary copy of the companion
+  tester before applying its verified changes to that checkout.
+- All ten Stage 3 language variants render with resolved links and valid JSON.
+  The example coordinates and Python snippets were checked; Python and Go views
+  were inspected in a browser preview.
+
+The dated sections below record earlier revisions, including earlier case counts.
+
 ## Setup split - 3 November 2026
 
 The combined setup stage cx7 is replaced by two stages using the supplied slugs:
