@@ -12,7 +12,7 @@ the tool and add a temporary response so your agent can handle a call safely.
 
 ### Add the tool specification
 
-Keep the client initialization from Stage 1. If the factory returned a client,
+Keep the client initialization from previous stages. If the factory returned a client,
 add this specification to every model request's `tools` array alongside Read,
 Write, and Bash. If LSP is unconfigured, keep using your existing tools without
 LSP. All LSP course tests supply a connection.
