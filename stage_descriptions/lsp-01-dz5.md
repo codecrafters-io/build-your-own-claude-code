@@ -298,12 +298,9 @@ Your agent must initialize the client before its first model request. The tester
 checks that the client connected successfully. You don't need to advertise an
 LSP tool yet.
 
-Optional: [run LSP locally][local-run].
-
 After passing this stage, your agent initializes the client successfully before
 starting its model conversation. Next, you'll advertise the `LSP` tool so the
 model knows it can request code navigation.
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
-[local-run]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_helpers/advanced_usage.md#run-with-your-own-server
 [lsp]: https://microsoft.github.io/language-server-protocol/

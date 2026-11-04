@@ -48,13 +48,13 @@ stay the same because both operations ask about a symbol at a position.
 Replace the tool's description with:
 
 ```text
-Find where a symbol at a given file position is defined or referenced.
+Find where a symbol at a given file position is defined or referenced. Input line and character are one-based UTF-16; returned ranges are zero-based. Add 1 to each returned coordinate before reusing it as input.
 ```
 
 Replace Stage 2's LSP guidance in your system prompt with:
 
 ```text
-Use LSP to find where a symbol is defined or referenced. Tool positions are one-based UTF-16.
+Use LSP to find where a symbol is defined or referenced. LSP inputs are one-based UTF-16; returned ranges are zero-based. Add 1 to each returned coordinate before reusing it as input.
 ```
 
 In your handler, route `findReferences` to a references request. Reuse document

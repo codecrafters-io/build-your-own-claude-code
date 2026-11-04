@@ -24,7 +24,7 @@ Only `goToDefinition` is offered for now; a later stage adds reference lookup.
   "type": "function",
   "function": {
     "name": "LSP",
-    "description": "Find where a symbol at a given file position is defined.",
+    "description": "Find where a symbol at a given file position is defined. Input line and character are one-based UTF-16; returned ranges are zero-based. Add 1 to each returned coordinate before reusing it as input.",
     "parameters": {
       "type": "object",
       "properties": {

@@ -353,6 +353,31 @@ The path fix matters: a helper initialized through a symlink must identify the
 same physical project as the agent's document URIs. Otherwise real-server
 reference results can omit callers even while the controlled fixture passes.
 
+## Deterministic grading and live-model coverage
+
+LSP grading now uses scripted model calls by default. The real submitted agent
+still makes model requests, dispatches tool calls, synchronizes documents, and
+returns tool results. Protocol, final-file, and independently executed project
+tests remain required. `make test_lsp_with_users_code` and `make test_live` in the
+companion tester explicitly enable live LSP calls with CODECRAFTERS_LSP_LIVE=1.
+These maintainer checks cover tool descriptions, planning, and recovery separately
+from learner grading.
+
+- The complete offline tester suite passes, including all six stages and new
+  regressions for lookup order, zero-based result reuse, and post-edit navigation.
+  A temporary copy of the actual Python learner agent also passes all six stages
+  against the new tester using the installed SDK and no live model credentials.
+- Either navigation order is accepted within each migration phase. Lookups must
+  still occur before edits and again after all edits; missing-operation errors
+  identify the lookup and explain the coordinate convention.
+- The supplied Python launcher uses `python -P` instead of exporting
+  PYTHONSAFEPATH. A network-disabled Python 3.14 Docker check reproduces the old
+  child-command import failure and verifies that the new launcher keeps agent
+  safe-path mode while child project tests can import local modules.
+- Tool descriptions and Stages 3, 4, and 6 distinguish one-based tool inputs from
+  zero-based returned ranges. All 60 stage/language combinations render and all
+  generated tool specifications match their source.
+
 ## Remaining release checks
 
 - Live-model reliability and the existing 100-run live flakiness check with a

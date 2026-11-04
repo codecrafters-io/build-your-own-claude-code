@@ -514,6 +514,14 @@ Keep the returned URI and range unchanged. The model decodes the file URI to
 obtain a path for Read. Your LSP handler returns the location; the model chooses
 the subsequent Read call.
 
+If the model reuses a returned position in another LSP call, it must add 1 to
+both coordinates: returned position `0:4` becomes tool input `1:5`. Include this
+convention in your LSP tool description or system prompt:
+
+```text
+LSP inputs are one-based UTF-16; returned ranges are zero-based. Add 1 to each returned coordinate before reusing it as input.
+```
+
 ### Tests
 
 The tester supplies the invoice project and runs:

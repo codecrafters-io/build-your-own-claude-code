@@ -89,14 +89,18 @@ Your agent's existing loop should let the model complete the following work:
    files; the model doesn't need to read every file before making any edits.
 4. **Check the updated code.** Repeat definition and reference lookups after
    editing. Added imports and the `Price` declaration can move `total` down the
-   file, so use its current definition position for the references request.
+   file, so use its current definition position for the references request. Returned
+   ranges are zero-based; add 1 to the line and character when using them as tool
+   inputs.
 5. **Run the project tests.** Use Bash to run
    `python3 -m unittest -v test_invoice.py` and return its actual output to the
    model, so its final explanation can report what happened.
 
-Let the model choose its tool calls and execute them through your existing agent
-loop. It may read `pricing.py` directly or alternate reads and writes across
-files. You may already have everything needed if the earlier stages are complete.
+Execute model tool calls through your existing agent loop. The tester supplies a
+fixed sequence of calls to check the integration consistently. In normal use, the
+model chooses its own calls: it may read `pricing.py` directly or alternate reads
+and writes across files. You may already have everything needed if the earlier
+stages are complete.
 
 Follow-up LSP requests and project tests check different things. Navigation shows
 whether the server can answer questions about the edited code. The tests check

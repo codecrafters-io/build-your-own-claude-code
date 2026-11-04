@@ -76,9 +76,10 @@ Reports.py is indexed but closed: after Write, reuse didOpen with the new text.
 Read and returned reference locations do not open documents. A real server may
 otherwise answer later references queries from its stale index.
 
-Do not hardcode the migration in a learner tool handler. The offline model emits
-a deterministic tool sequence to verify the integration; a live model chooses
-its own sequence. Neither run requires an intentionally broken first edit.
+Do not hardcode the migration in a learner tool handler. Graded LSP runs emit
+a deterministic tool sequence to verify the integration. A separate maintainer
+suite uses a live model to check tool descriptions, planning, and recovery.
+Neither run requires an intentionally broken first edit.
 
 Search is a brief motivation, not an implementation stage. Searching for total
 finds unrelated preview code and imports, while the alias invoice_total needs
