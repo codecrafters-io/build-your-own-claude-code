@@ -145,16 +145,14 @@ A diagnostic timeout means feedback is unavailable, not that the file is clean.
 The tester gives your agent this task:
 
 ```text
-Change pricing.total to return a Price TypedDict with a cents field.
-Use LSP goToDefinition on checkout.py at line 5, character 12 and findReferences
-on pricing.py at line 1, character 5. Read the implementation and affected
-callers. Update checkout.py and reports.py so they still return integer cents.
-Inspect diagnostic feedback from Write, repair any reported type errors, and
-confirm they clear. If feedback times out, report that separately from the
-successful write. Don't modify test_invoice.py. Leave preview.total and other
-unrelated files unchanged. After editing, repeat definition lookup on
-checkout.py and findReferences at pricing.total's current definition to check
-the current code. Run python3 -m unittest -v test_invoice.py and report the result.
+Change pricing.total to return a Price TypedDict with an integer cents field.
+Update checkout.py and reports.py so their results stay unchanged.
+
+Use LSP to find the implementation and callers, and recheck them after editing.
+Use Write's diagnostic feedback to fix type errors. Report any diagnostic timeout.
+
+Leave tests and unrelated files unchanged.
+Run python3 -m unittest -v test_invoice.py and report the result.
 ```
 
 The model chooses edits in normal use. For consistent grading, the tester
