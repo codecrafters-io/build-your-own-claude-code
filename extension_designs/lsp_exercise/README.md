@@ -26,18 +26,19 @@ locations; behavioral tests check the completed change.
 In the companion tester checkout:
 
 ```sh
-make test_lsp_offline
+make test_lsp_with_users_code
 ```
 
-The final stage sends a scripted sequence of navigation, read, write, and Bash
-calls through the real reference-agent loop. The tester checks diagnostic
-error/repair feedback in matching Write results, synchronized document contents,
-the changed API, and preserved caller behavior. It also checks that unrelated
-files stay unchanged. When a server publishes no diagnostics, Write must report
-a feedback timeout while preserving the successful save.
+Set `CODECRAFTERS_SECRET_OPENROUTER_API_KEY` before running this command. The
+reference agent requests responses from OpenRouter, and the model chooses its
+navigation, read, write, and Bash calls. The tester checks diagnostic feedback in
+matching Write results, synchronized document contents, the changed API, and
+preserved caller behavior. It also checks that unrelated files stay unchanged.
+When a server publishes no diagnostics, Write must report a feedback timeout
+while preserving the successful save.
 
-This controlled run verifies integration. A live model chooses its own tool
-sequence. For an independent language analyzer, run `make test_lsp_with_pyright`.
+For offline protocol and checker tests, run `make test_lsp`. For an independent
+language analyzer, run `make test_lsp_with_pyright`.
 
 ## Try your completed agent
 
@@ -54,8 +55,9 @@ Try this prompt:
 > test_invoice.py. Run python3 -m unittest -v test_invoice.py.
 
 The final stage adds diagnostic feedback to Write, using the helper's queued
-notifications. Its scripted run makes 12 tool calls; the base loop stage sets no
-iteration cap. A Stage 5 agent without feedback collection fails Stage 6.
+notifications. The model determines the number of tool calls; the base loop
+stage sets no iteration cap. A Stage 5 agent without feedback collection fails
+Stage 6.
 Keep document versions per URI, send didChange for open-file writes, and reuse
 didOpen after successful writes to supported closed files. In this sequence,
 references opens pricing.py but only returns locations in reports.py; Read

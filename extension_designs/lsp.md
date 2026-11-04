@@ -60,10 +60,10 @@ only sends document updates; an otherwise complete Stage 5 agent must fail Stage
 Keep the API migration: pricing.total changes from integer cents to a Price
 TypedDict with a cents field. Checkout and both reporting calls extract that
 field, preserving checkout's 500 cents and reporting's 600 cents. Preview stays
-unchanged. A scripted intermediate checkout edit returns Price from an int
-function, producing a type error. The next Write repairs that return and must
-surface a new, empty diagnostic report. Normal model runs need not deliberately
-introduce an error.
+unchanged. The model chooses its edits and uses diagnostic feedback to repair
+any type errors. Independent diagnostic tests and the Pyright walkthrough
+exercise an intermediate checkout error followed by a repair and an empty
+diagnostic report. Graded model runs need not deliberately introduce an error.
 
 After every successful Write to a supported file, preserve the write result and
 attach the written file's current publishDiagnostics params under diagnostics.
@@ -78,8 +78,8 @@ successful save and return diagnosticsError with an explicit timeout.
 
 The supplied helper already queues notifications. Its transport is unchanged;
 learners add cursor management, report selection, and feedback in Write. No new
-model-facing LSP operation is needed. The scripted integration makes 12 tool
-calls. Graded variants cover normal error/repair feedback, stale and unrelated
+model-facing LSP operation is needed. The model chooses its tool sequence.
+Graded variants cover current feedback, stale and unrelated
 notifications, unversioned reports, missing publications, and a moved definition.
 
 Read each file before its own first edit. Follow-up references target the current
@@ -88,10 +88,10 @@ Write sends didChange; reports.py is indexed but closed and its Write sends
 didOpen. Navigation still verifies current positions, and actual Bash output and
 independent project tests still verify the completed migration.
 
-Do not hardcode the migration in the agent. Grading supplies deterministic tool
-calls and checks the actual server reports in their matching Write results.
-Separate live-model checks cover whether the model uses that feedback to choose
-repairs.
+Do not hardcode the migration in the agent. Grading forwards model requests to
+OpenRouter and checks actual server reports in their matching Write results.
+The model uses the agent's tool descriptions and feedback to choose its calls
+and repairs; the tester does not supply model responses.
 
 Search is a brief motivation, not an implementation stage. Searching for total
 finds unrelated preview code and imports, while the alias invoice_total needs
@@ -165,15 +165,14 @@ In the companion `claude-code-tester` checkout, with Go 1.25.5 and Python 3.10+:
 
 ```sh
 make test_lsp
-make test_lsp_offline
 make test_lsp_with_pyright
 ```
 
-The first two need no model credentials. The third requires an installed
+These checks need no model credentials. The Pyright check requires an installed
 Pyright language server and checks the integration independently of the fixture.
-For live-model trials, set `CODECRAFTERS_SECRET_OPENROUTER_API_KEY` and run
-`make test_lsp_with_users_code`. Learner trials and live-model reliability checks
-remain release gates.
+For graded reference-agent runs, set `CODECRAFTERS_SECRET_OPENROUTER_API_KEY` and
+run `make test_lsp_with_users_code`. All learner grading uses the live model.
+Learner trials and repeated live-model reliability checks remain release gates.
 
 ## Verification and release gates
 
@@ -192,7 +191,7 @@ helper parity and course/tester stage registration together.
 
 The revised design still needs a learner pacing trial and repeated live-model
 runs with valid CODECRAFTERS_SECRET_OPENROUTER_API_KEY before publication.
-Deterministic scripted runs establish integration, not live-model reliability.
+Offline checker and protocol tests do not establish live-model reliability.
 Stage IDs are allocated. Deploy matching course content and a tester release
 with these IDs together.
 

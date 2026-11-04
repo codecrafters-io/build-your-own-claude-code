@@ -1,5 +1,30 @@
 # LSP revision verification
 
+## Live-model grading restored - 4 November 2026
+
+LSP learner grading now forwards every model request through the OpenRouter
+proxy. The scripted model endpoint, action sequences, offline full-stage mode,
+and live-model opt-in flag have been removed. Cases retain required navigation,
+reads, final edits, and behavior assertions without generating model responses.
+The shifted-definition case starts with shifted source rather than prescribing
+an edit. Offline protocol, checker, transport, and reference-client tests remain;
+full reference-agent runs and fixture recording require model credentials.
+
+- The full offline tester suite passes from the updated companion checkout:
+  `go test -count=1 -skip '^TestStages$' ./...`. Go vet and diff whitespace
+  checks pass. A subprocess regression confirms grading requires provider
+  credentials and cannot silently use canned responses.
+- Direct checker tests retain coverage for navigation order, one-based
+  coordinates, shifted starting definitions, stale documents, matching results,
+  schema advertisement, migration behavior, and diagnostic feedback errors.
+- Live-model grading was not run: this session has no
+  `CODECRAFTERS_SECRET_OPENROUTER_API_KEY`. The expected shifted-source setup
+  log was updated; full live fixture recording remains a release check.
+
+The deterministic grading entries below describe earlier revisions and do not
+describe the current grading path. Independent product smoke checks may still
+use a local model fixture; learner grading does not.
+
 ## Stage 6 diagnostic feedback and repair - 4 November 2026
 
 Stage ql9 now requires new implementation: collect diagnostic notifications after
@@ -387,7 +412,7 @@ The path fix matters: a helper initialized through a symlink must identify the
 same physical project as the agent's document URIs. Otherwise real-server
 reference results can omit callers even while the controlled fixture passes.
 
-## Deterministic grading and live-model coverage
+## Deterministic grading and live-model coverage (historical)
 
 LSP grading now uses scripted model calls by default. The real submitted agent
 still makes model requests, dispatches tool calls, synchronizes documents, and
@@ -423,5 +448,6 @@ from learner grading.
   slugs supplied on 3 November 2026; later stages keep their existing IDs.
   No publication was performed.
 
-Scripted integration runs prove the tool wiring and migration checks. They do not
-prove that a live model will reliably choose the required navigation and edits.
+The historical scripted integration runs proved tool wiring and migration
+checks. Current grading uses the live model; repeated reliability runs remain
+required before release.
