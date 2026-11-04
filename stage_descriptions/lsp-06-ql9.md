@@ -177,3 +177,4 @@ remain in place.
 
 A Stage 5 agent that only synchronizes edits will fail this stage until it
 returns diagnostic feedback.
+

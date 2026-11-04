@@ -85,3 +85,4 @@ All cases use successful writes to supported Python files.
 Your agent now keeps navigation results current after Write edits.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
+

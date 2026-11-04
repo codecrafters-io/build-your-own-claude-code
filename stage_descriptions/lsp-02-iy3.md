@@ -129,3 +129,4 @@ response is sufficient.
 
 The model can now request the LSP tool, and your agent can respond to that
 request. Next, you'll replace the placeholder with a real definition lookup.
+
