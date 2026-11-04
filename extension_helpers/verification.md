@@ -1,5 +1,30 @@
 # LSP revision verification
 
+## Stage 6 capstone walkthrough - 4 November 2026
+
+Stage ql9 shows one complete task prompt, a table of expected results, and a
+shorter integration checklist using Stage 5's shared version map. Tests focus
+on saved behavior, current navigation positions, unchanged files, and real Bash
+output. The lesson ends with the completed agent's capabilities.
+
+- All 60 stage/language variants render with valid JSON examples. The single
+  task prompt matches the companion tester after line wrapping, and both Python
+  API examples are unchanged.
+- The revised lesson was inspected in the browser. Diff whitespace checks pass.
+  This revision changes documentation only. No publication was performed.
+
+## Stage 5 synchronization walkthrough - 4 November 2026
+
+Stage bn2 explicitly replaces Stage 3's URI set with a version map shared by
+navigation and Write. One ordered flow covers saving, notifying, recording the
+version, and returning the tool result. The import example and Tests section
+are shorter, with both open- and closed-document writes retained.
+
+- All 60 stage/language variants render with valid JSON examples. The complete
+  `didChange` payload and tester prompt are unchanged.
+- The revised lesson was inspected in the browser. Diff whitespace checks pass.
+  This revision changes documentation only. No publication was performed.
+
 ## Stage 4 references walkthrough - 4 November 2026
 
 Stage rb6 has a shorter motivation, explicit replacements for the tool

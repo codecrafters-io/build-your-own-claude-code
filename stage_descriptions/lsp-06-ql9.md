@@ -25,17 +25,21 @@ preserves the required behavior.
 
 ### Give your agent the task
 
-Use this prompt with your completed agent:
+The tester supplies the Python invoice project and gives your agent this task:
 
 ```text
 Change pricing.total to return a Price TypedDict with a cents field.
-Use LSP to find the implementation and its callers. Update checkout.py and
-reports.py so they still return integer cents. Leave preview.total unchanged.
-Don't modify test_invoice.py. Run python3 -m unittest -v test_invoice.py.
+Use LSP goToDefinition on checkout.py at line 5, character 12 and findReferences
+on pricing.py at line 1, character 5. Read the implementation and affected
+callers. Update checkout.py and reports.py so they still return integer cents.
+Don't modify test_invoice.py. Leave preview.total and other unrelated files
+unchanged. After editing, repeat definition lookup on checkout.py and
+findReferences at pricing.total's current definition to check the current code.
+Run python3 -m unittest -v test_invoice.py and report the result.
 ```
 
-The tester supplies the Python project regardless of your agent's implementation
-language. The Python below describes the code your agent will edit.
+The project is Python regardless of your agent's implementation language.
+The Python below describes the code your agent will edit.
 
 ### Understand the new API
 
@@ -63,24 +67,13 @@ return invoice_total(250, 2)["cents"]
 ```
 
 Reporting must extract `cents` from each of its two calls before adding the
-amounts. Checkout should still return `500`, and reporting should still return
-`600`. The change is to pricing's return format; the callers' integer results
-remain the same.
+amounts. The callers' integer results remain the same:
 
-The saved code must produce:
-
-```python
->>> from pricing import total
->>> from checkout import checkout_total
->>> from reports import report_total
->>> total(37, 4)
-{'cents': 148}
->>> checkout_total()
-500
->>> report_total()
-600
-```
-
+| Call | Result after the change |
+| --- | --- |
+| `pricing.total(37, 4)` | `{"cents": 148}` |
+| `checkout_total()` | `500` |
+| `report_total()` | `600` |
 
 ### Let the tools work together
 
@@ -101,10 +94,9 @@ Your agent's existing loop should let the model complete the following work:
    `python3 -m unittest -v test_invoice.py` and return its actual output to the
    model, so its final explanation can report what happened.
 
-These steps describe the work, not a sequence to hardcode in a handler. A live
-model chooses its own tool calls and may read `pricing.py` directly. Your job is
-to make those calls work through the existing agent loop. You may already have
-everything needed if the earlier stages are complete.
+Let the model choose its tool calls and execute them through your existing agent
+loop. It may read `pricing.py` directly or alternate reads and writes across
+files. You may already have everything needed if the earlier stages are complete.
 
 Follow-up LSP requests and project tests check different things. Navigation shows
 whether the server can answer questions about the edited code. The tests check
@@ -117,28 +109,17 @@ Run `codecrafters test` to exercise your agent on this task. This course test
 checks the tool integration; the Python test command above checks the invoice
 program through your agent's Bash tool. If the course test fails, check:
 
-- **Loop capacity.** The scripted task uses 11 tool calls. The base loop stage
-  sets no iteration cap. Any limit you added must allow this longer conversation
-  and retain matching tool results. Ending the loop early can leave the model
-  partway through the migration.
-- **Document versions.** Track versions per URI across edits. Earlier stages already
-  test successive versions 2, 3. This task edits several documents, each with its
-  own version history.
-- **Open-file edits.** The references query opens `pricing.py`, so its Write
-  needs `didChange`, even though the earlier definition lookup only returned its
-  location. Returning a location and sending `didOpen` are separate actions.
+- **Loop continuation.** Allow the conversation to continue through navigation,
+  reads, writes, and test execution, retaining matching tool results throughout.
+- **Document versions.** Use Stage 5's shared URI-to-version map for navigation
+  and Write. Each document keeps its own version history across edits.
+- **Open-file edits.** A references query on `pricing.py` opens it. A following
+  Write sends `didChange` with the next version.
 - **Closed-file edits.** Read and returned references don't open `reports.py`.
-  After a successful Write, reuse `didOpen` with its new contents and version 1.
-  An indexed server copy can otherwise stay stale during follow-up lookups, even
-  if the edited program's tests pass on disk.
+  If it is still closed when written, send `didOpen` with its new contents and
+  version 1 so follow-up lookups use the updated code.
 
 ### Tests
-
-The tester supplies the invoice project with `test_invoice.py` and runs:
-
-```bash
-$ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with a cents field. Use LSP goToDefinition on checkout.py at line 5, character 12 and findReferences on pricing.py at line 1, character 5. Read the implementation and affected callers. Update checkout.py and reports.py so they still return integer cents. Don't modify test_invoice.py. Leave preview.total and other unrelated files unchanged. After editing, repeat definition lookup on checkout.py and findReferences at pricing.total's current definition to check the current code. Run python3 -m unittest -v test_invoice.py and report the result."
-```
 
 The supplied `test_invoice.py` contains five tests. Before migration, the three
 existing behavior tests pass, while two tests for the new pricing API fail. Those
@@ -154,10 +135,11 @@ Ran 5 tests in 0.000s
 OK
 ```
 
-Other cases move the definition with formatting and omit diagnostic publications.
-The tester checks navigation, synchronization, the `Price` contract, both callers,
-and unchanged unrelated files. Moving the definition checks that follow-up
-requests use the current code rather than the starting coordinates. You don't
-need to consume server diagnostics for this task; navigation, synchronized edits,
-and the Bash test output provide the required feedback. The final explanation
-can vary.
+The tester checks that the `Price` contract and both callers pass all five
+project tests, while `test_invoice.py` and unrelated files remain unchanged.
+Follow-up navigation must use the edited code and the function's current
+position, including when formatting moves its definition. The actual Bash
+output must reach the model through your tool-result flow.
+
+Your agent can now follow symbols, inspect their uses, make coordinated edits
+across files, and verify the result with project tests.

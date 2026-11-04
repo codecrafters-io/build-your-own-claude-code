@@ -35,43 +35,50 @@ An **open document** is a URI you've successfully sent with `didOpen`.
 Reading a file with Read, or receiving its location in an LSP result, doesn't
 open it in the language server.
 
-Extend the opened-document tracking from Stage 3 to store a version for each
-URI. `didOpen` starts at version 1. Each later change to that document uses a
-higher version: 2, then 3, and so on. The version identifies which revision of
-the document you're sending.
+Replace Stage 3's set of opened URIs with a map from URI to document version.
+Keep this map beside the client, outside the agent loop, and share it between
+navigation and Write. A URI in the map is open; a URI absent from it is closed.
+
+Whenever either handler successfully sends `didOpen`, record version 1 for
+that URI. Update navigation to use this map in place of the old set. Later
+changes use increasing versions: 2, then 3, and so on. The version identifies
+which revision of the document you're sending.
 
 Track versions per URI, rather than using one counter for the whole project.
 For example, checkout can be at version 3 while pricing is still at version 1.
 Reuse navigation's path resolution and URI builder so writing a file finds the
 same document record as looking it up.
 
+### Add synchronization to Write
+
+A supported file has an extension in the client's language mapping from Stage 3.
+The exercise edits Python files, whose `.py` extension maps to `python`.
+
+For a Write to a supported file:
+
+1. Save the file using your existing Write handler.
+2. After the save succeeds, send its complete new contents through `notify`.
+   For an open URI, send `didChange` with its recorded version plus one.
+   For a closed URI, send `didOpen` with version 1.
+3. Wait for the notification call to complete, record the sent version in the
+   shared map, then return Write's tool result. Use `await` with asynchronous
+   clients.
+
+This order keeps the update ahead of the model's next lookup on the same
+connection.
+
 ### Synchronize a Write to an open document
 
-Suppose you've already sent `didOpen` with version 1 for this `checkout.py`:
+Suppose `checkout.py` is open at version 1. The model uses Write to replace
+`from pricing import total as invoice_total` with:
 
 ```python
-from pricing import total as invoice_total
-
-
-def checkout_total() -> int:
-    return invoice_total(250, 2)
+from discounts import total as invoice_total
 ```
 
-The model requests this Write, changing only the module it imports from:
-
-```json
-{"file_path":"checkout.py","content":"from discounts import total as invoice_total\n\n\ndef checkout_total() -> int:\n    return invoice_total(250, 2)\n"}
-```
-
-After a successful write to an open document, send a
-[didChange notification][did-change]:
-
-1. Increment that URI's document version. Here, version 1 becomes version 2.
-2. Send the helper action `notify` with the complete object below, using your
-   language's client-call pattern from Stage 3. The LSP method is
-   `textDocument/didChange`.
-3. Wait for notification completion before returning Write's tool result or
-   continuing the agent loop. Use `await` with asynchronous clients.
+The rest of the file stays the same. After saving, send this
+[didChange notification][did-change] through `notify`, using your language's
+client-call pattern from Stage 3. Version 1 becomes version 2:
 
 ```json
 {
@@ -89,10 +96,8 @@ complete `text` and no range describing a smaller edit. Use the contents that
 were successfully written, including their line breaks; you don't need to
 calculate a diff.
 
-Waiting for the client call to complete keeps the change notification ahead of
-the model's next lookup. Keep using the same URI and connection. For another
-successful Write to this open document, send `didChange` with version 3 instead
-of sending `didOpen` again.
+For another successful Write to this open document, send `didChange` with
+version 3.
 
 ### Synchronize a Write to a closed document
 
@@ -101,22 +106,14 @@ references request on `pricing.py` can discover uses in `reports.py` without you
 agent opening `reports.py` in the server.
 
 After a successful Write to such a file, send `didOpen` with its URI, mapped
-language ID, complete new contents, and version 1, using Stage 3's payload. Once
-that call succeeds, record the URI as open at version 1. Later writes to it use
-`didChange` with increasing versions. Wait for the notification call to complete
-before returning Write's result here too.
+language ID, complete new contents, and version 1, using Stage 3's payload.
+Recording version 1 in the shared map lets later lookups skip `didOpen` and
+later writes use `didChange`.
 
 This matters because a server may have already indexed the file while analyzing
 imports and references. Sending its new contents refreshes that view even if the
 next query targets a different file. Waiting until the model queries the edited
 file itself could leave answers about other files based on the old code.
-
-A supported file has an extension in the client's language mapping from Stage 3.
-The exercise edits Python files, whose `.py` extension maps to `python`.
-
-Save the file before notifying the server so the update contains the saved text.
-Completing the notification sends that update; it doesn't tell you whether the
-edited program is correct. You'll check program behavior in the final stage.
 
 ### Tests
 
@@ -126,25 +123,14 @@ The tester writes the invoice project and runs:
 $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Use Write to change its import from pricing to discounts, preserving the invoice_total alias. Repeat definition lookup at the same position and report the new target."
 ```
 
-The first LSP result must preserve:
+The tester checks that definition lookup changes from `pricing.total` to
+`discounts.total` after Write. The call's position and alias stay the same,
+so the new target shows that the server used the edited contents. Return each
+server location through your existing tool-result flow.
 
-```json
-{"uri":"file:///project/pricing.py","range":{"start":{"line":0,"character":4},"end":{"line":0,"character":9}}}
-```
+Additional cases check repeated versions and Write before the first lookup.
+All cases use successful writes to supported Python files.
 
-After the successful Write, the second must preserve:
-
-```json
-{"uri":"file:///project/discounts.py","range":{"start":{"line":0,"character":4},"end":{"line":0,"character":9}}}
-```
-
-The call's position and alias are unchanged. Only the import changed, so the new
-target shows that the server received and used the edited contents. Returning
-`pricing.py` again would show that the lookup still used the old document.
-
-Substitute the actual project URI. Other cases restore the import and write
-before the first lookup. These check increasing versions and opening a file with
-its new contents after Write. All cases use successful writes to supported Python
-files. The final explanation can vary.
+Your agent now keeps navigation results current after Write edits.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
