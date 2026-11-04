@@ -150,8 +150,9 @@ Update checkout.py and reports.py so their results stay unchanged.
 
 Before any Write edits, use LSP goToDefinition on checkout.py at line 5,
 character 12, and LSP findReferences on the returned pricing.total definition.
-After all Write edits, repeat LSP goToDefinition at the same checkout.py
-position and LSP findReferences at the updated pricing.total definition.
+After all Write edits, repeat LSP goToDefinition on the invoice_total call in
+checkout.py at its current line and character, and LSP findReferences at the
+updated pricing.total definition.
 Use the returned definition position for findReferences, converting its
 zero-based range to one-based tool inputs. Both post-edit LSP queries are
 required even if diagnostics are clean and the project tests pass.
@@ -168,6 +169,8 @@ execute each tool call, collect its real feedback, and return it with the matchi
 introduce errors. Before the first Write and after the last Write, the task
 requires both definition lookup and references; project tests do not replace
 those navigation checks. Either lookup order is accepted within each phase.
+An edit can move the checkout call to a different line or column; locate it in
+the updated source before the follow-up definition lookup.
 
 Diagnostics and project tests serve different purposes. Diagnostics locate type
 errors; the five supplied Python tests check the new API and preserved behavior.
@@ -181,8 +184,9 @@ current diagnostic report, including a new, empty report when an edit clears
 earlier errors. It also checks stale and unrelated notifications, reports without
 versions, and an explicit timeout when the server publishes no report.
 Both LSP operations must run before editing and after all edits, using the
-updated definition position for follow-up references. Migration, unchanged-file,
-and Bash-output checks remain in place.
+current checkout call position for definition lookup and the updated pricing
+definition position for references. Migration, unchanged-file, and Bash-output
+checks remain in place.
 
 A Stage 5 agent that only synchronizes edits will fail this stage until it
 returns diagnostic feedback.

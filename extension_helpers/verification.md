@@ -1,5 +1,22 @@
 # LSP revision verification
 
+## Follow the current checkout call - 4 November 2026
+
+The QL9 follow-up definition lookup now targets invoice_total in the synchronized
+checkout source. The call can move to another line or column during a valid
+rewrite; the grader accepts positions within its current identifier and rejects
+stale coordinates, the import alias, and comments. Initial lookup coordinates
+and the required before/after-edit phases remain unchanged. The task and lesson
+ask for the current call position instead of reusing the original coordinates.
+
+- Seven regression variants reproduce the original rejection of valid moved
+  calls and acceptance of a stale column, then pass with the fix. They cover
+  moved columns, moved lines, positions inside the call name, stale positions,
+  the alias import, and a comment containing the call text.
+- The full offline tester suite and Go vet pass. Lesson/tester prompt parity,
+  all five expected task log lines, Markdown fences, and whitespace checks pass.
+  Live-model reliability remains unverified without a maintainer API credential.
+
 ## Explicit capstone navigation checks - 4 November 2026
 
 The QL9 task now explicitly requests goToDefinition and findReferences before
