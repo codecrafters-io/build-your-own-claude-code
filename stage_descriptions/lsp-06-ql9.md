@@ -148,18 +148,26 @@ The tester gives your agent this task:
 Change pricing.total to return a Price TypedDict with an integer cents field.
 Update checkout.py and reports.py so their results stay unchanged.
 
-Use LSP to find the implementation and callers, and recheck them after editing.
-Use Write's diagnostic feedback to fix type errors. Report any diagnostic timeout.
+Before any Write edits, use LSP goToDefinition on checkout.py at line 5,
+character 12, and LSP findReferences on the returned pricing.total definition.
+After all Write edits, repeat LSP goToDefinition at the same checkout.py
+position and LSP findReferences at the updated pricing.total definition.
+Use the returned definition position for findReferences, converting its
+zero-based range to one-based tool inputs. Both post-edit LSP queries are
+required even if diagnostics are clean and the project tests pass.
+
+Use diagnostic feedback from Write to fix type errors. Report any diagnostic timeout.
 
 Leave tests and unrelated files unchanged.
 Run python3 -m unittest -v test_invoice.py and report the result.
 ```
 
-The model chooses edits in normal use. For consistent grading, the tester
-supplies a sequence that includes an incomplete caller edit and its repair.
-You do not need to deliberately introduce errors in your agent's implementation.
-Execute each tool call, collect its real feedback, and return it with the matching
-`tool_call_id` before continuing the loop.
+The live model chooses its tool calls and edits during grading. Your agent must
+execute each tool call, collect its real feedback, and return it with the matching
+`tool_call_id` before continuing the loop. You do not need to deliberately
+introduce errors. Before the first Write and after the last Write, the task
+requires both definition lookup and references; project tests do not replace
+those navigation checks. Either lookup order is accepted within each phase.
 
 Diagnostics and project tests serve different purposes. Diagnostics locate type
 errors; the five supplied Python tests check the new API and preserved behavior.
@@ -168,12 +176,13 @@ function's position for follow-up references.
 
 ### Tests
 
-Run `codecrafters test`. Stage 6 checks that the caller's type error reaches the
-model in the incomplete Write's result, and that the repair's result contains a
-new, empty report. It also checks stale and unrelated notifications, reports
-without versions, and an explicit timeout when the server publishes no report.
-Existing migration, current-navigation, unchanged-file, and Bash-output checks
-remain in place.
+Run `codecrafters test`. Stage 6 checks that every successful Write returns the
+current diagnostic report, including a new, empty report when an edit clears
+earlier errors. It also checks stale and unrelated notifications, reports without
+versions, and an explicit timeout when the server publishes no report.
+Both LSP operations must run before editing and after all edits, using the
+updated definition position for follow-up references. Migration, unchanged-file,
+and Bash-output checks remain in place.
 
 A Stage 5 agent that only synchronizes edits will fail this stage until it
 returns diagnostic feedback.

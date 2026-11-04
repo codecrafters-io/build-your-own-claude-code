@@ -1,5 +1,25 @@
 # LSP revision verification
 
+## Explicit capstone navigation checks - 4 November 2026
+
+The QL9 task now explicitly requests goToDefinition and findReferences before
+the first Write and after the last Write, even when diagnostics are clean and
+project tests pass. Follow-up references use the updated definition's returned
+position, converted from zero-based ranges to one-based tool inputs. The lesson
+matches the tester prompt and describes live-model grading without prescribed
+incomplete edits.
+
+- Removed the early query-count failure so the existing matching checks identify
+  the missing operation, source file, position, and before/after-edit phase.
+  The four required lookups and phase constraints remain enforced.
+- Six missing-lookup regressions reproduced the old count-only error and pass
+  with the fix, including a completed migration with only its two initial lookups.
+  Existing navigation-order and shifted-definition tests still pass.
+- The full offline tester suite and Go vet pass. Lesson/tester prompt parity,
+  Markdown code fences, and diff whitespace checks pass. The five expected task
+  log lines match the revised prompt. Live-model verification remains pending:
+  this session has no CODECRAFTERS_SECRET_OPENROUTER_API_KEY.
+
 ## Live-model grading restored - 4 November 2026
 
 LSP learner grading now forwards every model request through the OpenRouter
