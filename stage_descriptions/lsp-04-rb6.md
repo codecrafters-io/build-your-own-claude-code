@@ -4,10 +4,9 @@ lets you start at that implementation and discover where it's used.
 
 ### Which callers need updating?
 
-In a later stage, you'll change `pricing.total` from returning integer cents to
-returning an object with a `cents` field. Finding the implementation is only part
-of that task: its callers currently expect an integer, so they'll need updating
-too. For example, a result of `500` will become `{"cents": 500}`.
+Suppose you want to change `pricing.total` from returning integer cents to
+returning an object: `500` would become `{"cents": 500}`. Before editing it,
+you need to find the callers that depend on its current return value.
 
 Checkout imports the function as `invoice_total` and returns its result:
 
@@ -29,19 +28,16 @@ def report_total() -> int:
     return total(250, 2) + total(100, 1)
 ```
 
-If you change only `pricing.total`, checkout will return an object where an
-integer is expected, and reporting will try to add two objects. Meanwhile,
-`preview.py` defines an unrelated `total` that should stay unchanged.
+After that change, checkout would return an object and reporting would try to
+add two objects. The unrelated `total` in `preview.py` should stay unchanged.
 
-Searching for `total` can find imports, calls, unrelated functions, and comments.
-The model can inspect those matches, but it must work out which refer to
-`pricing.total`. A [references request][references] asks the language server for
-the locations associated with that particular symbol, including uses through an
-alias. **LSP locates references; Read gives the model the surrounding code it
-needs to understand each use.**
+Searching for `total` also finds unrelated functions and comments. A
+[references request][references] asks the language server for locations tied to
+`pricing.total`, including uses through an alias. **LSP locates references; Read
+gives the model the surrounding code it needs to understand each use.**
 
-This stage adds that lookup. You'll make the API change later; for now, your
-agent should help the model discover the affected code before editing it.
+In this stage, implement reference lookup so the model can discover those
+callers.
 
 ### Add references to your LSP tool
 
@@ -49,7 +45,17 @@ Extend the existing LSP tool's operation enum to
 `["goToDefinition", "findReferences"]`. Keep definition lookup available: the
 model needs both ways to navigate. The file path, line, and character arguments
 stay the same because both operations ask about a symbol at a position.
-Update the tool's description to mention both definition and reference lookup.
+Replace the tool's description with:
+
+```text
+Find where a symbol at a given file position is defined or referenced.
+```
+
+Replace Stage 2's LSP guidance in your system prompt with:
+
+```text
+Use LSP to find where a symbol is defined or referenced. Tool positions are one-based UTF-16.
+```
 
 In your handler, route `findReferences` to a references request. Reuse document
 opening, file URIs, position conversion, and tool-result handling from Stage 3.
@@ -106,12 +112,48 @@ For the full invoice project under `/project`, the supplied test server returns:
 
 ```json
 [
-  {"uri":"file:///project/reports.py","range":{"start":{"line":4,"character":27},"end":{"line":4,"character":32}}},
-  {"uri":"file:///project/reports.py","range":{"start":{"line":4,"character":11},"end":{"line":4,"character":16}}},
-  {"uri":"file:///project/reports.py","range":{"start":{"line":0,"character":20},"end":{"line":0,"character":25}}},
-  {"uri":"file:///project/checkout.py","range":{"start":{"line":4,"character":11},"end":{"line":4,"character":24}}},
-  {"uri":"file:///project/checkout.py","range":{"start":{"line":0,"character":20},"end":{"line":0,"character":25}}},
-  {"uri":"file:///project/pricing.py","range":{"start":{"line":0,"character":4},"end":{"line":0,"character":9}}}
+  {
+    "uri": "file:///project/reports.py",
+    "range": {
+      "start": {"line": 4, "character": 27},
+      "end": {"line": 4, "character": 32}
+    }
+  },
+  {
+    "uri": "file:///project/reports.py",
+    "range": {
+      "start": {"line": 4, "character": 11},
+      "end": {"line": 4, "character": 16}
+    }
+  },
+  {
+    "uri": "file:///project/reports.py",
+    "range": {
+      "start": {"line": 0, "character": 20},
+      "end": {"line": 0, "character": 25}
+    }
+  },
+  {
+    "uri": "file:///project/checkout.py",
+    "range": {
+      "start": {"line": 4, "character": 11},
+      "end": {"line": 4, "character": 24}
+    }
+  },
+  {
+    "uri": "file:///project/checkout.py",
+    "range": {
+      "start": {"line": 0, "character": 20},
+      "end": {"line": 0, "character": 25}
+    }
+  },
+  {
+    "uri": "file:///project/pricing.py",
+    "range": {
+      "start": {"line": 0, "character": 4},
+      "end": {"line": 0, "character": 9}
+    }
+  }
 ]
 ```
 
@@ -144,26 +186,18 @@ unchanged, using the same tool-result handling as a nonempty array.
 
 ### Tests
 
-The first case supplies the invoice project without `reports.py` and runs:
+The tester supplies the invoice project and runs prompts such as:
 
 ```bash
 $ ./your_program.sh -p "Use LSP findReferences on pricing.py at line 1, character 5. Identify every affected caller before changing its return type. Preserve the returned locations; preview.total and comments are unrelated."
 ```
 
-The matching tool result must preserve these locations, with the actual project
-URI substituted:
+The tester checks references across files, multiple locations in one file,
+declaration inclusion, and an empty array. Each response must preserve the
+server's locations and reach the model with the matching `tool_call_id`.
 
-```json
-[
-  {"uri":"file:///project/checkout.py","range":{"start":{"line":4,"character":11},"end":{"line":4,"character":24}}},
-  {"uri":"file:///project/checkout.py","range":{"start":{"line":0,"character":20},"end":{"line":0,"character":25}}},
-  {"uri":"file:///project/pricing.py","range":{"start":{"line":0,"character":4},"end":{"line":0,"character":9}}}
-]
-```
-
-Other cases cover callers across files and an empty result. The tester checks
-`includeDeclaration` and every returned location. Together, these cases check
-that your handler can return all references, including multiple locations in one
-file, without including unrelated text matches. The final explanation can vary.
+Your agent can now find a function's definition and references so the model can
+inspect the affected code. Next, you'll keep those results current after file
+edits.
 
 [references]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_references

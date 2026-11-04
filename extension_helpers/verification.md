@@ -1,5 +1,36 @@
 # LSP revision verification
 
+## Stage 4 references walkthrough - 4 November 2026
+
+Stage rb6 has a shorter motivation, explicit replacements for the tool
+description and system-prompt guidance, and a checkpoint leading into edit
+synchronization. Its Tests section describes coverage without repeating the
+worked location array.
+
+- All 60 stage/language variants render with valid JSON examples. The Stage 4
+  tool arguments, server request, and worked response are unchanged.
+- The revised lesson was inspected in the browser. Diff whitespace checks pass.
+  No client or tester behavior changed, and no publication was performed.
+
+## Stage 3 definition walkthrough - 4 November 2026
+
+Stage gz6 distinguishes the model's tool call from the server request and
+explains why the handler sends source contents before the model reads the
+returned implementation. Document tracking now precedes lookup instructions,
+with concrete per-URI sets and named payloads in all ten languages. The Tests
+section states the expected behavior without an escaped file-content fixture.
+C and Zig client links point to this repository's supplied clients.
+
+- The exact state declarations and handler examples compile and run with all
+  ten supplied clients. Across two source URIs and three definition requests,
+  each URI opens once and every result retains the server's location JSON.
+- A failed Python `didOpen` leaves its URI unopened. Strict TypeScript checking
+  passes. The Zig example retains owned URI strings after each input is freed.
+- All 60 stage/language variants render with valid JSON examples. Python and
+  Zig previews were inspected in the browser. Diff whitespace checks pass.
+- This is a lesson-only revision; the tester's successful-definition scope is
+  unchanged. No publication was performed.
+
 ## Stage 2 tool-call exercise - 4 November 2026
 
 Stage iy3 now exercises the temporary LSP handler. Its prompt requests
