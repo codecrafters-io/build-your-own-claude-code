@@ -1,33 +1,56 @@
 # build-your-own-claude-code
 
-Content for the "Build your own Claude Code" challenge.
+Course content for the ["Build your own Claude Code" challenge](https://codecrafters.io/challenges/claude-code).
 
-## Setup
+Build a terminal-based AI coding assistant that calls an LLM, reads files,
+edits code, and runs shell commands. This repository contains the course
+definition, stage instructions, starter code, and example solutions.
 
-This challenge is developed using https://github.com/codecrafters-io/course-sdk.
+## Course overview
+
+The six base stages build the core agent:
+
+1. Communicate with the LLM.
+2. Advertise the Read tool.
+3. Execute the Read tool.
+4. Implement the agent loop.
+5. Implement the Write tool.
+6. Implement the Bash tool.
+
+Two extensions build on that agent:
+
+- **[Skills](extension_designs/skills.md)** (seven stages): discover and load
+  reusable task instructions, pass arguments, combine skills, run bundled scripts,
+  let the model choose a skill, and run a skill in a subagent.
+- **[Language Server Protocol (LSP)](extension_designs/lsp.md)** (six stages):
+  connect the supplied client, advertise the tool, find definitions and callers,
+  synchronize edits, and use diagnostics to repair an API migration across files.
+  The supplied helper handles server startup and transport. Skills is not a
+  prerequisite for LSP.
+
+Supported languages: C, C++, C#, Go, Java, JavaScript, Python, Rust, TypeScript,
+and Zig.
+
+## Repository guide
+
+| Path | Contents |
+| --- | --- |
+| [course-definition.yml](course-definition.yml) | Course metadata, supported languages, extensions, and stage order |
+| [stage_descriptions/](stage_descriptions/) | Learner-facing instructions for each stage |
+| [starter_templates/](starter_templates/) | Shared and language-specific starter templates |
+| [compiled_starters/](compiled_starters/) | Generated starter projects for each language |
+| [solutions/](solutions/) | Example solutions organized by language and stage |
+| [dockerfiles/](dockerfiles/) | Language runtime container definitions |
+| [extension_designs/](extension_designs/) | Extension designs and the sample LSP invoice project |
+| [extension_helpers/](extension_helpers/README.md) | Supplied LSP helper, language clients, and usage guides |
+
+## Development
+
+This challenge is developed using the [CodeCrafters course SDK](https://github.com/codecrafters-io/course-sdk).
 Read its README for language support and submission workflows.
 
-## LSP extension
-
-Six stages start with connecting the supplied LSP client, followed by advertising
-the LSP tool. Definition lookup, references, and document synchronization build on
-that setup. A final capstone combines them to migrate an API and its callers,
-then run project tests. The helper handles server startup and transport.
-
-- [Extension design](extension_designs/lsp.md)
-- [Supplied helper and language clients](extension_helpers/README.md)
-- [Invoice API migration and before/after demo](extension_designs/lsp_exercise/README.md)
-
-In the companion claude-code-tester checkout, with Go 1.25.5 and Python 3.10+:
-
-```sh
-make test_lsp
-make test_lsp_offline
-make test_lsp_with_pyright
-```
-
-The first two need no model credentials. The third requires an installed
-Pyright language server and checks the integration independently of the fixture.
-For live-model trials, set CODECRAFTERS_SECRET_OPENROUTER_API_KEY and run
-`make test_lsp_with_users_code`. Learner trials and live-model reliability checks
-remain release gates.
+LSP-specific setup and validation are documented in the
+[extension design](extension_designs/lsp.md#run-the-lsp-checks-locally).
+See the [invoice exercise](extension_designs/lsp_exercise/README.md) for the
+sample API migration and the [helper guide](extension_helpers/README.md) for
+the supplied clients.
