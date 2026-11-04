@@ -1,7 +1,7 @@
 In this extension, you'll give your agent tools to find function definitions and
 affected callers, then use those tools to change code across files.
 
-In this stage, you'll initialize the supplied LSP client.
+In this stage, you'll initialize the supplied LSP client and log when it connects.
 
 ### Why LSP?
 
@@ -51,6 +51,12 @@ during startup, before your first model request, and keep the client for your
 tool handlers. You'll connect the model's LSP calls to this client in later
 stages.
 
+After initialization, check whether you received a client and print
+`LSP client connected` to standard error when connected. This confirms the
+connection in your test logs and gives you a first use of the client. If no
+connection is configured, continue without printing the message. Keep standard
+output for your agent's answer.
+
 {{#lang_is_c}}
 
 The supplied client is in `src/lsp_client.h`. If it is missing or outdated,
@@ -68,6 +74,9 @@ Inside `main`, after your existing `curl_global_init` and before the agent loop:
 LSPClient lsp;
 int lsp_status = lsp_from_environment(&lsp);
 if (lsp_status < 0) return 1;
+if (lsp_status == 1) {
+    fprintf(stderr, "LSP client connected\n");
+}
 ```
 
 `lsp_status` is 1 when connected and 0 when unconfigured. Use the client only
@@ -93,6 +102,9 @@ Before the agent loop:
 
 ```cpp
 auto lsp_client = LSPClient::from_environment();
+if (lsp_client) {
+    std::cerr << "LSP client connected\n";
+}
 ```
 
 The factory returns `std::optional<LSPClient>`. Use `if (lsp_client)` to check
@@ -115,6 +127,9 @@ async startup method:
 
 ```csharp
 var lsp = await LSPClient.FromEnvironmentAsync();
+if (lsp is not null) {
+    Console.Error.WriteLine("LSP client connected");
+}
 ```
 
 The result is `LSPClient?`, with `null` meaning no connection is configured.
@@ -138,12 +153,13 @@ lsp, err := LSPClientFromEnvironment()
 if err != nil {
     log.Fatal(err)
 }
-_ = lsp // Used by the LSP handler in Stage 3.
+if lsp != nil {
+    log.Print("LSP client connected")
+}
 ```
 
-The client is `nil` when no connection is configured. Remove `_ = lsp` once your
-LSP handler uses the client. Run the whole package with `go run ./app`, rather
-than compiling only `app/main.go`.
+The client is `nil` when no connection is configured. Run the whole package with
+`go run ./app`, rather than compiling only `app/main.go`.
 
 [client-go]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/go/code/app/lsp_client.go
 
@@ -159,6 +175,9 @@ It shares the starter's default package with
 
 ```java
 var lsp = LSPClient.fromEnvironment();
+if (lsp != null) {
+    System.err.println("LSP client connected");
+}
 ```
 
 The factory returns `null` when no connection is configured. Initialization and
@@ -181,6 +200,9 @@ initialization at module scope or inside your async startup function:
 import { LSPClient } from "./lsp_client.js";
 
 const lsp = await LSPClient.fromEnvironment();
+if (lsp !== null) {
+    console.error("LSP client connected");
+}
 ```
 
 The factory returns `null` when no connection is configured.
@@ -197,9 +219,13 @@ The supplied client is in `app/lsp_client.py`. If it is missing or outdated,
 In your agent's Python module:
 
 ```python
+import sys
+
 from app.lsp_client import LSPClient
 
 lsp = LSPClient.from_environment()
+if lsp is not None:
+    print("LSP client connected", file=sys.stderr)
 ```
 
 The factory returns `None` when no connection is configured. Failed
@@ -225,6 +251,9 @@ Inside your existing `main` or startup function:
 
 ```rust
 let lsp_client = LspClient::from_environment()?;
+if lsp_client.is_some() {
+    eprintln!("LSP client connected");
+}
 ```
 
 The result is `Option<LspClient>`, with `None` meaning no connection is configured.
@@ -249,6 +278,9 @@ initialization at module scope or inside your async startup function:
 import { LSPClient } from "./lsp_client.ts";
 
 const lsp = await LSPClient.fromEnvironment();
+if (lsp !== null) {
+    console.error("LSP client connected");
+}
 ```
 
 The factory returns `null` when no connection is configured.
@@ -274,6 +306,9 @@ Inside `main(init: std.process.Init) !void`, after the starter's `allocator` and
 ```zig
 var lsp_client = try LSPClient.fromEnvironment(allocator, io, init.environ_map);
 defer if (lsp_client) |*lsp| lsp.deinit();
+if (lsp_client != null) {
+    std.debug.print("LSP client connected\n", .{});
+}
 ```
 
 The result is `?LSPClient`, with `null` meaning no connection is configured.
@@ -296,7 +331,8 @@ $ ./your_program.sh -p "Use only Read to inspect checkout.py and pricing.py. Exp
 
 Your agent must initialize the client before its first model request. The tester
 checks that the client connected successfully. You don't need to advertise an
-LSP tool yet.
+LSP tool yet. The connection message helps you confirm startup in the logs;
+the tester checks the connection itself, not the message text.
 
 After passing this stage, your agent initializes the client successfully before
 starting its model conversation. Next, you'll advertise the `LSP` tool so the

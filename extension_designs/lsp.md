@@ -18,7 +18,9 @@ explains why symbol navigation helps, using checkout's invoice_total alias and
 the pricing implementation in the test-supplied Python project. Learners connect
 the supplied client, whose initialization fetches its extension-to-language
 mapping before their first model request. The existing Read tool inspects the
-project. No LSP advertisement or navigation handler is required yet.
+project. Learners check the initialized client and log a connection message to
+standard error, giving the client an immediate use and confirming startup in
+the test logs. No LSP advertisement or navigation handler is required yet.
 Current starters include the client. Each language's setup section links directly
 to the current client file and gives its destination path if a download is needed.
 The lesson introduces the language mapping in Stage 3, alongside the `didOpen`
