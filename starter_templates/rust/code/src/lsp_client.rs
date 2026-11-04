@@ -13,6 +13,13 @@ pub struct LspClient {
 }
 
 impl LspClient {
+    pub fn from_environment() -> Result<Option<Self>, Box<dyn Error>> {
+        if std::env::var_os("CODECRAFTERS_LSP_URL").is_none() {
+            return Ok(None);
+        }
+        Ok(Some(Self::new()?))
+    }
+
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let url = std::env::var("CODECRAFTERS_LSP_URL")?;
         let local = url

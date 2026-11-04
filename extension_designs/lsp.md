@@ -44,7 +44,10 @@ agent's implementation language.
 
 Learners see the supplied LSP client as their interface. Server startup and
 message delivery are provided; helper transport internals stay in the optional
-guide. Every LSP test supplies a connection.
+guide. Every LSP test supplies a connection. Supplied environment factories return
+no client when that connection is unconfigured, allowing base-course and local
+runs to continue without advertising LSP. Configured initialization failures
+remain errors.
 
 ## Finish with a coordinated change
 

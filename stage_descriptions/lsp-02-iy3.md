@@ -12,9 +12,12 @@ the tool and add a temporary response so your agent can handle a call safely.
 
 ### Add the tool specification
 
-Keep the client initialization from Stage 1. Add this specification to
-every model request's `tools` array alongside Read, Write, and Bash. Only
-`goToDefinition` is offered for now; a later stage adds reference lookup.
+Keep the client initialization from Stage 1. If the factory returned a client,
+add this specification to every model request's `tools` array alongside Read,
+Write, and Bash. If LSP is unconfigured, keep using your existing tools without
+LSP. All LSP course tests supply a connection.
+
+Only `goToDefinition` is offered for now; a later stage adds reference lookup.
 
 ```json
 {
@@ -77,7 +80,8 @@ in these exercises. Here, line 5, character 12 identifies the start of
 ### Update your system prompt
 
 The specification describes the tool's interface. Add this guidance to your
-existing system prompt to explain when the model should use it:
+existing system prompt when LSP is configured to explain when the model should
+use it:
 
 ```text
 Use LSP to find where a symbol is defined. Tool positions are one-based UTF-16.

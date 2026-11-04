@@ -1,6 +1,7 @@
 // Course-supplied transport, using the starter's existing HTTP and JSON libraries.
 #pragma once
 #include <cstdlib>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <cpr/cpr.h>
@@ -10,6 +11,11 @@ class LSPClient {
     std::string url;
 public:
     nlohmann::json extension_to_language;
+
+    static std::optional<LSPClient> from_environment() {
+        if (!std::getenv("CODECRAFTERS_LSP_URL")) return std::nullopt;
+        return LSPClient{};
+    }
 
     LSPClient() {
         const char* value = std::getenv("CODECRAFTERS_LSP_URL");

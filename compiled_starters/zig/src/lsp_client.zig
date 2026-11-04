@@ -9,6 +9,11 @@ pub const LSPClient = struct {
     configuration: ?std.json.Parsed(std.json.Value) = null,
     extension_to_language: std.json.ObjectMap = undefined,
 
+    pub fn fromEnvironment(allocator: std.mem.Allocator, io: std.Io, environ: *const std.process.Environ.Map) !?LSPClient {
+        const url = environ.get("CODECRAFTERS_LSP_URL") orelse return null;
+        return try init(allocator, io, url);
+    }
+
     pub fn init(allocator: std.mem.Allocator, io: std.Io, url: ?[]const u8) !LSPClient {
         var client: LSPClient = .{
             .allocator = allocator,

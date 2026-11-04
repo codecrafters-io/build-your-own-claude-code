@@ -15,6 +15,12 @@ public sealed class LSPClient
 
     private LSPClient() {}
 
+    public static async Task<LSPClient?> FromEnvironmentAsync()
+    {
+        if (Environment.GetEnvironmentVariable("CODECRAFTERS_LSP_URL") == null) return null;
+        return await CreateAsync();
+    }
+
     public static async Task<LSPClient> CreateAsync()
     {
         var lsp = new LSPClient();

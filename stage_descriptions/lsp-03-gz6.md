@@ -36,6 +36,24 @@ like this:
 Line 5, character 12 identifies the first character of `invoice_total` in
 `checkout.py`'s return statement.
 
+The examples below use the initialized client as `lsp` inside your LSP handler.
+
+{{#lang_is_cpp}}
+Check `if (lsp_client)` and bind `auto& lsp = *lsp_client;` in that branch.
+{{/lang_is_cpp}}
+{{#lang_is_rust}}
+Use `if let Some(lsp) = lsp_client.as_ref()` to access it in that branch.
+{{/lang_is_rust}}
+{{#lang_is_zig}}
+Use `if (lsp_client) |*lsp|` to access it in that branch.
+{{/lang_is_zig}}
+{{#lang_is_typescript}}
+Check `if (lsp)` in that branch so TypeScript narrows it to `LSPClient`.
+{{/lang_is_typescript}}
+{{#lang_is_csharp}}
+Check `if (lsp is not null)` in that branch to access the initialized client.
+{{/lang_is_csharp}}
+
 The names describe different parts of this lookup:
 
 | Name | Role |
@@ -463,8 +481,8 @@ const content = try lsp.call("request", definition_json);
 defer allocator.free(content);
 ```
 
-Use the supplied [Zig client][client-zig] with `var lsp` and `defer lsp.deinit()`.
-Copy `content` into the tool message before freeing it.
+Use the supplied [Zig client][client-zig] with the optional-client cleanup from
+Stage 1. Copy `content` into the tool message before freeing it.
 
 [client-zig]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/starter_templates/zig/code/src/lsp_client.zig
 

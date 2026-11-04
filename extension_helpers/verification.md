@@ -1,5 +1,31 @@
 # LSP revision verification
 
+## Optional connection setup - 4 November 2026
+
+All ten supplied clients now provide an environment factory. An absent
+`CODECRAFTERS_LSP_URL` returns no client; a configured URL initializes the client
+and fetches its language mapping. Existing required initialization APIs remain
+available. Stage 1 uses the factory, Stage 2 enables the tool and prompt guidance
+only for a configured connection, and Stage 3 explains access to optional clients.
+Every LSP course test still supplies a connection.
+
+Stage 1 states that course tests provide the connection automatically and directs
+learners to `codecrafters test`, keeping helper and environment-variable details
+in the optional advanced guide.
+
+- Native checks pass for all ten factories: unconfigured startup skips the helper,
+  configured startup fetches the mapping once, and 8 KiB responses are preserved.
+  Empty URLs, unreachable helpers, and failed configuration fetches remain errors.
+  C++ was compiled and exercised separately in a temporary Ubuntu container.
+- C and Zig error-body and recovery regressions pass. Strict TypeScript checking
+  passes with the optional-client guard. The exact Stage 1 Zig setup compiles
+  and exits successfully without a connection.
+- All ten starter and compiled client copies match. All 60 stage/language
+  variants render with valid JSON examples. Revised Python setup and tool
+  registration, plus Zig client access, were inspected in the browser.
+- Python syntax, Go and Zig formatting, and diff whitespace checks pass.
+  No publication was performed.
+
 ## Stage 6 capstone walkthrough - 4 November 2026
 
 Stage ql9 shows one complete task prompt, a table of expected results, and a

@@ -91,6 +91,13 @@ static int lsp_init(LSPClient *client) {
     return 1;
 }
 
+/* Returns 1 when connected, 0 when unconfigured, and -1 on initialization error. */
+static int lsp_from_environment(LSPClient *client) {
+    client->extension_to_language = NULL;
+    if (!getenv("CODECRAFTERS_LSP_URL")) return 0;
+    return lsp_init(client) ? 1 : -1;
+}
+
 static void lsp_deinit(LSPClient *client) {
     cJSON_Delete(client->extension_to_language);
     client->extension_to_language = NULL;

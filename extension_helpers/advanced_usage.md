@@ -12,9 +12,15 @@ fixed Python language in the helper and no language argument to the constructor.
 The course tests configure Python; you can configure a different server locally.
 
 Client initialization fetches and stores the configured mapping. Use the
-constructor or initialization function shown in Stage 1; JavaScript and
-TypeScript use `await LSPClient.create()`, and C# uses
-`await LSPClient.CreateAsync()`.
+environment factory shown in Stage 1; Python uses `LSPClient.from_environment()`,
+JavaScript and TypeScript use `await LSPClient.fromEnvironment()`, and C# uses
+`await LSPClient.FromEnvironmentAsync()`.
+
+The factory reads `CODECRAFTERS_LSP_URL` inside the supplied client. An absent
+variable returns no client; a present variable initializes the connection and
+propagates errors. Advertise LSP and add its system-prompt guidance only when
+the factory returns a client. Without a configured connection, the agent can
+continue using its base tools.
 
 Internally, initialization calls the helper's `configuration` action with `{}`.
 This action belongs to the course helper, not the LSP protocol. The response in

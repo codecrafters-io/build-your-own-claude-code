@@ -3,6 +3,11 @@ export class LSPClient {
   private url: string;
   extensionToLanguage!: Record<string, string>;
 
+  static async fromEnvironment(): Promise<LSPClient | null> {
+    if (process.env.CODECRAFTERS_LSP_URL === undefined) return null;
+    return LSPClient.create();
+  }
+
   private constructor() {
     const url = process.env.CODECRAFTERS_LSP_URL;
     if (!url) throw new Error("Run with the course LSP transport");

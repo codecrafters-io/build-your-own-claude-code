@@ -14,6 +14,11 @@ public final class LSPClient {
 
     private record Configuration(Map<String, String> extensionToLanguage) {}
 
+    public static LSPClient fromEnvironment() throws Exception {
+        if (System.getenv("CODECRAFTERS_LSP_URL") == null) return null;
+        return new LSPClient();
+    }
+
     public LSPClient() throws Exception {
         url = System.getenv("CODECRAFTERS_LSP_URL");
         if (url == null) throw new IllegalStateException("Run with the course LSP transport");

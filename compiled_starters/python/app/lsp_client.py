@@ -7,6 +7,12 @@ import urllib.request
 
 
 class LSPClient:
+    @classmethod
+    def from_environment(cls):
+        if "CODECRAFTERS_LSP_URL" not in os.environ:
+            return None
+        return cls()
+
     def __init__(self):
         self.url = os.environ["CODECRAFTERS_LSP_URL"]
         self.extension_to_language = self.call("configuration", {})["extensionToLanguage"]

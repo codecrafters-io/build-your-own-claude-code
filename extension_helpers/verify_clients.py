@@ -110,6 +110,46 @@ def verify_client(name, command, environment, server):
     assert len(result["padding"]) == expected_length, name
     print(f"{name}: round-trip passed", flush=True)
     verify_initialization_failure(name, command, environment, server)
+    verify_unconfigured_client(name, command, environment, server)
+    verify_invalid_connection(name, command, environment, server, "")
+    verify_invalid_connection(name, command, environment, server, "http://127.0.0.1:0")
+
+
+# A missing connection must return no client without contacting the helper.
+def verify_unconfigured_client(name, command, environment, server):
+    # Arrange
+    environment = environment.copy()
+    environment.pop("CODECRAFTERS_LSP_URL", None)
+    server.calls.clear()
+
+    # Act
+    process = subprocess.run(
+        command, env=environment, capture_output=True, text=True, timeout=60
+    )
+
+    # Assert
+    assert process.returncode == 0, (name, process.stderr)
+    assert process.stdout.strip() == "disabled", (name, process.stdout)
+    assert not server.calls, (name, server.calls)
+    print(f"{name}: unconfigured startup passed", flush=True)
+
+
+# An invalid configured connection must fail instead of disabling the client.
+def verify_invalid_connection(name, command, environment, server, url):
+    # Arrange
+    environment = environment.copy()
+    environment["CODECRAFTERS_LSP_URL"] = url
+    server.calls.clear()
+
+    # Act
+    process = subprocess.run(
+        command, env=environment, capture_output=True, text=True, timeout=60
+    )
+
+    # Assert
+    assert process.returncode != 0, (name, url, process.stdout)
+    assert not server.calls, (name, server.calls)
+    print(f"{name}: invalid connection {url!r} passed", flush=True)
 
 
 # Rust clients must route requests with and without a base path.
@@ -135,7 +175,10 @@ path = "main.rs"
 ''')
         (directory / "main.rs").write_text('''mod lsp_client;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = lsp_client::LspClient::new()?;
+    let Some(client) = lsp_client::LspClient::from_environment()? else {
+        println!("disabled");
+        return Ok(());
+    };
     println!("{}", serde_json::to_string(&client.extension_to_language)?);
     let result = client.call("request", &serde_json::json!({
         "method": "test/echo", "params": {"value": 42}
@@ -189,7 +232,8 @@ def verify_csharp_client(directory, environment, server):
 ''')
     (directory / "Program.cs").write_text('''using System;
 using System.Text.Json;
-var lsp = await LSPClient.CreateAsync();
+var lsp = await LSPClient.FromEnvironmentAsync();
+if (lsp is null) { Console.WriteLine("disabled"); return; }
 Console.WriteLine(JsonSerializer.Serialize(lsp.ExtensionToLanguage));
 Console.WriteLine(await lsp.Call("request", "{\\"method\\":\\"test/echo\\",\\"params\\":{\\"value\\":42}}"));
 ''')
@@ -208,7 +252,10 @@ def verify_zig_client(directory, environment, server):
 const LSPClient = @import("lsp_client.zig").LSPClient;
 pub fn main(init: std.process.Init) !void {
     const allocator = init.gpa;
-    var lsp = try LSPClient.init(allocator, init.io, init.environ_map.get("CODECRAFTERS_LSP_URL"));
+    var lsp = try LSPClient.fromEnvironment(allocator, init.io, init.environ_map) orelse {
+        try std.Io.File.stdout().writeStreamingAll(init.io, "disabled\\n");
+        return;
+    };
     defer lsp.deinit();
     const mapping = try std.json.Stringify.valueAlloc(allocator, std.json.Value{ .object = lsp.extension_to_language }, .{});
     defer allocator.free(mapping);
@@ -238,12 +285,18 @@ def main():
     )
     try:
         python_client = str(ROOT / "starter_templates/python/code/app")
-        verify_client("Python", ["python3", "-c", (
-            f"import sys,json; sys.path.insert(0,{python_client!r}); "
-            "from lsp_client import LSPClient; "
-            'lsp = LSPClient(); print(json.dumps(lsp.extension_to_language)); '
-            'print(json.dumps(lsp.request("test/echo", {"value":42})))'
-        )], environment, server)
+        verify_client("Python", ["python3", "-c", f'''
+import sys
+import json
+sys.path.insert(0, {python_client!r})
+from lsp_client import LSPClient
+lsp = LSPClient.from_environment()
+if lsp is None:
+    print("disabled")
+    sys.exit(0)
+print(json.dumps(lsp.extension_to_language))
+print(json.dumps(lsp.request("test/echo", {{"value": 42}})))
+'''], environment, server)
 
         for name, language, extension in [
             ("JavaScript", "javascript", "js"),
@@ -252,7 +305,8 @@ def main():
             module = ROOT / f"starter_templates/{language}/code/app/lsp_client.{extension}"
             verify_client(name, ["node", "--input-type=module", "-e", (
                 f"import {{LSPClient}} from {json.dumps(module.as_uri())}; "
-                'const lsp = await LSPClient.create(); '
+                'const lsp = await LSPClient.fromEnvironment(); '
+                'if (lsp === null) { console.log("disabled"); process.exit(0); } '
                 'console.log(JSON.stringify(lsp.extensionToLanguage)); '
                 'console.log(JSON.stringify(await lsp.request("test/echo", {value:42})));'
             )], environment, server)
@@ -266,8 +320,9 @@ def main():
             (directory / "main.go").write_text('''package main
 import ("fmt"; "encoding/json")
 func main() {
-    client, err := NewLSPClient()
+    client, err := LSPClientFromEnvironment()
     if err != nil { panic(err) }
+    if client == nil { fmt.Println("disabled"); return }
     mapping, err := json.Marshal(client.ExtensionToLanguage)
     if err != nil { panic(err) }
     fmt.Println(string(mapping))
@@ -278,15 +333,24 @@ func main() {
     fmt.Println(string(result))
 }
 ''')
-            verify_client("Go", [
-                "go", "run", str(directory / "main.go"), str(directory / "lsp_client.go")
-            ], environment, server)
+            subprocess.run([
+                "go", "build", "-o", str(directory / "go-client"),
+                str(directory / "main.go"), str(directory / "lsp_client.go")
+            ], check=True, capture_output=True, timeout=180, env=environment)
+            verify_client("Go", [str(directory / "go-client")], environment, server)
 
             header = ROOT / "starter_templates/c/code/src/lsp_client.h"
             (directory / "main.c").write_text(f'#include "{header}"\n' + '''int main(void) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     LSPClient lsp;
-    if (!lsp_init(&lsp)) return 1;
+    int available = lsp_from_environment(&lsp);
+    if (available < 0) return 1;
+    if (!available) {
+        puts("disabled");
+        lsp_deinit(&lsp);
+        curl_global_cleanup();
+        return 0;
+    }
     char *mapping = cJSON_PrintUnformatted(lsp.extension_to_language);
     puts(mapping);
     free(mapping);
@@ -312,7 +376,8 @@ func main() {
             )
             (directory / "Main.java").write_text('''class Main {
     public static void main(String[] args) throws Exception {
-        var client = new LSPClient();
+        var client = LSPClient.fromEnvironment();
+        if (client == null) { System.out.println("disabled"); return; }
         System.out.println(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(client.extensionToLanguage));
         System.out.println(client.call("request", "{\\"method\\":\\"test/echo\\",\\"params\\":{\\"value\\":42}}"));
     }

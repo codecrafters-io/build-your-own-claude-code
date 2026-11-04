@@ -17,6 +17,13 @@ type LSPClient struct {
 	ExtensionToLanguage map[string]string `json:"extensionToLanguage"`
 }
 
+func LSPClientFromEnvironment() (*LSPClient, error) {
+	if _, configured := os.LookupEnv("CODECRAFTERS_LSP_URL"); !configured {
+		return nil, nil
+	}
+	return NewLSPClient()
+}
+
 func NewLSPClient() (*LSPClient, error) {
 	url := os.Getenv("CODECRAFTERS_LSP_URL")
 	if url == "" {
