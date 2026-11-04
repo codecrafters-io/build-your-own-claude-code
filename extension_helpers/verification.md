@@ -1,5 +1,39 @@
 # LSP revision verification
 
+## Stage 6 diagnostic feedback and repair - 4 November 2026
+
+Stage ql9 now requires new implementation: collect diagnostic notifications after
+successful Write edits and attach the current report to the matching tool result.
+The stage is titled "Repair edits with diagnostics". Its migration includes an
+incomplete checkout return and its repair, so the error must reach the model and
+a subsequent empty report must clear it. This supersedes the no-diagnostics
+capstone scope recorded in the earlier entries below.
+
+- The complete offline tester suite passes in a temporary companion tester copy:
+  `go test -count=1 -skip '^TestStages$' ./...` with TESTER_DIR set to that copy.
+  Recorded output was regenerated for all six stages. The verified changes were
+  then applied byte-for-byte to the companion checkout.
+- Separate progression regressions prove that a synchronization-only agent passes
+  Stage bn2 and fails ql9. Broken-feedback regressions reject discarded errors,
+  unrelated file reports, stale versions, retained errors after repair, and fake
+  clean reports on timeout. The existing migration and navigation regressions pass.
+- Five graded Stage 6 variants cover the API migration, stale and unrelated
+  notifications, unversioned publications, missing-publication timeouts, and a
+  shifted definition. Each Write's feedback is checked against actual server
+  events, including its URI, optional version, and complete diagnostic array.
+- Eight Python reference-client unit tests pass, covering configured document
+  languages, feedback selection, cursor advancement, pre-edit draining, and a
+  bounded timeout that preserves the successful save.
+- The independent installed-Pyright check passes: the incomplete caller's type
+  error reaches Write's result, its repair returns an empty report, follow-up
+  locations are current, and all five project tests pass.
+- Go vet passes. Course/tester YAML and lesson/tester prompts match. Lesson JSON
+  and Python examples parse, and the revised lesson was inspected in the local
+  course editor. No supplied client or transport changes were needed.
+
+No publication was performed. Live-model repair reliability remains a release
+check; the deterministic sequence verifies feedback delivery and repair state.
+
 ## Optional connection setup - 4 November 2026
 
 All ten supplied clients now provide an environment factory. An absent

@@ -14,8 +14,8 @@ preserving their integer results.
 4. Find pricing's callers in checkout and reporting, excluding preview.total.
 5. Temporarily change checkout's import from pricing to discounts and watch
    definition lookup follow the new target. Restore pricing before migration.
-6. Use navigation, Read, Write, and Bash together to migrate pricing and its
-   callers, keep analysis current, and run the project tests.
+6. Return current diagnostics after Write, repair type errors during the API
+   migration, confirm they clear, and run the project tests.
 
 Text search remains useful. A search for total also finds unrelated code, and
 its aliased calls require interpretation. The language server supplies resolved
@@ -30,10 +30,11 @@ make test_lsp_offline
 ```
 
 The final stage sends a scripted sequence of navigation, read, write, and Bash
-calls through the real reference-agent loop. The tester checks tool results,
-synchronized document contents, the changed API, and preserved caller behavior.
-It also checks that unrelated files stay unchanged. The capstone works without
-diagnostic publications or changes to Write's result format.
+calls through the real reference-agent loop. The tester checks diagnostic
+error/repair feedback in matching Write results, synchronized document contents,
+the changed API, and preserved caller behavior. It also checks that unrelated
+files stay unchanged. When a server publishes no diagnostics, Write must report
+a feedback timeout while preserving the successful save.
 
 This controlled run verifies integration. A live model chooses its own tool
 sequence. For an independent language analyzer, run `make test_lsp_with_pyright`.
@@ -47,12 +48,14 @@ This directory already contains .lsp.json and pyrightconfig.json.
 Try this prompt:
 
 > Change pricing.total to return a Price TypedDict with a cents field. Use LSP
-> to find the implementation and its callers. Update checkout.py and reports.py
+> to find the implementation and its callers. Inspect diagnostic feedback from
+> Write and repair reported type errors. Update checkout.py and reports.py
 > so they still return integer cents. Leave preview.total unchanged. Don't modify
 > test_invoice.py. Run python3 -m unittest -v test_invoice.py.
 
-The final stage adds no new LSP operation and may pass without new code. Its
-scripted run makes 11 tool calls; the base loop stage sets no iteration cap.
+The final stage adds diagnostic feedback to Write, using the helper's queued
+notifications. Its scripted run makes 12 tool calls; the base loop stage sets no
+iteration cap. A Stage 5 agent without feedback collection fails Stage 6.
 Keep document versions per URI, send didChange for open-file writes, and reuse
 didOpen after successful writes to supported closed files. In this sequence,
 references opens pricing.py but only returns locations in reports.py; Read

@@ -42,7 +42,7 @@ marketing:
         Two extensions build on that agent:
 
         * Skills: load reusable task instructions when needed, pass arguments, run bundled scripts, and hand a skill to a subagent.
-        * Language Server Protocol (LSP): find definitions and references, synchronize edits, and use those tools to update an API across files.
+        * Language Server Protocol (LSP): find definitions and references, synchronize edits, and use diagnostic feedback to repair changes across files.
 
         You'll finish with a working codebase you can inspect, modify, and extend.
     - question_markdown: "What exactly will I learn?"
@@ -56,7 +56,7 @@ marketing:
 
         The Skills extension covers discovering instructions on disk, loading them on demand, substituting arguments, and running a skill in a separate agent conversation.
 
-        The LSP extension covers symbol navigation and document synchronization. In the final capstone, your agent combines those capabilities with Read, Write, and Bash to change an API and update its callers.
+        The LSP extension covers symbol navigation, document synchronization, and diagnostic feedback. In the final stage, your agent uses type errors to repair an API migration and checks the result with project tests.
     - question_markdown: "Why should I build such a project?"
       answer_markdown: |-
         Building an agent makes its behavior visible. You can follow a model's tool request into your own code, inspect the result it receives, and see why it takes another step or stops.
@@ -107,7 +107,7 @@ extensions:
     description_markdown: |-
       In this challenge extension, you'll add support for [LSP][lsp] to your Claude Code implementation.
 
-      Along the way, you'll learn symbol navigation, document synchronization, and coordinated changes across files.
+      Along the way, you'll learn symbol navigation, document synchronization, and diagnostic feedback to repair changes across files.
 
       [lsp]: https://microsoft.github.io/language-server-protocol/
 
@@ -235,8 +235,8 @@ stages:
       In this stage, you'll synchronize `Write` edits to keep language-server answers current.
 
   - slug: "ql9"
-    name: "Change an API across files"
+    name: "Repair edits with diagnostics"
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll use your agent to change an API across several files from a single prompt.
+      In this stage, you'll return language-server diagnostics to the model so it can repair an API migration.

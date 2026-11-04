@@ -1,51 +1,16 @@
-In this stage, you'll use your agent to change an API across several files from a single prompt.
-This brings together the connection, definition lookup, references, and edit
-synchronization you've built. There is no new LSP operation to implement. Your
-agent will use those capabilities alongside Read, Write, and Bash to complete a
-larger task.
+In Stage 5, your agent sent edits to the language server. Now you'll return the
+server's diagnostic feedback to the model so it can repair errors introduced by
+those edits.
 
-### One change, several callers
+A diagnostic describes an issue in a file, with a message, severity, and source
+range. For example, changing a function to return a dictionary can make a caller's
+`int` return annotation incorrect. Definition lookup still finds the function;
+diagnostics explain what needs fixing.
 
-The invoice project currently returns integer cents from `pricing.total`. For
-example, `total(250, 2)` returns `500`. You'll ask the agent to change that result
-to a dictionary with a `cents` field: `{"cents": 500}`.
+### Change the API and repair its callers
 
-Changing the implementation alone isn't enough. `checkout.py` imports it as
-`invoice_total` and returns its result, so checkout would start returning a
-dictionary instead of an integer. `reports.py` calls it twice as `total` and adds
-the results, so reporting would try to add two dictionaries. Both callers need
-to extract the integer from the new result. Meanwhile, `preview.py` defines an
-unrelated `total` whose behavior should stay unchanged.
-
-This is where the earlier stages work together. Definition lookup follows the
-alias to the implementation. References locate its uses across files. Read lets
-the model understand each use, and synchronized Write keeps later lookups working
-with the edited code. Finally, project tests check whether the whole change
-preserves the required behavior.
-
-### Give your agent the task
-
-The tester supplies the Python invoice project and gives your agent this task:
-
-```text
-Change pricing.total to return a Price TypedDict with a cents field.
-Use LSP goToDefinition on checkout.py at line 5, character 12 and findReferences
-on pricing.py at line 1, character 5. Read the implementation and affected
-callers. Update checkout.py and reports.py so they still return integer cents.
-Don't modify test_invoice.py. Leave preview.total and other unrelated files
-unchanged. After editing, repeat definition lookup on checkout.py and
-findReferences at pricing.total's current definition to check the current code.
-Run python3 -m unittest -v test_invoice.py and report the result.
-```
-
-The project is Python regardless of your agent's implementation language.
-The Python below describes the code your agent will edit.
-
-### Understand the new API
-
-A `TypedDict` describes a dictionary with named, typed fields. Here, `Price`
-declares that the result has a `cents` field containing an integer. The value
-returned at runtime is an ordinary Python dictionary. The new API is:
+The tester supplies the same Python invoice project. The task is to change
+`pricing.total` from returning integer cents to returning a `Price` TypedDict:
 
 ```python
 from typing import TypedDict
@@ -59,91 +24,158 @@ def total(price: int, quantity: int) -> Price:
     return {"cents": price * quantity}
 ```
 
-Each affected call must now read the `cents` field. For example, checkout's call
-can return the amount with:
+Both callers must extract the `cents` field. Checkout must still return integer
+`500`, reporting must return integer `600`, and the unrelated `preview.total`
+must keep its behavior. The model uses definition lookup, references, and Read
+to inspect the implementation and its callers, then Write to edit them.
+
+An incomplete checkout edit might look like this:
 
 ```python
-return invoice_total(250, 2)["cents"]
+def checkout_total() -> int:
+    amount = invoice_total(250, 2)
+    return amount
 ```
 
-Reporting must extract `cents` from each of its two calls before adding the
-amounts. The callers' integer results remain the same:
+After the API change, `amount` is a `Price`, while this function promises an
+`int`. The language server can report that mismatch. Returning
+`amount["cents"]` repairs it. Your new work is to deliver the error and the
+subsequent clean report through Write's existing tool-result flow.
 
-| Call | Result after the change |
-| --- | --- |
-| `pricing.total(37, 4)` | `{"cents": 148}` |
-| `checkout_total()` | `500` |
-| `report_total()` | `600` |
+### Read the server's feedback
 
-### Let the tools work together
+The server sends diagnostics asynchronously in `textDocument/publishDiagnostics`
+notifications. They are not the response to `didChange`. The supplied helper
+queues them while your agent executes other calls.
 
-Your agent's existing loop should let the model complete the following work:
+Keep a notification cursor beside the client and Stage 5's document-version map.
+Initialize it to `0`. Call the client's `call` method with action `notifications`
+and this payload, using the same language-specific call pattern as earlier stages:
 
-1. **Find the implementation.** Use `goToDefinition` on checkout's aliased call
-   to locate `pricing.total`.
-2. **Locate its uses.** Use `findReferences` on the pricing function. References
-   can identify checkout's import rather than its aliased call, so the model uses
-   Read to inspect the returned files and find the callers.
-3. **Read and edit.** Read each file before its first edit, then use Write to
-   change pricing and update its callers. Reads and writes may alternate across
-   files; the model doesn't need to read every file before making any edits.
-4. **Check the updated code.** Repeat definition and reference lookups after
-   editing. Added imports and the `Price` declaration can move `total` down the
-   file, so use its current definition position for the references request. Returned
-   ranges are zero-based; add 1 to the line and character when using them as tool
-   inputs.
-5. **Run the project tests.** Use Bash to run
-   `python3 -m unittest -v test_invoice.py` and return its actual output to the
-   model, so its final explanation can report what happened.
+```json
+{ "after": 0, "timeoutMs": 0 }
+```
 
-Execute model tool calls through your existing agent loop. The tester supplies a
-fixed sequence of calls to check the integration consistently. In normal use, the
-model chooses its own calls: it may read `pricing.py` directly or alternate reads
-and writes across files. You may already have everything needed if the earlier
-stages are complete.
+Use your saved cursor as `after`. A zero timeout drains queued messages without
+waiting. The response contains a new cursor and a notification array:
 
-Follow-up LSP requests and project tests check different things. Navigation shows
-whether the server can answer questions about the edited code. The tests check
-the new return contract and the behavior of the callers and unrelated preview
-function. Accurate locations alone don't prove the migration is correct.
+```json
+{
+  "cursor": 4,
+  "notifications": [
+    {
+      "method": "textDocument/publishDiagnostics",
+      "params": {
+        "uri": "file:///project/checkout.py",
+        "version": 2,
+        "diagnostics": [
+          {
+            "range": {
+              "start": { "line": 5, "character": 11 },
+              "end": { "line": 5, "character": 17 }
+            },
+            "severity": 1,
+            "message": "Type Price is not assignable to return type int"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
 
-### Run your completed integration
+Save every returned cursor, including when the batch is empty or contains only
+unrelated messages. Diagnostic ranges are zero-based, like navigation results.
 
-Run `codecrafters test` to exercise your agent on this task. This course test
-checks the tool integration; the Python test command above checks the invoice
-program through your agent's Bash tool. If the course test fails, check:
+### Add feedback to Write
 
-- **Loop continuation.** Allow the conversation to continue through navigation,
-  reads, writes, and test execution, retaining matching tool results throughout.
-- **Document versions.** Use Stage 5's shared URI-to-version map for navigation
-  and Write. Each document keeps its own version history across edits.
-- **Open-file edits.** A references query on `pricing.py` opens it. A following
-  Write sends `didChange` with the next version.
-- **Closed-file edits.** Read and returned references don't open `reports.py`.
-  If it is still closed when written, send `didOpen` with its new contents and
-  version 1 so follow-up lookups use the updated code.
+For each successful Write to a supported Python file:
+
+1. **Drain old notifications before the edit.** Advance the cursor so a queued
+   report from an earlier edit cannot satisfy this Write.
+2. **Save and synchronize.** Keep Stage 5's save, `didOpen` or `didChange`, and
+   per-URI version tracking. Finish synchronization before collecting feedback.
+3. **Wait for the written file's report.** Poll `notifications` after the saved
+   cursor with a short timeout, such as `200` milliseconds. Use an overall
+   deadline, such as two seconds; each empty batch must not restart that deadline.
+4. **Select current feedback.** Consider only `textDocument/publishDiagnostics`
+   for the written file's URI. If a version is supplied, it must match the version
+   just synchronized. Accept unversioned reports received after the pre-edit
+   drain. Choose the latest matching report in each batch. Ignore other methods,
+   other files, and older versions.
+5. **Return the result to the model.** Preserve your Write success information
+   and add the selected report's complete `params` object under `diagnostics`.
+   Wait for this collection to finish before returning the tool result. Use
+   `await` with asynchronous clients.
+
+For example, after the repair, Write's result could contain:
+
+```json
+{
+  "written": "/project/checkout.py",
+  "diagnostics": {
+    "uri": "file:///project/checkout.py",
+    "version": 3,
+    "diagnostics": []
+  }
+}
+```
+
+Your existing success fields may differ; the new `diagnostics` field contains
+the server's report. Preserve its URI, optional version, and complete diagnostic
+array. An empty diagnostic array clears the previous errors for that file.
+An empty notification batch means no report arrived yet; it does not mean the
+file is error-free.
+
+If the overall deadline expires, keep the successful Write result and add
+`diagnosticsError` with a message such as
+`"Timed out waiting for language-server diagnostics"`. Omit `diagnostics` in
+that result. The save succeeded, but analysis is unavailable. Do not invent a
+clean report or turn the successful save into a file-write failure.
+
+Add this guidance to the system prompt:
+
+```text
+Inspect diagnostic feedback from Write and repair reported type errors.
+A diagnostic timeout means feedback is unavailable, not that the file is clean.
+```
+
+### Complete the migration
+
+The tester gives your agent this task:
+
+```text
+Change pricing.total to return a Price TypedDict with a cents field.
+Use LSP goToDefinition on checkout.py at line 5, character 12 and findReferences
+on pricing.py at line 1, character 5. Read the implementation and affected
+callers. Update checkout.py and reports.py so they still return integer cents.
+Inspect diagnostic feedback from Write, repair any reported type errors, and
+confirm they clear. If feedback times out, report that separately from the
+successful write. Don't modify test_invoice.py. Leave preview.total and other
+unrelated files unchanged. After editing, repeat definition lookup on
+checkout.py and findReferences at pricing.total's current definition to check
+the current code. Run python3 -m unittest -v test_invoice.py and report the result.
+```
+
+The model chooses edits in normal use. For consistent grading, the tester
+supplies a sequence that includes an incomplete caller edit and its repair.
+You do not need to deliberately introduce errors in your agent's implementation.
+Execute each tool call, collect its real feedback, and return it with the matching
+`tool_call_id` before continuing the loop.
+
+Diagnostics and project tests serve different purposes. Diagnostics locate type
+errors; the five supplied Python tests check the new API and preserved behavior.
+Return the actual Bash output, leave the tests unchanged, and use the updated
+function's position for follow-up references.
 
 ### Tests
 
-The supplied `test_invoice.py` contains five tests. Before migration, the three
-existing behavior tests pass, while two tests for the new pricing API fail. Those
-failures describe the change the agent needs to make. Leave the test file
-unchanged and update the implementation and callers until all five pass.
+Run `codecrafters test`. Stage 6 checks that the caller's type error reaches the
+model in the incomplete Write's result, and that the repair's result contains a
+new, empty report. It also checks stale and unrelated notifications, reports
+without versions, and an explicit timeout when the server publishes no report.
+Existing migration, current-navigation, unchanged-file, and Bash-output checks
+remain in place.
 
-The Bash tool result must contain the real test output. After a successful
-migration, its summary looks like this, with elapsed time varying:
-
-```text
-Ran 5 tests in 0.000s
-
-OK
-```
-
-The tester checks that the `Price` contract and both callers pass all five
-project tests, while `test_invoice.py` and unrelated files remain unchanged.
-Follow-up navigation must use the edited code and the function's current
-position, including when formatting moves its definition. The actual Bash
-output must reach the model through your tool-result flow.
-
-Your agent can now follow symbols, inspect their uses, make coordinated edits
-across files, and verify the result with project tests.
+A Stage 5 agent that only synchronizes edits will fail this stage until it
+returns diagnostic feedback.

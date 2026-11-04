@@ -70,12 +70,11 @@ The HTTP endpoint is course scaffolding around the stdio LSP connection, not a
 part of LSP. The learner's model-facing LSP tool uses the product's one-based
 positions; the server receives zero-based positions.
 
-## Optional: read server notifications
+## Read server notifications
 
-The six graded stages do not require reading server notifications. The final
-capstone combines navigation, synchronized edits, and Bash test results to check
-an API migration. The helper also exposes queued notifications for optional
-advanced work, such as diagnostic feedback.
+Stage 6 consumes queued notifications to return diagnostic feedback after
+Write. The transport retains messages while requests are running; your agent
+selects current feedback and attaches it to the matching Write result.
 
 Call action `notifications` with:
 
@@ -105,12 +104,13 @@ Save the returned cursor for the next call. `timeoutMs: 0` drains without waitin
 a value up to 5000 waits for messages. Notifications are retained while requests
 are running. An empty notification batch is not a clean diagnostic report.
 
-For optional diagnostic feedback after Write, drain pending messages before the
+For diagnostic feedback after Write, drain pending messages before the
 edit, then record the cursor. Save and synchronize the file. Poll after that
-cursor until you receive a publication for its URI;
-ignore versioned reports older than the current document. Advance the cursor
-even for unrelated notifications. Stop at an overall deadline and return a
-feedback error on timeout. Accept unversioned publications in arrival order.
+cursor until you receive a publication for its URI. Accept versioned reports
+only for the synchronized document version. Advance the cursor even for unrelated
+notifications. Stop at an overall deadline and return `diagnosticsError` on
+timeout while preserving the successful save. Accept
+unversioned publications received after the pre-edit drain in arrival order.
 Your agent owns all of these decisions.
 
 ## Run with your own server

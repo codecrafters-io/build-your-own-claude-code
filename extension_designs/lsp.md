@@ -1,12 +1,12 @@
 # Language Server Protocol - extension design
 
-**Status:** Five implementation stages followed by a capstone.
+**Status:** Six implementation stages, ending with diagnostic feedback during an API migration.
 The setup split uses dz5 and iy3 from the slugs supplied on 3 November 2026;
 the four later stages keep their existing IDs. Publication is deferred.
 No production release is authorized.
 
 **Promise:** Give your existing agent precise code navigation and current analysis
-so it can change an API and update its callers across files from a single prompt.
+so it can change an API, use diagnostic feedback to repair its callers, and verify the result.
 
 **Prerequisites:** The base agent loop, Read, Write, and Bash. Skills is not needed.
 The learner builds an agent integration, not a language analyzer or editor.
@@ -49,37 +49,47 @@ no client when that connection is unconfigured, allowing base-course and local
 runs to continue without advertising LSP. Configured initialization failures
 remain errors.
 
-## Finish with a coordinated change
+## Finish with diagnostic feedback and repair
 
-Stage six is a capstone using the preceding five stages and the base tools.
-It introduces no new LSP operation, notification handling, or Write result format.
-The agent changes pricing.total from integer cents to a Price TypedDict with a
-cents field, then updates checkout and both reporting calls to extract that field.
-Checkout must still return 500, reporting 600, and preview must stay unchanged.
+Stage six adds consumption of asynchronous diagnostic notifications. Stage five
+only sends document updates; an otherwise complete Stage 5 agent must fail Stage
+6 if it does not return diagnostic feedback to the model.
 
-```text
-Find:   Follow invoice_total to pricing.total; read the implementation.
-Locate: Find references; read checkout and reporting.
-Edit:   Change pricing's return value and update the affected callers.
-Check:  Keep later lookups current; run the project tests through Bash.
-```
+Keep the API migration: pricing.total changes from integer cents to a Price
+TypedDict with a cents field. Checkout and both reporting calls extract that
+field, preserving checkout's 500 cents and reporting's 600 cents. Preview stays
+unchanged. A scripted intermediate checkout edit returns Price from an int
+function, producing a type error. The next Write repairs that return and must
+surface a new, empty diagnostic report. Normal model runs need not deliberately
+introduce an error.
 
-The payoff is watching the existing agent loop complete a change across files.
-No new code may be needed. The scripted sequence makes 11 tool calls; the base
-loop stage specifies no iteration cap. Stage five already exercises versions 2
-and 3 of one document; the capstone combines per-URI versions with several files.
-Read each file before its own first edit; reads and writes may alternate across
-files. Follow-up references target pricing.total's current definition rather
-than a fixed line. A separate scripted case moves that definition with a comment.
-Its references query opens pricing.py, so that Write requires didChange.
-Reports.py is indexed but closed: after Write, reuse didOpen with the new text.
-Read and returned reference locations do not open documents. A real server may
-otherwise answer later references queries from its stale index.
+After every successful Write to a supported file, preserve the write result and
+attach the written file's current publishDiagnostics params under diagnostics.
+Drain pending notifications before saving, synchronize with Stage 5's version
+map, then poll with an overall deadline. Advance the cursor for every batch.
+Filter by URI and, when present, the synchronized version; accept unversioned
+reports received after the pre-edit drain. Use the latest matching report in a
+batch. Preserve complete messages, severities, zero-based ranges, and optional
+versions. An empty diagnostic array clears earlier errors; an empty notification
+batch is not a clean report. If no report arrives by the deadline, preserve the
+successful save and return diagnosticsError with an explicit timeout.
 
-Do not hardcode the migration in a learner tool handler. Graded LSP runs emit
-a deterministic tool sequence to verify the integration. A separate maintainer
-suite uses a live model to check tool descriptions, planning, and recovery.
-Neither run requires an intentionally broken first edit.
+The supplied helper already queues notifications. Its transport is unchanged;
+learners add cursor management, report selection, and feedback in Write. No new
+model-facing LSP operation is needed. The scripted integration makes 12 tool
+calls. Graded variants cover normal error/repair feedback, stale and unrelated
+notifications, unversioned reports, missing publications, and a moved definition.
+
+Read each file before its own first edit. Follow-up references target the current
+pricing.total definition. The pricing references request opens pricing.py, so its
+Write sends didChange; reports.py is indexed but closed and its Write sends
+didOpen. Navigation still verifies current positions, and actual Bash output and
+independent project tests still verify the completed migration.
+
+Do not hardcode the migration in the agent. Grading supplies deterministic tool
+calls and checks the actual server reports in their matching Write results.
+Separate live-model checks cover whether the model uses that feedback to choose
+repairs.
 
 Search is a brief motivation, not an implementation stage. Searching for total
 finds unrelated preview code and imports, while the alias invoice_total needs
@@ -95,12 +105,12 @@ locations; the completed migration shows why those locations are useful.
 | 3 | gz6 | Find the implementation | didOpen; definition routing and tool results | Follow invoice_total to pricing.total and read the implementation |
 | 4 | rb6 | Find the affected callers | References with includeDeclaration true | Return pricing callers across files, excluding preview.total |
 | 5 | bn2 | Keep the analysis current | Per-URI versions and synchronized successful writes | The edited import changes the definition target without a restart |
-| 6 | ql9 | Change an API across files | Combine stages 1-5 with Read, Write, Bash and the agent loop | Migrate pricing and callers, preserve unrelated code, pass project tests |
+| 6 | ql9 | Repair edits with diagnostics | Collect current diagnostic reports after Write and return feedback to the model | Surface a caller error, confirm its repair clears it, and pass project tests |
 
 Keep each setup stage focused on its own tested behavior and retain the
 motivation beside the instructions it explains. The setup stages have no LSP
 document payloads. Definition lookup introduces opening and querying together;
-synchronization remains its own stage before the capstone combines several edits.
+synchronization remains its own stage before diagnostic feedback adds a repair loop.
 
 ## Supply the connection
 
@@ -130,7 +140,7 @@ native-product smoke check.
 
 Hover, standalone initialization and response-reading stages are removed. Their
 IDs ls1, ir2, hv2 and the combined setup ID cx7 are retired, not repurposed.
-All six stages use backend-generated IDs; ql9 now grades the migration capstone instead of asynchronous diagnostics.
+All six stages use backend-generated IDs; ql9 grades diagnostic feedback during the API migration.
 Rename remains outside the built-in LSP tool's course scope.
 
 The fixture recognizes the documented invoice project; it is not a Python
@@ -143,19 +153,35 @@ and unchanged unrelated files.
 The supplied test_invoice.py also tests the Price shape and type contract;
 those two tests intentionally fail before migration. Prompts protect that file.
 
-Deferred: asynchronous diagnostic feedback, completion, incremental synchronization,
-workspace indexing by the client, cancellation, arbitrary shell-edit watching and
-plugin discovery. The helper's notification API remains available for optional
-advanced work; learners do not need to consume it in this extension.
+Deferred: completion, incremental synchronization, workspace indexing by the client,
+cancellation, arbitrary shell-edit watching, and plugin discovery. Diagnostic
+feedback in this extension covers successful writes to supported Python files.
+
+## Run the LSP checks locally
+
+In the companion `claude-code-tester` checkout, with Go 1.25.5 and Python 3.10+:
+
+```sh
+make test_lsp
+make test_lsp_offline
+make test_lsp_with_pyright
+```
+
+The first two need no model credentials. The third requires an installed
+Pyright language server and checks the integration independently of the fixture.
+For live-model trials, set `CODECRAFTERS_SECRET_OPENROUTER_API_KEY` and run
+`make test_lsp_with_users_code`. Learner trials and live-model reliability checks
+remain release gates.
 
 ## Verification and release gates
 
 The tester runs the actual agent HTTP/tool loop and a real stdio child, with
 protocol, tool-result and final-behavior assertions. Each stage prints evidence
-of its useful outcome. Capstone checks cover navigation and reads, synchronized
-edits, the Price result, both callers, unchanged unrelated files, and Bash's test
-output reaching the model. A case without diagnostic publications verifies that
-no diagnostic handling is required. Separate helper tests cover startup/framing
+of its useful outcome. Stage 6 checks cover navigation and reads, synchronized
+edits, diagnostic error/repair feedback, bounded diagnostic timeouts, the Price
+result, both callers, unchanged unrelated files, and actual Bash output. A
+progression regression proves that Stage 5 passes without diagnostic feedback
+and Stage 6 rejects that same agent. Separate helper tests cover startup/framing
 so those checks do not inflate graded stages.
 
 Regenerate recorded output when cases or prompts change. Verify the reference
