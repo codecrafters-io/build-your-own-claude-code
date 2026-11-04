@@ -38,9 +38,14 @@ the function. **LSP locates the definition; Read retrieves the code.**
 
 ### Connect the supplied client
 
-Your agent communicates with the language server through the supplied LSP client.
-During course tests, the environment starts the server and handles message
-delivery for you. You don't need to install or launch a server.
+The language server is a separate program that analyzes code and answers
+questions about definitions and references. It stays running across requests,
+so your agent can query it repeatedly. The supplied LSP client sends your
+agent's requests to the server and returns its responses.
+
+During course tests, the environment starts and initializes the server for you.
+The supplied client handles communication with it. You'll build the tool handler
+that connects the model's LSP calls to this client in later stages.
 
 The client is included in your starter repository. Initialize it once during
 startup, before your first model request, and keep it available to your agent's
@@ -48,7 +53,10 @@ tool handlers.
 
 {{#lang_is_c}}
 
-The supplied client is in `src/lsp_client.h`. At the top of your agent's C source, add:
+The supplied client is in `src/lsp_client.h`. If it is missing or outdated,
+[download the current client][client-c] and save it to that path.
+
+At the top of your agent's C source, add:
 
 ```c
 #include "lsp_client.h"
@@ -64,11 +72,16 @@ if (!lsp_init(&lsp)) return 1;
 Call `lsp_deinit(&lsp)` after the agent loop, before your existing libcurl
 cleanup. `lsp_call` still sends requests through the supplied connection.
 
+[client-c]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/c/code/src/lsp_client.h
+
 {{/lang_is_c}}
 
 {{#lang_is_cpp}}
 
-The supplied client is in `src/lsp_client.hpp`. At the top of your C++ source, add:
+The supplied client is in `src/lsp_client.hpp`. If it is missing or outdated,
+[download the current client][client-cpp] and save it to that path.
+
+At the top of your C++ source, add:
 
 ```cpp
 #include "lsp_client.hpp"
@@ -84,11 +97,16 @@ The client uses the starter's existing CPR and nlohmann JSON dependencies.
 Constructor, HTTP, and JSON errors propagate as exceptions. Handle them with
 your agent's existing exception handling.
 
+[client-cpp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/cpp/code/src/lsp_client.hpp
+
 {{/lang_is_cpp}}
 
 {{#lang_is_csharp}}
 
-The supplied client is in `src/LSPClient.cs`. The starter includes `.cs` files under `src/`
+The supplied client is in `src/LSPClient.cs`. If it is missing or outdated,
+[download the current client][client-csharp] and save it to that path.
+
+The starter includes `.cs` files under `src/`
 automatically. No client import is needed. In your top-level startup code or an
 async startup method:
 
@@ -99,13 +117,17 @@ var lsp = await LSPClient.CreateAsync();
 `CreateAsync` initializes the client. Await it before the agent loop. Handle
 exceptions with your agent's existing error handling.
 
+[client-csharp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/csharp/code/src/LSPClient.cs
+
 {{/lang_is_csharp}}
 
 {{#lang_is_go}}
 
-The supplied client is in `app/lsp_client.go`, in the same `package main` as your
-agent. No client import is needed. Add `log` to your imports, then place this
-inside your startup function:
+The supplied client is in `app/lsp_client.go`. If it is missing or outdated,
+[download the current client][client-go] and save it to that path.
+
+The client shares the same `package main` as your agent. No client import is
+needed. Add `log` to your imports, then place this inside your startup function:
 
 ```go
 lsp, err := NewLSPClient()
@@ -118,11 +140,16 @@ _ = lsp // Used by the LSP handler in Stage 3.
 Remove `_ = lsp` once your LSP handler uses the client. Run the whole package
 with `go run ./app`, rather than compiling only `app/main.go`.
 
+[client-go]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/go/code/app/lsp_client.go
+
 {{/lang_is_go}}
 
 {{#lang_is_java}}
 
-The supplied client is in `src/main/java/LSPClient.java`. It shares the starter's default package with
+The supplied client is in `src/main/java/LSPClient.java`. If it is missing or outdated,
+[download the current client][client-java] and save it to that path.
+
+It shares the starter's default package with
 `Main`, so no client import is needed. Inside your startup method:
 
 ```java
@@ -132,11 +159,16 @@ var lsp = new LSPClient();
 Construction and `call` throw checked exceptions: catch them with your existing
 error handling, or declare `throws Exception` on your startup method.
 
+[client-java]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/java/code/src/main/java/LSPClient.java
+
 {{/lang_is_java}}
 
 {{#lang_is_javascript}}
 
-The supplied client is in `app/lsp_client.js`. From another file in `app/`, import the client and await
+The supplied client is in `app/lsp_client.js`. If it is missing or outdated,
+[download the current client][client-javascript] and save it to that path.
+
+From another file in `app/`, import the client and await
 initialization at module scope or inside your async startup function:
 
 ```javascript
@@ -145,11 +177,16 @@ import { LSPClient } from "./lsp_client.js";
 const lsp = await LSPClient.create();
 ```
 
+[client-javascript]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/javascript/code/app/lsp_client.js
+
 {{/lang_is_javascript}}
 
 {{#lang_is_python}}
 
-The supplied client is in `app/lsp_client.py`. In your agent's Python module:
+The supplied client is in `app/lsp_client.py`. If it is missing or outdated,
+[download the current client][client-python] and save it to that path.
+
+In your agent's Python module:
 
 ```python
 from app.lsp_client import LSPClient
@@ -159,11 +196,16 @@ lsp = LSPClient()
 
 Failed initialization or calls raise exceptions.
 
+[client-python]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/python/code/app/lsp_client.py
+
 {{/lang_is_python}}
 
 {{#lang_is_rust}}
 
-The supplied client is in `src/lsp_client.rs`. At the top level of `src/main.rs`, add:
+The supplied client is in `src/lsp_client.rs`. If it is missing or outdated,
+[download the current client][client-rust] and save it to that path.
+
+At the top level of `src/main.rs`, add:
 
 ```rust
 mod lsp_client;
@@ -181,11 +223,16 @@ operator propagates errors from a function returning a compatible `Result`,
 such as the starter's `Result<(), Box<dyn std::error::Error>>`. If your startup
 function returns another type, handle these results explicitly instead.
 
+[client-rust]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/rust/code/src/lsp_client.rs
+
 {{/lang_is_rust}}
 
 {{#lang_is_typescript}}
 
-The supplied client is in `app/lsp_client.ts`. From another file in `app/`, import the client and await
+The supplied client is in `app/lsp_client.ts`. If it is missing or outdated,
+[download the current client][client-typescript] and save it to that path.
+
+From another file in `app/`, import the client and await
 initialization at module scope or inside your async startup function:
 
 ```typescript
@@ -194,11 +241,16 @@ import { LSPClient } from "./lsp_client.ts";
 const lsp = await LSPClient.create();
 ```
 
+[client-typescript]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/typescript/code/app/lsp_client.ts
+
 {{/lang_is_typescript}}
 
 {{#lang_is_zig}}
 
-The supplied client is in `src/lsp_client.zig`. At the top of `src/main.zig`, add:
+The supplied client is in `src/lsp_client.zig`. If it is missing or outdated,
+[download the current client][client-zig] and save it to that path.
+
+At the top of `src/main.zig`, add:
 
 ```zig
 const LSPClient = @import("lsp_client.zig").LSPClient;
@@ -217,6 +269,8 @@ defer lsp.deinit();
 error union, as the starter does. Keep the client alive until after the agent
 loop. The deferred cleanup above runs on exit.
 
+[client-zig]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/zig/code/src/lsp_client.zig
+
 {{/lang_is_zig}}
 
 ### Tests
@@ -232,9 +286,6 @@ Your agent must initialize the client before its first model request. The tester
 checks that the client connected successfully. You don't need to advertise an
 LSP tool yet.
 
-If the client file is missing or outdated, see
-[troubleshooting older repositories][client-troubleshooting].
-
 Optional: [run locally][local-run].
 
 After passing this stage, your agent initializes the client successfully before
@@ -242,6 +293,5 @@ starting its model conversation. Next, you'll advertise the `LSP` tool so the
 model knows it can request code navigation.
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
-[client-troubleshooting]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_helpers/README.md#troubleshooting-older-repositories
 [local-run]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_helpers/advanced_usage.md#run-with-your-own-server
 [lsp]: https://microsoft.github.io/language-server-protocol/

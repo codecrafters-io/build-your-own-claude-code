@@ -49,6 +49,7 @@ Extend the existing LSP tool's operation enum to
 `["goToDefinition", "findReferences"]`. Keep definition lookup available: the
 model needs both ways to navigate. The file path, line, and character arguments
 stay the same because both operations ask about a symbol at a position.
+Update the tool's description to mention both definition and reference lookup.
 
 In your handler, route `findReferences` to a references request. Reuse document
 opening, file URIs, position conversion, and tool-result handling from Stage 3.

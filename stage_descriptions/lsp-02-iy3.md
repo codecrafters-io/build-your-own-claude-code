@@ -1,6 +1,6 @@
 In this stage, you'll advertise the `LSP` tool to the model.
 
-### Make navigation available to the model
+### Tell the model about LSP
 
 Your agent now has an LSP client, but the model doesn't know that capability is
 available. Just as you advertised Read in the base course, you'll describe LSP in
@@ -21,7 +21,7 @@ every model request's `tools` array alongside Read, Write, and Bash. Only
   "type": "function",
   "function": {
     "name": "LSP",
-    "description": "Returns raw language-server results with file URIs and zero-based UTF-16 ranges.",
+    "description": "Find where a symbol at a given file position is defined.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -50,13 +50,29 @@ every model request's `tools` array alongside Read, Write, and Bash. Only
 }
 ```
 
-The operation selects the question to ask. `filePath`, `line`, and `character`
-identify the occurrence of the symbol the model wants to investigate.
+The model calls a tool named `LSP`. Its `operation` argument selects what to
+do: for now, `goToDefinition`.
+
+An LSP tool call can contain these arguments to look up the definition of
+`invoice_total` at its call in `checkout.py`:
+
+```json
+{
+  "operation": "goToDefinition",
+  "filePath": "checkout.py",
+  "line": 5,
+  "character": 12
+}
+```
+
+The `filePath`, `line`, and `character` arguments identify the particular
+occurrence of the symbol. A name alone isn't enough:
+the same name can refer to different definitions in different files or scopes.
 
 The tool accepts one-based positions: the first line and column are both 1.
 Columns count UTF-16 code units, which match character counts for the ASCII text
-in these exercises. The server's results use zero-based positions. You'll handle
-that conversion when you implement definition lookup.
+in these exercises. Here, line 5, character 12 identifies the start of
+`invoice_total`. You'll handle the server's position format in the next stage.
 
 ### Update your system prompt
 
@@ -64,47 +80,48 @@ The specification describes the tool's interface. Add this guidance to your
 existing system prompt to explain when the model should use it:
 
 ```text
-Use LSP for code navigation. Tool positions are one-based UTF-16.
-Edit files with Write so the language server sees changes.
+Use LSP to find where a symbol is defined. Tool positions are one-based UTF-16.
 ```
-
-The Write guidance prepares for Stage 5, where you'll send edited contents to
-the server from your Write handler. Bash edits won't pass through that handler
-and can leave the server's view of a file outdated.
 
 ### Add a temporary LSP handler
 
-Advertising a tool makes it available immediately, even before you've implemented
-navigation. If the model calls LSP, return a tool message with content
-`LSP is not implemented yet` and the matching `tool_call_id`. This lets the
-agent loop continue instead of crashing.
+The model can now return a tool call whose `function.name` is `LSP`. Your agent
+already checks this field to decide whether to run Read, Write, or Bash. Extend
+that check to recognize `LSP` too.
+
+For now, respond with `LSP is not implemented yet` using your existing
+tool-result flow. Set the response's `tool_call_id` to the incoming tool call's
+`id`. This tells the model which call the response answers.
 
 {{#lang_is_python}}
 
-For a tool call stored in `call`, the message is:
+For a tool call stored in `call`, the new case can look like this:
 
 ```python
-{"role": "tool", "tool_call_id": call.id, "content": "LSP is not implemented yet"}
+if call.function.name == "LSP":
+    messages.append({
+        "role": "tool",
+        "tool_call_id": call.id,
+        "content": "LSP is not implemented yet"
+    })
 ```
 
 {{/lang_is_python}}
 
-In the next stage, you'll replace this temporary response with a definition
-lookup. You don't need document messages or navigation requests in this stage.
+Then continue the agent loop. This placeholder does not contact the language
+server. In the next stage, you'll replace it with a definition lookup.
 
 ### Tests
 
-The tester runs the same Read-only prompt as Stage 1:
+The tester supplies the invoice project and runs:
 
 ```bash
-$ ./your_program.sh -p "Use only Read to inspect checkout.py and pricing.py. Explain how checkout uses the pricing function."
+$ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. If navigation is not implemented yet, report the tool response without retrying."
 ```
 
-Your agent must still initialize the client before its first model request. Every
-model request must now include the supplied LSP specification, with
-`goToDefinition` and all four required arguments. The existing Read results must
-still preserve the complete contents of both files.
+The tester checks that every model request advertises `LSP` and that the tool
+response reaches the model with the matching `tool_call_id`. The placeholder
+response is sufficient.
 
-The prompt uses Read so you can verify tool advertisement before implementing
-navigation. The temporary LSP handler may not run in this test. The model's final
-explanation can vary.
+The model can now request the LSP tool, and your agent can respond to that
+request. Next, you'll replace the placeholder with a real definition lookup.

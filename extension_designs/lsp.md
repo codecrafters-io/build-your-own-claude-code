@@ -19,15 +19,17 @@ the pricing implementation in the test-supplied Python project. Learners connect
 the supplied client, whose initialization fetches its extension-to-language
 mapping before their first model request. The existing Read tool inspects the
 project. No LSP advertisement or navigation handler is required yet.
-Current starters include the client; older-repository download instructions live
-in troubleshooting. The lesson introduces the language mapping in Stage 3,
-alongside the `didOpen` field that uses it.
+Current starters include the client. Each language's setup section links directly
+to the current client file and gives its destination path if a download is needed.
+The lesson introduces the language mapping in Stage 3, alongside the `didOpen`
+field that uses it.
 
 Stage two advertises the LSP schema, adds system-prompt guidance, and installs a
-temporary handler. Its test checks advertisement while still requesting only
-Read. Navigation can remain unimplemented. The setup split separates client
-initialization from the model-facing tool interface without introducing a
-temporary command-line flag.
+temporary handler. Its test requests a definition lookup and checks that the
+placeholder response reaches the matching model tool call. Navigation can remain
+unimplemented; an agent with working navigation can also pass. The setup split
+separates client initialization from the model-facing tool interface without
+introducing a temporary command-line flag.
 
 Stage three follows invoice_total to pricing.total. It reuses the connection and
 schema, adding document opening, definition routing, and matching tool results.
@@ -85,7 +87,7 @@ locations; the completed migration shows why those locations are useful.
 | # | ID | Stage | New implementation | Visible evidence |
 | --- | --- | --- | --- | --- |
 | 1 | dz5 | Connect the LSP client | Initialize the supplied client, which fetches the language mapping | Mapping fetched before the first model request |
-| 2 | iy3 | Advertise the LSP tool | Register the schema, prompt guidance, and temporary handler | LSP advertised in model requests; navigation not required |
+| 2 | iy3 | Advertise the LSP tool | Register the schema, prompt guidance, and temporary handler | LSP advertised; a matching tool response reaches the model; navigation not required |
 | 3 | gz6 | Find the implementation | didOpen; definition routing and tool results | Follow invoice_total to pricing.total and read the implementation |
 | 4 | rb6 | Find the affected callers | References with includeDeclaration true | Return pricing callers across files, excluding preview.total |
 | 5 | bn2 | Keep the analysis current | Per-URI versions and synchronized successful writes | The edited import changes the definition target without a restart |

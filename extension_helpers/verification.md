@@ -1,5 +1,28 @@
 # LSP revision verification
 
+## Stage 2 tool-call exercise - 4 November 2026
+
+Stage iy3 now exercises the temporary LSP handler. Its prompt requests
+`goToDefinition` at checkout's alias call, and the checker requires a response
+to reach the model with the matching call ID. A placeholder passes without any
+navigation request. An agent that already implements definition lookup still
+passes with the real server result.
+
+- The lesson shows a concrete call, explains why positions identify symbols,
+  and uses a tool description focused on definition lookup. Write guidance now
+  appears in Stage 5. The shared schema and all ten compiled copies match.
+- Integration checks accept plain-text and JSON-serialized placeholders and
+  reject wrong call IDs, incorrect responses, missing follow-up requests, and
+  unhandled calls. Disabling placeholder validation makes all four negative
+  regressions fail.
+- The full offline companion tester suite passes with
+  `go test -count=1 -skip '^TestStages$' ./...`, including all six stages and the
+  existing navigation and synchronization regressions. Recorded output was
+  regenerated, and the verified changes were applied to the companion checkout.
+- All 60 stage/language variants render with valid JSON examples. The revised
+  Python lesson was inspected in the browser. Diff whitespace checks pass in
+  both repositories. No publication was performed.
+
 ## Client initialization - 4 November 2026
 
 All ten supplied clients now fetch the language mapping during initialization
@@ -10,9 +33,9 @@ learners to call `configuration` or parse its response. Client download links
 point to the matching starter templates in this repository.
 
 Stage 1 now assumes the supplied client is already in the starter repository.
-Missing or outdated clients are covered in a separate troubleshooting guide
-with download paths for all ten languages. Mapping access is introduced beside
-`didOpen` in Stage 3, where it is first needed.
+Each language's initialization section links directly to the current client
+file and states its destination path if the supplied copy is missing or outdated.
+Mapping access is introduced beside `didOpen` in Stage 3, where it is first needed.
 
 - Native runtime checks pass for all ten clients: initialization exposes a
   configured TypeScript mapping, fetches it once before tool requests, and stops
@@ -30,9 +53,11 @@ with download paths for all ten languages. Mapping access is introduced beside
   render with valid JSON and matching client links. Python and JavaScript setup
   previews were inspected in the browser.
 - After simplifying the lesson, all 60 variants render with valid JSON, all ten
-  troubleshooting download links resolve, and the exact Stage 1 Go and Zig
+  client download links resolve, and the exact Stage 1 Go and Zig
   examples compile without unused-local errors. The revised Python setup and
   definition lesson were inspected in the browser.
+- All ten direct download URLs were fetched and matched the current starter
+  client files.
 
 No publication was performed. The earlier dated sections below describe previous
 client APIs and verification coverage.

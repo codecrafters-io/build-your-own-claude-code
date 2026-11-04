@@ -3,12 +3,10 @@
 Current starter repositories include the client for your language. Follow Stage 1
 in CodeCrafters to import and initialize it.
 
-## Troubleshooting older repositories
+## Download a client
 
-If you started the course before the client was included, your repository may be
-missing it. Download the entire client file for your language below and save it
-at the shown path. If your repository has an older client that does not match the
-lesson's API, replace that client file with the current version.
+If the client file is missing or outdated, download the current file for your
+language below and save it at the shown path.
 
 | Language | Client file | Save to |
 | --- | --- | --- |

@@ -19,7 +19,7 @@ Your Write handler will connect them: first save the file, then send its new
 contents through the existing client. Keeping the same server connection lets
 later definition and reference requests use the updated document.
 
-Keep this guidance in your system prompt:
+Add this guidance to your system prompt:
 
 ```text
 Edit files with Write so the language server sees changes.
@@ -111,8 +111,8 @@ imports and references. Sending its new contents refreshes that view even if the
 next query targets a different file. Waiting until the model queries the edited
 file itself could leave answers about other files based on the old code.
 
-A supported file has an extension in the mapping you saved in Stage 1. The
-exercise edits Python files, whose `.py` extension maps to `python`.
+A supported file has an extension in the client's language mapping from Stage 3.
+The exercise edits Python files, whose `.py` extension maps to `python`.
 
 Save the file before notifying the server so the update contains the saved text.
 Completing the notification sends that update; it doesn't tell you whether the

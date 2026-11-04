@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "LSP",
-    "description": "Returns raw language-server results with file URIs and zero-based UTF-16 ranges.",
+    "description": "Find where a symbol at a given file position is defined.",
     "parameters": {
       "type": "object",
       "properties": {
