@@ -11,8 +11,12 @@ analyzes comes from `.lsp.json`: `command` and `args` select the server, and
 fixed Python language in the helper and no language argument to the constructor.
 The course tests configure Python; you can configure a different server locally.
 
-Call action `configuration` with `{}` to read the configured mapping. The empty
-object is the request's argument list, not a configuration you must fill in.
+Client initialization fetches and stores the configured mapping. Use the
+constructor or initialization function shown in Stage 1; JavaScript and
+TypeScript use `await LSPClient.create()`, and C# uses
+`await LSPClient.CreateAsync()`.
+
+Internally, initialization calls the helper's `configuration` action with `{}`.
 This action belongs to the course helper, not the LSP protocol. The response in
 the course tests is:
 

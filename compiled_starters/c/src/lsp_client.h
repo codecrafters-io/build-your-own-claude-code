@@ -2,11 +2,13 @@
 #ifndef CODECRAFTERS_LSP_CLIENT_H
 #define CODECRAFTERS_LSP_CLIENT_H
 #include <curl/curl.h>
+#include <cjson/cJSON.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 struct lsp_buffer { char *data; size_t size; };
+typedef struct { cJSON *extension_to_language; } LSPClient;
 static char *lsp_error_data = NULL;
 static const char *lsp_error_message = NULL;
 
@@ -69,5 +71,31 @@ static char *lsp_call(const char *action, const char *json) {
     }
     lsp_error_message = NULL;
     return buffer.data;
+}
+
+static int lsp_init(LSPClient *client) {
+    client->extension_to_language = NULL;
+    char *json = lsp_call("configuration", "{}");
+    if (!json) return 0;
+    cJSON *configuration = cJSON_Parse(json);
+    free(json);
+    cJSON *mapping = cJSON_DetachItemFromObjectCaseSensitive(
+        configuration, "extensionToLanguage");
+    cJSON_Delete(configuration);
+    if (!cJSON_IsObject(mapping)) {
+        cJSON_Delete(mapping);
+        lsp_error_message = "Missing extensionToLanguage mapping";
+        return 0;
+    }
+    client->extension_to_language = mapping;
+    return 1;
+}
+
+static void lsp_deinit(LSPClient *client) {
+    cJSON_Delete(client->extension_to_language);
+    client->extension_to_language = NULL;
+    free(lsp_error_data);
+    lsp_error_data = NULL;
+    lsp_error_message = NULL;
 }
 #endif

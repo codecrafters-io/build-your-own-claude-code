@@ -4,14 +4,21 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class LSPClient {
     private final String url;
     private final HttpClient client = HttpClient.newHttpClient();
+    public final Map<String, String> extensionToLanguage;
 
-    public LSPClient() {
+    private record Configuration(Map<String, String> extensionToLanguage) {}
+
+    public LSPClient() throws Exception {
         url = System.getenv("CODECRAFTERS_LSP_URL");
         if (url == null) throw new IllegalStateException("Run with the course LSP transport");
+        extensionToLanguage = new ObjectMapper()
+            .readValue(call("configuration", "{}"), Configuration.class).extensionToLanguage();
     }
 
     public String call(String action, String json) throws Exception {

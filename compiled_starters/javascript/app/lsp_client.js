@@ -1,5 +1,12 @@
 // Course-supplied transport; your agent owns document state and tool results.
 export class LSPClient {
+  static async create() {
+    const client = new LSPClient();
+    const configuration = await client.call("configuration", {});
+    client.extensionToLanguage = configuration.extensionToLanguage;
+    return client;
+  }
+
   constructor() {
     this.url = process.env.CODECRAFTERS_LSP_URL;
     if (!this.url) throw new Error("Run with the course LSP transport");

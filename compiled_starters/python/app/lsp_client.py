@@ -9,6 +9,7 @@ import urllib.request
 class LSPClient:
     def __init__(self):
         self.url = os.environ["CODECRAFTERS_LSP_URL"]
+        self.extension_to_language = self.call("configuration", {})["extensionToLanguage"]
 
     def call(self, action, payload):
         request = urllib.request.Request(

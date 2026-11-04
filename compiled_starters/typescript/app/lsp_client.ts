@@ -1,11 +1,21 @@
 // Course-supplied transport; your agent owns document state and tool results.
 export class LSPClient {
   private url: string;
+  extensionToLanguage!: Record<string, string>;
 
-  constructor() {
+  private constructor() {
     const url = process.env.CODECRAFTERS_LSP_URL;
     if (!url) throw new Error("Run with the course LSP transport");
     this.url = url;
+  }
+
+  static async create(): Promise<LSPClient> {
+    const client = new LSPClient();
+    const configuration = await client.call("configuration", {}) as {
+      extensionToLanguage: Record<string, string>;
+    };
+    client.extensionToLanguage = configuration.extensionToLanguage;
+    return client;
   }
 
   async call(action: string, payload: unknown): Promise<unknown> {

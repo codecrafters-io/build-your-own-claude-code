@@ -9,10 +9,14 @@
 class LSPClient {
     std::string url;
 public:
+    nlohmann::json extension_to_language;
+
     LSPClient() {
         const char* value = std::getenv("CODECRAFTERS_LSP_URL");
         if (!value) throw std::runtime_error("Run with the course LSP transport");
         url = value;
+        extension_to_language = call("configuration", nlohmann::json::object())
+            .at("extensionToLanguage");
     }
     nlohmann::json call(const std::string& action, const nlohmann::json& payload) {
         auto response = cpr::Post(cpr::Url{url + "/" + action},

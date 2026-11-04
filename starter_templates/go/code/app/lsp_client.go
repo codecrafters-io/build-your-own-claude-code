@@ -12,8 +12,9 @@ import (
 )
 
 type LSPClient struct {
-	url    string
-	client *http.Client
+	url                 string
+	client              *http.Client
+	ExtensionToLanguage map[string]string `json:"extensionToLanguage"`
 }
 
 func NewLSPClient() (*LSPClient, error) {
@@ -21,7 +22,15 @@ func NewLSPClient() (*LSPClient, error) {
 	if url == "" {
 		return nil, fmt.Errorf("run with the course LSP transport")
 	}
-	return &LSPClient{url, &http.Client{Timeout: 10 * time.Second}}, nil
+	lsp := &LSPClient{url: url, client: &http.Client{Timeout: 10 * time.Second}}
+	configuration, err := lsp.Call("configuration", map[string]any{})
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(configuration, lsp); err != nil {
+		return nil, err
+	}
+	return lsp, nil
 }
 
 func (l *LSPClient) Call(action string, payload any) (json.RawMessage, error) {

@@ -12,7 +12,7 @@ the tool and add a temporary response so your agent can handle a call safely.
 
 ### Add the tool specification
 
-Keep the client and configuration call from Stage 1. Add this specification to
+Keep the client initialization from Stage 1. Add this specification to
 every model request's `tools` array alongside Read, Write, and Bash. Only
 `goToDefinition` is offered for now; a later stage adds reference lookup.
 
@@ -100,7 +100,7 @@ The tester runs the same Read-only prompt as Stage 1:
 $ ./your_program.sh -p "Use only Read to inspect checkout.py and pricing.py. Explain how checkout uses the pricing function."
 ```
 
-Your agent must still call `configuration` before its first model request. Every
+Your agent must still initialize the client before its first model request. Every
 model request must now include the supplied LSP specification, with
 `goToDefinition` and all four required arguments. The existing Read results must
 still preserve the complete contents of both files.

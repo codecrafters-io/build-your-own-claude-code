@@ -1,5 +1,42 @@
 # LSP revision verification
 
+## Client initialization - 4 November 2026
+
+All ten supplied clients now fetch the language mapping during initialization
+and expose it on the client. JavaScript and TypeScript use `LSPClient.create()`;
+C# uses `LSPClient.CreateAsync()`. The other languages use their constructor or
+initialization function. Stage 1 and the later setup references no longer ask
+learners to call `configuration` or parse its response. Client download links
+point to the matching starter templates in this repository.
+
+Stage 1 now assumes the supplied client is already in the starter repository.
+Missing or outdated clients are covered in a separate troubleshooting guide
+with download paths for all ten languages. Mapping access is introduced beside
+`didOpen` in Stage 3, where it is first needed.
+
+- Native runtime checks pass for all ten clients: initialization exposes a
+  configured TypeScript mapping, fetches it once before tool requests, and stops
+  on a failed fetch. Existing 8 KiB response checks still pass. Rust also passes
+  all four base-URL variants.
+- `verify_clients.py` now covers nine clients, including C# and Zig, in CI. C++
+  was compiled and exercised separately with CPR in a temporary Ubuntu container.
+  C and Zig error-body and recovery checks pass with initialized clients.
+- The six-stage offline reference exercise, connection without advertisement,
+  advertisement without navigation, and stage registration checks pass in a
+  temporary companion tester copy using the updated Python client and mapping
+  property. The original companion checkout was left unchanged.
+- Strict TypeScript checking, Python syntax, all ten starter/compiled-client
+  comparisons, and diff whitespace checks pass. All 60 stage/language variants
+  render with valid JSON and matching client links. Python and JavaScript setup
+  previews were inspected in the browser.
+- After simplifying the lesson, all 60 variants render with valid JSON, all ten
+  troubleshooting download links resolve, and the exact Stage 1 Go and Zig
+  examples compile without unused-local errors. The revised Python setup and
+  definition lesson were inspected in the browser.
+
+No publication was performed. The earlier dated sections below describe previous
+client APIs and verification coverage.
+
 ## References and synchronization scope - 3 November 2026
 
 Stage rb6 now requires reference arrays, including an empty array, without adding
@@ -211,9 +248,6 @@ reference results can omit callers even while the controlled fixture passes.
 
 ## Remaining release checks
 
-- Compile and exercise C++, C#, Rust and Zig starter clients in their supported
-  build environments. Their toolchains/dependencies were unavailable locally;
-  inclusion and generated-starter parity do not establish runtime correctness.
 - Live-model reliability and the existing 100-run live flakiness check with a
   valid CODECRAFTERS_SECRET_OPENROUTER_API_KEY.
 - A learner pacing trial, especially the first navigation stage and the coordinated

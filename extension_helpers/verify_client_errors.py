@@ -1,12 +1,13 @@
 """Verify C and Zig preserve helper error bodies and recover on later calls.
 
-Requires Clang with libcurl and Zig 0.17.
+Requires Clang with libcurl and cJSON, and Zig 0.17.
 """
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -29,10 +30,14 @@ class ErrorHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-        if self.requestline.split()[1] != "/request":
+        path = self.requestline.split()[1]
+        if path == "/configuration" and body == {}:
+            status, result = 200, {"extensionToLanguage": {".py": "python"}}
+        elif path == "/request":
+            status, result = RESPONSES[body["case"]]
+        else:
             self.send_error(404)
             return
-        status, result = RESPONSES[body["case"]]
         data = json.dumps(result).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
@@ -71,6 +76,8 @@ def main():
             assert header.read_bytes() == (ROOT / "compiled_starters/c/src/lsp_client.h").read_bytes()
             (directory / "main.c").write_text(f'#include "{header}"\n' + '''int main(void) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
+    LSPClient lsp;
+    if (!lsp_init(&lsp)) return 1;
     for (int i = 0; i < 4; i++) {
         char payload[32];
         snprintf(payload, sizeof(payload), "{\\"case\\":%d}", i);
@@ -80,12 +87,15 @@ def main():
         puts(response);
         free(result);
     }
+    lsp_deinit(&lsp);
     curl_global_cleanup();
     return 0;
 }
 ''')
             subprocess.run([
-                "clang", str(directory / "main.c"), "-lcurl", "-o", str(directory / "c-client")
+                "clang", *shlex.split(environment.get("CFLAGS", "")),
+                str(directory / "main.c"), *shlex.split(environment.get("LDFLAGS", "")),
+                "-lcurl", "-lcjson", "-o", str(directory / "c-client")
             ], check=True, capture_output=True)
             verify_error_recovery("C", [str(directory / "c-client")], environment)
 

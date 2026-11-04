@@ -204,7 +204,7 @@ stages:
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll connect the supplied LSP client and read its configuration.
+      In this stage, you'll initialize the supplied LSP client.
 
   - slug: "iy3"
     name: "Advertise the LSP tool"

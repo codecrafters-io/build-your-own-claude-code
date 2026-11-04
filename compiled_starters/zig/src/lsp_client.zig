@@ -6,12 +6,27 @@ pub const LSPClient = struct {
     io: std.Io,
     url: []const u8,
     last_error: ?[]u8 = null,
+    configuration: ?std.json.Parsed(std.json.Value) = null,
+    extension_to_language: std.json.ObjectMap = undefined,
 
     pub fn init(allocator: std.mem.Allocator, io: std.Io, url: ?[]const u8) !LSPClient {
-        return .{ .allocator = allocator, .io = io, .url = url orelse return error.MissingLSPTransport };
+        var client: LSPClient = .{
+            .allocator = allocator,
+            .io = io,
+            .url = url orelse return error.MissingLSPTransport,
+        };
+        errdefer client.deinit();
+        const json = try client.call("configuration", "{}");
+        defer allocator.free(json);
+        client.configuration = try std.json.parseFromSlice(std.json.Value, allocator, json, .{ .allocate = .alloc_always });
+        const mapping = client.configuration.?.value.object.get("extensionToLanguage") orelse return error.MissingLanguageMapping;
+        client.extension_to_language = mapping.object;
+        return client;
     }
 
     pub fn deinit(self: *LSPClient) void {
+        if (self.configuration) |configuration| configuration.deinit();
+        self.configuration = null;
         if (self.last_error) |message| self.allocator.free(message);
         self.last_error = null;
     }
@@ -32,7 +47,9 @@ pub const LSPClient = struct {
         var output: std.Io.Writer.Allocating = .init(self.allocator);
         defer output.deinit();
         const result = try client.fetch(.{
-            .location = .{ .url = url }, .method = .POST, .payload = json,
+            .location = .{ .url = url },
+            .method = .POST,
+            .payload = json,
             .extra_headers = &.{.{ .name = "content-type", .value = "application/json" }},
             .response_writer = &output.writer,
         });

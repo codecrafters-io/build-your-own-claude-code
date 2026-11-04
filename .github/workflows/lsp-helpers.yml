@@ -23,8 +23,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - name: Install C client dependencies
-        run: sudo apt-get update && sudo apt-get install -y clang libcurl4-openssl-dev
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Install C and Java client dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang libcurl4-openssl-dev libcjson-dev libjackson2-databind-java
       - name: Install Rust client dependencies
         run: rustup toolchain install stable --profile minimal --no-self-update && rustup default stable
       - name: Install Zig client dependencies

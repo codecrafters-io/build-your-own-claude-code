@@ -1,5 +1,6 @@
 // Course-supplied transport. This client talks only to the local HTTP bridge.
 use serde_json::Value;
+use std::collections::HashMap;
 use std::error::Error;
 use std::io::{Read, Write};
 use std::net::TcpStream;
@@ -8,6 +9,7 @@ use std::time::Duration;
 pub struct LspClient {
     address: String,
     path: String,
+    pub extension_to_language: HashMap<String, String>,
 }
 
 impl LspClient {
@@ -17,14 +19,19 @@ impl LspClient {
             .strip_prefix("http://127.0.0.1:")
             .ok_or("Expected local LSP transport")?;
         let (port, path) = local.split_once('/').unwrap_or((local, ""));
-        Ok(Self {
+        let mut client = Self {
             address: format!("127.0.0.1:{port}"),
             path: if path.is_empty() {
                 String::new()
             } else {
                 format!("/{path}")
             },
-        })
+            extension_to_language: HashMap::new(),
+        };
+        let configuration = client.call("configuration", &serde_json::json!({}))?;
+        client.extension_to_language =
+            serde_json::from_value(configuration["extensionToLanguage"].clone())?;
+        Ok(client)
     }
 
     pub fn call(&self, action: &str, payload: &Value) -> Result<Value, Box<dyn Error>> {

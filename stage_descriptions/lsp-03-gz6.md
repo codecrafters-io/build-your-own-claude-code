@@ -19,8 +19,8 @@ The server resolves the alias to `pricing.total` and returns its location in
 `preview.total` has the same function name but isn't the target of checkout's import.
 
 Replace Stage 2's temporary LSP handler with definition handling. Reuse Stage 1's
-client and `extensionToLanguage` mapping and Stage 2's tool specification. Your
-handler must accept this `LSP` tool call from the model:
+client and Stage 2's tool specification. Your handler must accept this `LSP` tool
+call from the model:
 
 ```json
 {
@@ -47,7 +47,49 @@ special characters:
 
 Pass this complete [`didOpen` object][did-open] to the client's `notify` action.
 Replace `uri` with the resolved file URI and `text` with the complete file contents.
-Set `languageId` from `extensionToLanguage` (`.py` maps to `python`):
+
+The server also needs to know the file's language. During initialization, the
+client fetched and stored a mapping from file extensions to language IDs. The
+course's invoice project is Python regardless of your agent's implementation
+language, so the mapping is:
+
+```json
+{ ".py": "python" }
+```
+
+{{#lang_is_c}}
+Read this mapping from `lsp.extension_to_language`, a cJSON object.
+{{/lang_is_c}}
+{{#lang_is_cpp}}
+Read this mapping from `lsp.extension_to_language`, a JSON object.
+{{/lang_is_cpp}}
+{{#lang_is_csharp}}
+Read this mapping from `lsp.ExtensionToLanguage`, a dictionary.
+{{/lang_is_csharp}}
+{{#lang_is_go}}
+Read this mapping from `lsp.ExtensionToLanguage`, a `map[string]string`.
+{{/lang_is_go}}
+{{#lang_is_java}}
+Read this mapping from `lsp.extensionToLanguage`, a `Map<String, String>`.
+{{/lang_is_java}}
+{{#lang_is_javascript}}
+Read this mapping from `lsp.extensionToLanguage`, an object.
+{{/lang_is_javascript}}
+{{#lang_is_python}}
+Read this mapping from `lsp.extension_to_language`, a dict.
+{{/lang_is_python}}
+{{#lang_is_rust}}
+Read this mapping from `lsp.extension_to_language`, a `HashMap<String, String>`.
+{{/lang_is_rust}}
+{{#lang_is_typescript}}
+Read this mapping from `lsp.extensionToLanguage`, a `Record<string, string>`.
+{{/lang_is_typescript}}
+{{#lang_is_zig}}
+Read this mapping from `lsp.extension_to_language`, a `std.json.ObjectMap`.
+{{/lang_is_zig}}
+
+Look up the queried file's extension in this mapping and use the returned value
+as `languageId`. For `checkout.py`, `.py` maps to `python`:
 
 ```json
 {
