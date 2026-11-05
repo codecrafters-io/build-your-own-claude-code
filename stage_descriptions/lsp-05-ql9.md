@@ -136,7 +136,7 @@ Fix the issues reported in new diagnostics.
 The tester will create the [invoice project][example] with `test_invoice.py` and execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an integer cents field. Update checkout.py and reports.py so their results stay unchanged. Before any Write edits, use LSP goToDefinition on checkout.py at line 5, character 12, and LSP findReferences on the returned pricing.total definition. After all Write edits, repeat LSP goToDefinition on the invoice_total call in checkout.py at its current line and character, and LSP findReferences at the updated pricing.total definition, using the position it returns. Both post-edit LSP queries are required even if the project tests pass. Fix the type errors your tools report. Leave tests and unrelated files unchanged. Run python3 -m unittest -v test_invoice.py and report the result."
+$ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an integer cents field. Update checkout.py and reports.py so their results stay unchanged. Before any Write edits, use LSP goToDefinition on checkout.py at line 5, character 12, and LSP findReferences on the returned pricing.total definition. After all Write edits, repeat LSP findReferences at the updated pricing.total definition. That query is required even if the project tests pass. Fix the type errors your tools report. Leave tests and unrelated files unchanged. Run python3 -m unittest -v test_invoice.py and report the result."
 <the model's summary of the migration and the test result>
 ```
 
@@ -144,8 +144,8 @@ The tester will verify that:
 
 - Every current diagnostic the server published, for any file, reaches the model with its file, message, and 1-based line and character
 - No diagnostic from a report for an older version reaches the model
-- Both lookups run, in either order, before the first Write and again after the last Write, and the follow-up references match the edited files
-- The model reads `pricing.py`, `checkout.py`, and `reports.py` before writing each one
+- Both lookups run, in either order, before the first Write
+- A references lookup runs after the last Write, and its result matches the edited files
 - The Bash output shows `Ran 5 tests` and `OK`, `checkout_total()` returns `500`, and `report_total()` returns `600`
 - `preview.py` and `test_invoice.py` are unchanged
 - Your program exits with code `0`
