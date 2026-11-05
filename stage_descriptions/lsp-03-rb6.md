@@ -103,7 +103,7 @@ to choose it.
 
 ### Understand the returned locations
 
-For the full invoice project under `/project`, the supplied test server returns:
+For the full [invoice project][example] under `/project`, the supplied test server returns:
 
 ```json
 [
@@ -178,7 +178,7 @@ unchanged, using the same tool-result handling as a nonempty array.
 
 ### Tests
 
-The tester will create the invoice project and execute your program like this:
+The tester will create the [invoice project][example] and execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Use LSP findReferences on pricing.py at line 1, character 5. Identify every affected caller before changing its return type. Preserve the returned locations; preview.total and comments are unrelated."
@@ -198,3 +198,4 @@ The tester will also run this prompt on a project without `reports.py`, and agai
 - Other language servers can represent aliased references differently. Pyright, for example, returns checkout's import of `total` but not the `invoice_total` call. Pass through whatever the server returns, and the model can read `checkout.py` to follow the alias to the call.
 
 [references]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_references
+[example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise

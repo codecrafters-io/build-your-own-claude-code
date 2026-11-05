@@ -10,7 +10,7 @@ The descriptions are already there from earlier stages. What's missing is a way 
 
 ### Giving the model a way in
 
-The `Skill` tool enables the LLM to invoke a skill. Like with the `Read` , `Write` and `Bash`tools, you need to advertise the `Skill` tool in your request and execute it when the model requests it.
+The `Skill` tool enables the LLM to invoke a skill. Like with the `Read`, `Write` and `Bash` tools, you need to advertise the `Skill` tool in your request and execute it when the model requests it.
 
 Here's the tool specification: 
 

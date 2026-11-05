@@ -32,7 +32,7 @@ its location in an LSP result, doesn't open it in the language server.
 ### Add synchronization to Write
 
 For a Write to a file supported by the client's language mapping (`.py` maps to
-`python` in the invoice project):
+`python` in the [invoice project][example]):
 
 1. Save the file using your existing Write handler.
 2. After the save succeeds, send its complete new contents through `notify`.
@@ -74,7 +74,7 @@ query targets another file.
 
 ### Tests
 
-The tester will create the invoice project and execute your program like this:
+The tester will create the [invoice project][example] and execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Use Write to change its import from pricing to discounts, preserving the invoice_total alias. Repeat definition lookup at the same position and report the new target."
@@ -95,3 +95,4 @@ The tester will also run a prompt that restores the `pricing` import and looks u
 - Every test case uses a successful Write to a supported Python file. Failed writes and files outside the language mapping are out of scope.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
+[example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise

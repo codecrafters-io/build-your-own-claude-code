@@ -6,9 +6,11 @@ Your agent can already read files, search with Bash, and write changes. Finding
 the right code can still mean searching for a name and following its imports.
 
 A language server is a program that reads a project's code and knows where each
-function is defined and where it is used. Editors like VS Code run one in the
-background to answer questions such as "Where is this function defined?" Your
-agent can ask the same questions using the **[Language Server Protocol (LSP)][lsp]**.
+function is defined and where it is used. Claude Code's
+[LSP tool](https://code.claude.com/docs/en/tools-reference#lsp-tool-behavior)
+uses one to look up where a function is defined, the same way editors like VS
+Code do. Your agent can make the same lookups using the
+**[Language Server Protocol (LSP)][lsp]**.
 
 For example, take this `checkout.py` from the
 [invoice project][example] the tester uses:
@@ -353,12 +355,13 @@ If your agent doesn't send a system message yet, add one at the start of
 ### 4. Handle LSP calls with a placeholder
 
 Your agent already picks Read, Write, or Bash by the tool call's
-`function.name`. Add a case for `LSP` that returns `LSP is not implemented yet`
-through your existing tool-result flow, then continue the agent loop.
+`function.name`. Add a case for `LSP` that returns a placeholder, such as
+`LSP is not implemented yet`, through your existing tool-result flow. Then
+continue the agent loop.
 
 ### Tests
 
-The tester will create the invoice project and execute your program like this:
+The tester will create the [invoice project][example] and execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. If navigation is not implemented yet, report the tool response without retrying."
@@ -370,7 +373,7 @@ The tester will verify that:
 
 - Your program connects the supplied LSP client before its first model request
 - Every model request advertises the `LSP` tool, with `operation`, `filePath`, `line`, and `character` required
-- The model's `goToDefinition` call gets the tool result `LSP is not implemented yet`, with the matching `tool_call_id`
+- The model's `goToDefinition` call gets a tool result, with the matching `tool_call_id`
 - Your program exits with code `0`
 
 ### Notes
