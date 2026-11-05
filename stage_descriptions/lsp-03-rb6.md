@@ -43,13 +43,13 @@ Add `findReferences` to the LSP tool's `operation` enum, so it becomes
 `["goToDefinition", "findReferences"]`. Replace the tool's description with:
 
 ```text
-Returns the locations, each a file URI and a zero-based range, where a symbol is defined or referenced.
+Returns the file, line, and character of each place where a symbol is defined or referenced.
 ```
 
 Replace the LSP guidance you added to your system prompt when you advertised the tool:
 
 ```text
-Use the LSP tool to find where a symbol is defined or referenced. Lines and characters are 1-based, as in an editor. Returned ranges are 0-based, so add 1 to each coordinate before reusing it as input.
+Use the LSP tool to find where a symbol is defined or referenced. Lines and characters are 1-based, as in an editor.
 ```
 
 ### Ask where the function is used
@@ -151,10 +151,28 @@ every entry is a call: imports and the declaration are references too.
 
 ### Return the answer to the model
 
-Return the result the same way as for definition lookup: as JSON text,
-unchanged, in a tool message with the model's `tool_call_id`. Do the same for an
-empty array: when the server finds no references, return `[]` rather than a
-message like "No references found".
+Format each location the same way as for definition lookup: the relative path,
+then the start line and character, each plus one. Claude Code groups them by
+file:
+
+```text
+Found 6 references across 3 files:
+
+pricing.py:
+  Line 1:5
+
+checkout.py:
+  Line 1:21
+  Line 5:12
+
+reports.py:
+  Line 1:21
+  Line 5:12
+  Line 5:28
+```
+
+Return the text in a tool message with the model's `tool_call_id`. When the
+server returns an empty array, say so, for example `No references found.`
 
 ### Tests
 
@@ -168,14 +186,14 @@ $ ./your_program.sh -p "Use LSP findReferences on pricing.py at line 1, characte
 The tester will verify that:
 
 - Your program sends `textDocument/references` for `pricing.py` at position 0:4, with `includeDeclaration` set to `true`
-- The tool result contains every location the server returned, with the matching `tool_call_id`
+- The tool result names every location the server returned, each with its file and 1-based line and character, with the matching `tool_call_id`
 - Your program exits with code `0`
 
 The tester will also run this prompt against a server that returns an empty array.
 
 ### Notes
 
-- Other language servers can represent aliased references differently. Pyright, for example, returns checkout's import of `total` but not the `invoice_total` call. Pass through whatever the server returns, and the model can read `checkout.py` to follow the alias to the call.
+- Other language servers can represent aliased references differently. Pyright, for example, returns checkout's import of `total` but not the `invoice_total` call. Return whatever the server finds, and the model can read `checkout.py` to follow the alias to the call.
 
 [references]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_references
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise

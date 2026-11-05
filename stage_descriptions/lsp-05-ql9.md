@@ -1,10 +1,13 @@
-In this stage, you'll return language-server diagnostics to the model so it can repair an API migration.
+In this stage, you'll report language-server diagnostics to the model so it can repair an API migration.
 
 ### Why diagnostics?
 
 Your agent already sends each Write to the language server. The server can also
-report problems in what was written. A diagnostic describes an issue in a file,
-with a message, severity, and source range.
+report problems in the code. A diagnostic describes an issue in a file, with a
+message, severity, and source range.
+
+A change to one file can break another. The server re-checks every open file
+after a change, so it can report an error in a caller the model hasn't touched.
 
 ### Change the API and repair its callers
 
@@ -30,23 +33,24 @@ keep their results unchanged: `checkout_total()` must still return the integer
 `500`, and `report_total()` the integer `600`. The unrelated `preview.total`
 stays as it is.
 
-Part-way through, the model might edit `checkout.py` like this:
+Suppose the model writes the new `pricing.py` first. `checkout.py` is still
+open from the earlier definition lookup, and its unchanged return statement now
+returns a `Price` from a function declared to return an `int`:
 
 ```python
 def checkout_total() -> int:
-    amount = invoice_total(250, 2)
-    return amount
+    return invoice_total(250, 2)
 ```
 
-After the API change, `amount` is a `Price`, while this function is declared to
-return an `int`. The language server can report that mismatch, and your Write
-tool passes it back so the model can fix it by returning `amount["cents"]`.
+The language server reports that mismatch in `checkout.py`, even though nothing
+wrote to it. Your agent passes the report on, so the model can fix the caller by
+returning `invoice_total(250, 2)["cents"]`.
 
-### Read the server's feedback
+### Read the server's reports
 
 The server sends diagnostics asynchronously in `textDocument/publishDiagnostics`
-notifications. They are not the response to `didChange`. Your LSP client
-queues them while your agent executes other calls.
+notifications. They are not the response to `didChange`. Your LSP client queues
+them while your agent executes other calls.
 
 Keep a notification cursor for the whole run, like the document-version map,
 and initialize it to `0`. Read queued notifications with `call` and
@@ -58,8 +62,8 @@ and initialize it to `0`. Read queued notifications with `call` and
 
 Use your saved cursor as `after`. It counts the notifications you've already
 read, so the response holds only newer ones, plus a new `cursor` to pass next
-time. A zero timeout drains queued messages without waiting. For the incomplete
-edit above, the response contains:
+time. A zero timeout drains queued messages without waiting. After the
+`pricing.py` write above, the response contains:
 
 ```json
 {
@@ -69,12 +73,12 @@ edit above, the response contains:
       "method": "textDocument/publishDiagnostics",
       "params": {
         "uri": "file:///project/checkout.py",
-        "version": 2,
+        "version": 1,
         "diagnostics": [
           {
             "range": {
-              "start": { "line": 5, "character": 11 },
-              "end": { "line": 5, "character": 17 }
+              "start": { "line": 4, "character": 11 },
+              "end": { "line": 4, "character": 32 }
             },
             "severity": 1,
             "message": "Type Price is not assignable to return type int"
@@ -87,60 +91,42 @@ edit above, the response contains:
 ```
 
 Save every returned cursor, including when the batch is empty or contains only
-unrelated messages. Diagnostic ranges are zero-based, like navigation results.
+unrelated messages. Diagnostic ranges count from zero, like navigation results.
 
-### Add feedback to Write
+### Report new diagnostics to the model
 
-After each save, your Write tool waits for the server's report on that file and
-returns it to the model with the write result. For each successful Write to a
-file your LSP client's language mapping covers:
+Claude Code doesn't wait for diagnostics inside Write. It collects them in the
+background and shows the model what's new on its next turn. Do the same before
+each model request:
 
-1. **Drain old notifications.** Read notifications with a zero timeout and save
-   the cursor, so a report from an earlier edit can't answer this one.
-2. **Save and synchronize** as your Write tool already does: the save, then
-   `didOpen` or `didChange` with the next version.
-3. **Wait for the report.** Poll notifications with a short timeout, such as
-   `200` milliseconds, within an overall deadline, such as two seconds. An empty
-   batch means no report has arrived yet, not that the file is clean, and it
-   doesn't restart the deadline.
-4. **Pick the current report.** Use only `textDocument/publishDiagnostics` for
-   the written file's URI whose `version` matches the version you just sent, or
-   that has no `version`. If a batch has several, use the latest.
-5. **Return it.** Keep your Write success information and add the report's
-   complete `params` object under `diagnostics`. In JavaScript, TypeScript, and
-   C#, `await` each `notifications` call.
-
-For example, after the repair, Write's result could contain:
-
-```json
-{
-  "written": "/project/checkout.py",
-  "diagnostics": {
-    "uri": "file:///project/checkout.py",
-    "version": 3,
-    "diagnostics": []
-  }
-}
-```
-
-Your existing success fields may differ. An empty `diagnostics` array means the
-server found no errors, and it clears the earlier ones for that file.
-
-If the overall deadline expires, keep the successful Write result and add
-`diagnosticsError` with a message that contains both "timed out" and
-"diagnostic", in any letter case, such as
-`"Timed out waiting for language-server diagnostics"`.
-Omit `diagnostics` in that result. The save succeeded, but analysis is
-unavailable. Do not invent a clean report or turn the successful save into a
-file-write failure.
-
-### Tell the model to use the feedback
-
-Add these lines to your system prompt, alongside the LSP guidance it already has:
+1. **Read queued notifications** with a zero timeout and save the cursor.
+2. **Keep the current report for each file.** Use only
+   `textDocument/publishDiagnostics`. Skip a report whose `version` doesn't
+   match the version you last sent for that file. A report with no `version` is
+   current. If a file has several current reports, the latest replaces the
+   earlier ones, and an empty `diagnostics` array means the file is clean.
+3. **Find what's new.** Compare each file's current diagnostics with the ones
+   you last showed the model for that file, and keep the ones it hasn't seen.
+4. **Append them to the latest tool result**, with relative paths and 1-based
+   positions, as in navigation results. Claude Code uses this block:
 
 ```text
-Inspect diagnostic feedback from Write and repair reported type errors.
-A diagnostic timeout means feedback is unavailable, not that the file is clean.
+<new-diagnostics>The following new diagnostic issues were detected:
+
+checkout.py:
+  ✘ [Line 5:12] Type Price is not assignable to return type int</new-diagnostics>
+```
+
+The tester checks that each diagnostic's file, message, and 1-based line and
+character reach the model, not the exact wording. In JavaScript, TypeScript,
+and C#, `await` each `notifications` call.
+
+### Tell the model to use the reports
+
+Add this line to your system prompt, alongside the LSP guidance it already has:
+
+```text
+Fix the issues reported in new diagnostics.
 ```
 
 ### Tests
@@ -148,24 +134,26 @@ A diagnostic timeout means feedback is unavailable, not that the file is clean.
 The tester will create the [invoice project][example] with `test_invoice.py` and execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an integer cents field. Update checkout.py and reports.py so their results stay unchanged. Before any Write edits, use LSP goToDefinition on checkout.py at line 5, character 12, and LSP findReferences on the returned pricing.total definition. After all Write edits, repeat LSP goToDefinition on the invoice_total call in checkout.py at its current line and character, and LSP findReferences at the updated pricing.total definition. Use the returned definition position for findReferences, converting its zero-based range to one-based tool inputs. Both post-edit LSP queries are required even if diagnostics are clean and the project tests pass. Use diagnostic feedback from Write to fix type errors. Report any diagnostic timeout. Leave tests and unrelated files unchanged. Run python3 -m unittest -v test_invoice.py and report the result."
+$ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an integer cents field. Update checkout.py and reports.py so their results stay unchanged. Before any Write edits, use LSP goToDefinition on checkout.py at line 5, character 12, and LSP findReferences on the returned pricing.total definition. After all Write edits, repeat LSP goToDefinition on the invoice_total call in checkout.py at its current line and character, and LSP findReferences at the updated pricing.total definition, using the position it returns. Both post-edit LSP queries are required even if the project tests pass. Fix the type errors your tools report. Leave tests and unrelated files unchanged. Run python3 -m unittest -v test_invoice.py and report the result."
 <the model's summary of the migration and the test result>
 ```
 
 The tester will verify that:
 
-- Every Write's tool result is a JSON object whose `diagnostics` field holds the server's report for the version that Write synchronized
+- Every current diagnostic the server published, for any file, reaches the model with its file, message, and 1-based line and character
+- No diagnostic from a report for an older version reaches the model
 - Both lookups run, in either order, before the first Write and again after the last Write, and the follow-up references match the edited files
 - The model reads `pricing.py`, `checkout.py`, and `reports.py` before writing each one
 - The Bash output shows `Ran 5 tests` and `OK`, `checkout_total()` returns `500`, and `report_total()` returns `600`
 - `preview.py` and `test_invoice.py` are unchanged
 - Your program exits with code `0`
 
-The tester will also run this prompt against two other servers. One sends stale reports around a current report that has no `version`. The other never publishes a report, and its `pricing.py` has a comment line above `def total`, so the definition is not on line 1. In that run, every Write returns `diagnosticsError` instead of `diagnostics`.
+The tester will also run this prompt against a server that sends stale reports and current reports without a `version`. Its `pricing.py` has a comment line above `def total`, so the definition is not on line 1.
 
 ### Notes
 
-- If your Write tool returns plain text such as `Wrote checkout.py`, change it to return a JSON object, so the `diagnostics` field has somewhere to go.
-- The model chooses its own edits, so a run may or may not hit a type error. You don't need to introduce errors yourself. Each Write only has to return the report the server published for it, which is often an empty `diagnostics` array.
+- Write's own result stays as it was. Diagnostics reach the model through a later tool result instead.
+- A report can arrive after the model request that followed its change. Your agent reads it before the next request.
+- The model chooses its own edits, so a run may or may not hit a type error. You don't need to introduce errors yourself.
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
