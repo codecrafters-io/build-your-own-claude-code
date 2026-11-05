@@ -7,6 +7,7 @@ RUN apt-get update && \
         curl \
         libncurses-dev \
         libreadline-dev \
+        python3 \
         xz-utils \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*

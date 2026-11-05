@@ -3,7 +3,7 @@ FROM oven/bun:1.3-alpine
 
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="package.json,bun.lock"
 
-RUN apk add --no-cache --upgrade 'bash>=5.2'
+RUN apk add --no-cache --upgrade 'bash>=5.2' 'python3>=3.10'
 
 WORKDIR /app
 

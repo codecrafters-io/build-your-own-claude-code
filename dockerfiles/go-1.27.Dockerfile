@@ -4,7 +4,7 @@ FROM golang:1.27-alpine
 # Ensures the container is re-built if go.mod or go.sum changes
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="go.mod,go.sum"
 
-RUN apk add --no-cache --upgrade 'bash>=5.3'
+RUN apk add --no-cache --upgrade 'bash>=5.3' 'python3>=3.10'
 
 WORKDIR /app
 

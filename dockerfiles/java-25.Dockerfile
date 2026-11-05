@@ -4,7 +4,7 @@ FROM maven:3.9.11-eclipse-temurin-25-alpine
 # Ensures the container is re-built if dependency files change
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="pom.xml"
 
-RUN apk add --no-cache --upgrade 'bash>=5.2'
+RUN apk add --no-cache --upgrade 'bash>=5.2' 'python3>=3.10'
 
 WORKDIR /app
 

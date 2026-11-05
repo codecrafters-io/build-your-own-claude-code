@@ -5,7 +5,7 @@ FROM gcc:15.2.0-trixie
 ENV CODECRAFTERS_DEPENDENCY_FILE_PATHS="CMakeLists.txt,vcpkg.json,vcpkg-configuration.json"
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y zip=3.* && \ 
+    apt-get install --no-install-recommends -y python3=3.* zip=3.* && \
     apt-get install --no-install-recommends -y build-essential=12.* && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

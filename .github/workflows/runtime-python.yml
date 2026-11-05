@@ -1,0 +1,28 @@
+name: Grading runtime Python
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  invoice-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [bun-1.2, bun-1.3]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the TypeScript grading image
+        run: docker build -f "dockerfiles/${{ matrix.runtime }}.Dockerfile" -t invoice-runtime compiled_starters/typescript
+      # The grading shell can run the invoice project's existing behavior tests.
+      - name: Run Python tests from the grading shell
+        run: |
+          docker run --rm --network none \
+            --mount "type=bind,src=${{ github.workspace }}/extension_designs/lsp_exercise,dst=/invoice,readonly" \
+            --workdir /invoice invoice-runtime /bin/sh -c '
+              python3 -m unittest -v \
+                test_invoice.InvoiceTests.test_checkout_total_is_500_cents \
+                test_invoice.InvoiceTests.test_report_total_is_600_cents \
+                test_invoice.InvoiceTests.test_preview_keeps_its_label
+            '

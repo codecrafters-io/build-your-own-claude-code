@@ -1,5 +1,28 @@
 # LSP revision verification
 
+## Python in grading runtimes - 5 November 2026
+
+QL9 requires Python even when the learner implements the agent in another
+language. All 21 non-Python runtime Dockerfiles now explicitly install Python;
+the Python runtime already supplies it. Alpine installs require Python 3.10 or
+newer for the invoice tests' `typing.is_typeddict` import. Debian images use
+Trixie's Python 3 package.
+
+- The unchanged `oven/bun:1.2-alpine` base reproduces `/bin/sh: python3: not
+  found` with exit code 127.
+- Full Bun 1.2 and 1.3 grading images build using the TypeScript starter. Both
+  pass all five unchanged invoice tests on a migrated temporary project, invoked
+  through a Bun subprocess and `/bin/sh` with container networking disabled.
+- Dependency layers from Node.js 21 and Rust 1.92 also build and pass all five
+  invoice tests with networking disabled. Other runtime images were not built.
+- The new grading-runtime CI workflow builds both Bun images and runs the three
+  existing invoice behavior tests from the unmodified exercise through its shell.
+  Both workflow test commands pass locally. The workflow YAML parses and diff
+  whitespace checks pass.
+
+Hosted grading requires rebuilding the runtime images. These checks do not
+exercise the separate OpenRouter HTTP 400 reported in the original failure.
+
 ## Follow the current checkout call - 4 November 2026
 
 The QL9 follow-up definition lookup now targets invoice_total in the synchronized

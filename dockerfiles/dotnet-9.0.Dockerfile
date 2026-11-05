@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7-labs
 FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine
 
-RUN apk add --no-cache --upgrade 'bash>=5'
+RUN apk add --no-cache --upgrade 'bash>=5' 'python3>=3.10'
 
 WORKDIR /app
 

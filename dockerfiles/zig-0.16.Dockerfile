@@ -6,6 +6,7 @@ FROM debian:trixie
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         curl \
+        python3 \
         xz-utils \
         procps \
     && apt-get clean && \
