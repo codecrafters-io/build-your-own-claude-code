@@ -161,7 +161,7 @@ The tester will verify that:
 - `preview.py` and `test_invoice.py` are unchanged
 - Your program exits with code `0`
 
-The tester will also run this prompt against two other servers. One sends stale reports around a current report that has no `version`. The other never publishes a report, and its `pricing.py` has a comment line above `def total`, so the definition is not on line 1. In that case, every Write must return `diagnosticsError`.
+The tester will also run this prompt against two other servers. One sends stale reports around a current report that has no `version`. The other never publishes a report, and its `pricing.py` has a comment line above `def total`, so the definition is not on line 1. In that run, every Write returns `diagnosticsError` instead of `diagnostics`.
 
 ### Notes
 
