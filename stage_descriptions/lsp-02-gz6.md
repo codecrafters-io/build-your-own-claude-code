@@ -94,12 +94,21 @@ For `invoice_total` in `checkout.py`, the server returns this location:
 }
 ```
 
-The URI points to `pricing.py`. The zero-based range covers the name `total` in
-its definition, starting at the `t` and ending just after the name.
+The URI points to `pricing.py`. The range covers the name `total` in its
+definition, starting at the `t` and ending just after the name. Like the
+position you sent, it counts from zero.
 
-Put the result in a tool message's `content` field as JSON text, unchanged, and
-set `tool_call_id` to the ID of the model's LSP call. Then continue the agent
-loop.
+The model counts from one, and it reuses the location you return as input to
+later LSP calls. So return it as text, the way Claude Code does: the path
+relative to your agent's working directory, then the start line and character,
+each plus one:
+
+```text
+Defined in pricing.py:1:5
+```
+
+Put that text in a tool message's `content` field, and set `tool_call_id` to
+the ID of the model's LSP call. Then continue the agent loop.
 
 ### Tests
 
@@ -113,7 +122,7 @@ $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, charact
 The tester will verify that:
 
 - Your program sends `textDocument/didOpen` for `checkout.py`, then `textDocument/definition` at position 4:11
-- The tool result for that call contains the server's location for `total` in `pricing.py`, with the matching `tool_call_id`
+- The tool result for that call names `pricing.py` at line 1, character 5, with the matching `tool_call_id`
 - Read returns the complete contents of `pricing.py` to the model
 - Your program exits with code `0`
 
