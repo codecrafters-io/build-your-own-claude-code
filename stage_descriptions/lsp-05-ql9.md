@@ -91,7 +91,8 @@ time. A zero timeout drains queued messages without waiting. After the
 ```
 
 Save every returned cursor, including when the batch is empty or contains only
-unrelated messages. Diagnostic ranges count from zero, like navigation results.
+unrelated messages. Diagnostic ranges count from zero, like the locations the
+server returns for navigation.
 
 ### Report new diagnostics to the model
 
@@ -107,8 +108,9 @@ each model request:
    earlier ones, and an empty `diagnostics` array means the file is clean.
 3. **Find what's new.** Compare each file's current diagnostics with the ones
    you last showed the model for that file, and keep the ones it hasn't seen.
-4. **Append them to the latest tool result**, with relative paths and 1-based
-   positions, as in navigation results. Claude Code uses this block:
+4. **Append them to the latest tool result.** Format each one as you format
+   navigation results: the relative path, then the start line and character,
+   each plus one. Claude Code uses this block:
 
 ```text
 <new-diagnostics>The following new diagnostic issues were detected:
