@@ -119,6 +119,7 @@ The tester will verify that:
 
 ### Notes
 
+- The LSP tool's path argument is `filePath`, not `file_path` as in Read.
 - We recommend URL encoding file paths when you convert them to URIs, so `cart notes.py` becomes `cart%20notes.py`.
 - A definition lookup can also return several locations, no location, or a server error. We won't deal with those in this extension.
 

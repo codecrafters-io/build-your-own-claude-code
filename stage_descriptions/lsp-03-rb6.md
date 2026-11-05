@@ -5,11 +5,12 @@ In this stage, you'll implement `findReferences` to find the callers affected by
 Definition lookup took you from a call to its implementation. Reference lookup
 starts at that implementation and discovers where it's used.
 
-Suppose you want to change `pricing.total` from returning integer cents to
-returning an object: `500` would become `{"cents": 500}`. Before editing it,
-you need to find the callers that depend on its current return value.
+Suppose you want `pricing.total` to return an object instead of a number, so
+`500` becomes `{"cents": 500}`. Every caller that uses the number would break.
+So before you change the function, you need to find all of its callers.
 
-Checkout imports the function as `invoice_total` and returns its result:
+In the [invoice project][example], `checkout.py` imports the function as
+`invoice_total` and returns its result:
 
 ```python
 from pricing import total as invoice_total
@@ -19,7 +20,7 @@ def checkout_total() -> int:
     return invoice_total(250, 2)
 ```
 
-Reporting uses the original name and adds the results of two calls:
+`reports.py` uses the original name and adds the results of two calls:
 
 ```python
 from pricing import total
@@ -38,24 +39,18 @@ Searching for `total` also finds unrelated functions and comments. A
 
 ### Add references to your LSP tool
 
-Extend the existing LSP tool's operation enum to
-`["goToDefinition", "findReferences"]`. Keep definition lookup available: the
-model needs both ways to navigate. The file path, line, and character arguments
-stay the same because both operations ask about a symbol at a position.
-Replace the tool's description with:
+Add `findReferences` to the LSP tool's `operation` enum, so it becomes
+`["goToDefinition", "findReferences"]`. Replace the tool's description with:
 
 ```text
-Find where a symbol at a given file position is defined or referenced. Input line and character are one-based UTF-16; returned ranges are zero-based. Add 1 to each returned coordinate before reusing it as input.
+Returns the locations, each a file URI and a zero-based range, where a symbol is defined or referenced.
 ```
 
 Replace the LSP guidance you added to your system prompt when you advertised the tool:
 
 ```text
-Use LSP to find where a symbol is defined or referenced.
+Use the LSP tool to find where a symbol is defined or referenced. Lines and characters are 1-based, as in an editor. Returned ranges are 0-based, so add 1 to each coordinate before reusing it as input.
 ```
-
-In your handler, route `findReferences` to a references request. Reuse document
-opening, file URIs, position conversion, and tool-result handling from definition lookup.
 
 ### Ask where the function is used
 
@@ -74,15 +69,13 @@ Line 1, character 5 points to the `t` in `def total`. This tells the server whic
 function's references to find, rather than asking it to match every occurrence of
 the word `total`.
 
-Resolve and read `pricing.py`, and send `didOpen` if its URI isn't already open,
-just as you did for definition lookup. Use the saved extension mapping for its
-language ID and wait for the notification call to complete before requesting.
-Opening `checkout.py` in an earlier lookup doesn't open `pricing.py`, because your record
-of open documents is per URI.
+Handle `findReferences` the same way as definition lookup: send `didOpen` if the
+file's URI isn't in your set yet, then send the request. Opening `checkout.py` in
+an earlier lookup doesn't open `pricing.py`, because the set tracks each URI
+separately.
 
-Send the helper action `request` with the complete payload below, using your
-language's client-call pattern from definition lookup. Convert the one-based tool position
-1:5 to the zero-based LSP position 0:4:
+This time the request is [`textDocument/references`][references], at the
+zero-based position 0:4. Send it with `call` and `"request"`:
 
 ```json
 {
@@ -95,11 +88,10 @@ language's client-call pattern from definition lookup. Convert the one-based too
 }
 ```
 
-The method is now `textDocument/references`. Its `context.includeDeclaration`
-setting asks the server to include the symbol's own declaration along with its
-uses, so the answer can contain the definition in `pricing.py` too. Keep this
-setting fixed to `true` in your handler. The model doesn't need another argument
-to choose it.
+Its `context.includeDeclaration` setting asks the server to include the symbol's
+own declaration along with its uses, so the answer can contain the definition in
+`pricing.py` too. Keep it fixed to `true`. The model doesn't need another
+argument to choose it.
 
 ### Understand the returned locations
 
@@ -152,36 +144,24 @@ For the full [invoice project][example] under `/project`, the supplied test serv
 ]
 ```
 
-Each entry has a file URI and a zero-based range, just like a definition location.
-The response includes the declaration in `pricing.py`, the import and aliased
-call in `checkout.py`, and the import and two calls in `reports.py`. Several entries
-can refer to the same file because they identify different occurrences.
-
-These are reference locations, so not every entry is a function call. The model
-uses Read to inspect the returned files and decide how their uses depend on the
-current return value. Returning a location doesn't open that document in the
-language server, and reading it with Read doesn't send `didOpen` either.
-
-Your handler passes through the server's answer rather than reconstructing
-locations or filtering them by spelling.
+Each entry has a file URI and a zero-based range, just like a definition
+location. The response includes the declaration in `pricing.py`, the import and
+aliased call in `checkout.py`, and the import and two calls in `reports.py`. Not
+every entry is a call: imports and the declaration are references too.
 
 ### Return the answer to the model
 
-Serialize the result as the tool message's `content` and use the matching
-`tool_call_id`, as you did for definition lookup. If your client already returns JSON
-text, use that text directly. Return every location, preserving the array order,
-URIs, and ranges. Don't collapse several references in one file into a single
-entry or convert the result positions to one-based.
-
-An empty array means the server returned no reference locations. Pass it through
-unchanged, using the same tool-result handling as a nonempty array.
+Return the result the same way as for definition lookup: as JSON text,
+unchanged, in a tool message with the model's `tool_call_id`. Do the same for an
+empty array: when the server finds no references, return `[]` rather than a
+message like "No references found".
 
 ### Tests
 
 The tester will create the [invoice project][example] and execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Use LSP findReferences on pricing.py at line 1, character 5. Identify every affected caller before changing its return type. Preserve the returned locations; preview.total and comments are unrelated."
+$ ./your_program.sh -p "Use LSP findReferences on pricing.py at line 1, character 5, and list the callers that a change to pricing.total's return type would affect. Don't change any code. Preserve the returned locations; preview.total and comments are unrelated."
 <the model's list of the affected callers>
 ```
 
@@ -191,7 +171,7 @@ The tester will verify that:
 - The tool result contains every location the server returned, with the matching `tool_call_id`
 - Your program exits with code `0`
 
-The tester will also run this prompt on a project without `reports.py`, and against a server that returns an empty array.
+The tester will also run this prompt against a server that returns an empty array.
 
 ### Notes
 
