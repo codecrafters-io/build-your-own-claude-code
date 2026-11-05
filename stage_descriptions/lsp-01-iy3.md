@@ -34,7 +34,10 @@ Instead, the agent can ask the language server where `invoice_total` is
 defined. The server follows the import and returns the location of `total` in
 `pricing.py` in a single request.
 
-### Connect the supplied LSP client
+Setting up that lookup takes four steps. The lookup itself comes in later
+stages, so for now LSP calls get a placeholder response.
+
+### 1. Connect the supplied LSP client
 
 We've written an LSP client for your language. It connects to the language
 server and sends it your agent's requests, so you don't write that part
@@ -275,11 +278,7 @@ if (lsp_client != null) {
 
 {{/lang_is_zig}}
 
-### Add the tool specification
-
-The model doesn't know about the language server yet. Just as you advertised
-Read in previous stages, you'll describe LSP in the `tools` array, so the model
-knows when to call it and what arguments to send.
+### 2. Advertise the tool
 
 Once the LSP client has connected, add this specification to every model
 request's `tools` array, alongside Read, Write, and Bash. Earlier stages run
@@ -319,11 +318,10 @@ without a language server, so leave the tool out when there's no client.
 }
 ```
 
-The tool's arguments point at one spot in a file, not at a name. A name alone
-can be ambiguous: the invoice project defines `total` in `pricing.py`,
-`discounts.py`, and `preview.py`. A file, line, and character pick out exactly
-one occurrence. For example, these arguments point at `invoice_total` in
-`checkout.py`'s return statement:
+The arguments point at a spot in a file rather than a name, because `total`
+alone could mean the one in `pricing.py`, `discounts.py`, or `preview.py`. For
+example, to point at `invoice_total` in `checkout.py`'s return statement, the
+model sends line 5, character 12. Both count from 1, as in an editor:
 
 ```json
 {
@@ -334,12 +332,9 @@ one occurrence. For example, these arguments point at `invoice_total` in
 }
 ```
 
-Line 5, character 12 is the `i` in `invoice_total`. Lines and characters count
-from 1, as in an editor.
+### 3. Tell the model how to use it
 
-### Update your system prompt
-
-Tell the model how to use the tool in your system prompt:
+Add this guidance to your system prompt:
 
 ```text
 Use the LSP tool to find where a symbol is defined. Lines and characters are 1-based, as in an editor.
@@ -355,7 +350,7 @@ If your agent doesn't send a system message yet, add one at the start of
  ]
 ```
 
-### Add a temporary LSP handler
+### 4. Handle LSP calls with a placeholder
 
 Your agent already picks Read, Write, or Bash by the tool call's
 `function.name`. Add a case for `LSP` that returns `LSP is not implemented yet`
