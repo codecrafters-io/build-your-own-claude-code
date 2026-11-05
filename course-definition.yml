@@ -204,7 +204,7 @@ stages:
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll initialize the supplied LSP client.
+      In this stage, you'll initialize the supplied LSP client and log when it connects.
 
   - slug: "iy3"
     name: "Advertise the LSP tool"
@@ -232,7 +232,7 @@ stages:
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll synchronize `Write` edits to keep language-server answers current.
+      In this stage, you'll synchronize `Write` edits so definition and reference lookups use the updated code.
 
   - slug: "ql9"
     name: "Repair edits with diagnostics"

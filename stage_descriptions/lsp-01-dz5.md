@@ -1,9 +1,9 @@
-In this extension, you'll give your agent tools to find function definitions and
-affected callers, then use those tools to change code across files.
-
 In this stage, you'll initialize the supplied LSP client and log when it connects.
 
 ### Why LSP?
+
+Over this challenge, you'll give your agent tools to find function definitions
+and affected callers, then use those tools to change code across files.
 
 Your agent can already read files, search with Bash, and write changes. Finding
 the right code can still mean searching for a name and following its imports.
@@ -34,7 +34,7 @@ With LSP, the agent sends a definition lookup request to the language server,
 identifying the `invoice_total` call by its file, line, and character position.
 The server follows the import and returns the location of `total` in
 `pricing.py`. The agent then uses its Read tool to open that file and inspect
-the function. **LSP locates the definition; Read retrieves the code.**
+the function. **LSP locates the definition, and Read retrieves the code.**
 
 ### Connect the supplied client
 
@@ -42,7 +42,7 @@ The supplied LSP client sends your agent's requests to the language server and
 returns its responses. The server runs as a separate program and stays running
 across requests.
 
-LSP course tests provide the server connection automatically. You don't need to
+The tester starts the language server and supplies its connection, so you don't
 configure it yourself.
 
 The client is included in your starter repository. Use the setup call below once
@@ -105,8 +105,8 @@ if (lsp_client) {
 
 The factory returns `std::optional<LSPClient>`. Use `if (lsp_client)` to check
 whether LSP is configured. The client uses the starter's existing CPR and
-nlohmann JSON dependencies. HTTP and JSON errors propagate as exceptions;
-handle them with your agent's existing exception handling.
+nlohmann JSON dependencies. HTTP and JSON errors propagate as exceptions.
+Handle them with your agent's existing exception handling.
 
 [client-cpp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/cpp/code/src/lsp_client.hpp
 
@@ -154,8 +154,7 @@ if lsp != nil {
 }
 ```
 
-The client is `nil` when no connection is configured. Run the whole package with
-`go run ./app`, rather than compiling only `app/main.go`.
+The client is `nil` when no connection is configured.
 
 [client-go]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/go/code/app/lsp_client.go
 
@@ -314,18 +313,26 @@ the agent loop. The deferred cleanup above runs on exit.
 
 ### Tests
 
-Run `codecrafters test` to verify your connection. The tester supplies the
-invoice project in your agent's working directory and runs:
+The tester will create the invoice project in your program's working directory and execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Use only Read to inspect checkout.py and pricing.py. Explain how checkout uses the pricing function."
+<the model's explanation of how checkout uses pricing.total>
 ```
 
-The connection message helps you confirm startup in the logs. The tester checks
-the connection itself, not the message text.
+The tester will verify that:
 
-Next, you'll advertise the `LSP` tool so the model knows it can request code
-navigation.
+- Your program connects the supplied LSP client before its first model request
+- Read returns the complete contents of `checkout.py` and `pricing.py` to the model
+- Your program exits with code `0`
+
+### Notes
+
+- You don't need to advertise an LSP tool yet. Later stages add it.
+- The tester checks the connection itself, not the `LSP client connected` text. The message is there so you can confirm startup in your test logs.
+{{#lang_is_go}}
+- Run the whole package with `go run ./app`, rather than compiling only `app/main.go`, so the build picks up `app/lsp_client.go`.
+{{/lang_is_go}}
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
 [lsp]: https://microsoft.github.io/language-server-protocol/

@@ -3,7 +3,7 @@ In this stage, you'll advertise the `LSP` tool to the model.
 ### Tell the model about LSP
 
 Your agent now has an LSP client, but the model doesn't know that capability is
-available. Just as you advertised Read in the base course, you'll describe LSP in
+available. Just as you advertised Read in previous stages, you'll describe LSP in
 the `tools` array so the model knows when to call it and what arguments to send.
 
 For example, the model will be able to ask where `invoice_total` in `checkout.py`
@@ -12,12 +12,10 @@ agent can handle a call safely.
 
 ### Add the tool specification
 
-Keep the client initialization from Stage 1. If the factory returned a client,
+Keep the client initialization from previous stages. If the factory returned a client,
 add this specification to every model request's `tools` array alongside Read,
 Write, and Bash. If LSP is unconfigured, keep using your existing tools without
-LSP. All LSP course tests supply a connection.
-
-Only `goToDefinition` is offered for now; a later stage adds reference lookup.
+LSP. The tester always supplies a connection.
 
 ```json
 {
@@ -75,7 +73,7 @@ the same name can refer to different definitions in different files or scopes.
 The tool accepts one-based positions: the first line and column are both 1.
 Columns count UTF-16 code units, which match character counts for the ASCII text
 in these exercises. Here, line 5, character 12 identifies the start of
-`invoice_total`. You'll handle the server's position format in the next stage.
+`invoice_total`. You'll convert these to the server's position format in later stages.
 
 ### Update your system prompt
 
@@ -117,14 +115,20 @@ server.
 
 ### Tests
 
-The tester supplies the invoice project and runs:
+The tester will create the invoice project and execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. If navigation is not implemented yet, report the tool response without retrying."
+<the model's report of the tool response>
 ```
 
-The tester checks that every model request advertises `LSP` and that the tool
-response reaches the model with the matching `tool_call_id`. The placeholder
-response is sufficient.
+The tester will verify that:
 
-Next, you'll replace the placeholder with a real definition lookup.
+- Every model request advertises the `LSP` tool, with `operation`, `filePath`, `line`, and `character` required
+- The model's `goToDefinition` call gets the tool result `LSP is not implemented yet`, with the matching `tool_call_id`
+- Your program exits with code `0`
+
+### Notes
+
+- Only `goToDefinition` is offered for now. Reference lookup comes in later stages, and so does replacing the placeholder with a lookup that contacts the server.
+
