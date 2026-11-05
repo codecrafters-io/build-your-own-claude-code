@@ -2,7 +2,7 @@ In this stage, you'll initialize the supplied LSP client and log when it connect
 
 ### Why LSP?
 
-Over this challenge, you'll give your agent tools to find function definitions
+In this extension, you'll give your agent tools to find function definitions
 and affected callers, then use those tools to change code across files.
 
 Your agent can already read files, search with Bash, and write changes. Finding
