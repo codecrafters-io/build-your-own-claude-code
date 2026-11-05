@@ -1,6 +1,6 @@
 // Only needed for the LSP extension.
 // You can ignore this file until you reach that extension.
-// Course-supplied transport. This client talks only to the local HTTP bridge.
+// Course-supplied client for the language server the tester starts.
 use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
@@ -8,13 +8,35 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::time::Duration;
 
+/// Sends your agent's messages to the language server.
+///
+/// The client doesn't track open documents or versions; that state belongs in
+/// your agent.
+///
+/// # Examples
+///
+/// ```ignore
+/// if let Some(lsp) = LspClient::from_environment()? {
+///     let language = &lsp.extension_to_language[".py"]; // "python"
+///     let result = lsp.call("request", &serde_json::json!({"method": "textDocument/definition", "params": params}))?;
+/// }
+/// ```
 pub struct LspClient {
     address: String,
     path: String,
+    /// Maps file extensions, including the dot, to LSP language IDs, such as
+    /// `{".py": "python"}`.
     pub extension_to_language: HashMap<String, String>,
 }
 
 impl LspClient {
+    /// Connects to the language server the tester configured.
+    ///
+    /// Returns `Ok(None)` when no language server is configured.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if connecting or reading the language mapping fails.
     pub fn from_environment() -> Result<Option<Self>, Box<dyn Error>> {
         if std::env::var_os("CODECRAFTERS_LSP_URL").is_none() {
             return Ok(None);
@@ -22,6 +44,11 @@ impl LspClient {
         Ok(Some(Self::new()?))
     }
 
+    /// Connects and reads the extension-to-language mapping.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if no language server is configured, or connecting fails.
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let url = std::env::var("CODECRAFTERS_LSP_URL")?;
         let local = url
@@ -43,6 +70,25 @@ impl LspClient {
         Ok(client)
     }
 
+    /// Sends one action to the language server and returns the parsed JSON response.
+    ///
+    /// Actions and their payloads:
+    ///
+    ///   - "configuration": {}. Returns {"extensionToLanguage": {".py": "python"}}.
+    ///   - "notify": {"method": ..., "params": {...}}, an LSP notification.
+    ///     Returns null.
+    ///   - "request": {"method": ..., "params": {...}}, an LSP request. Returns the
+    ///     server's result, which may be null, an object, or an array.
+    ///   - "notifications": {"after": cursor, "timeoutMs": ms}. Returns
+    ///     {"cursor": n, "notifications": [...]}: the server's notifications after
+    ///     the cursor, each with "method" and "params". Waits up to ms (0 to 5000)
+    ///     when none are queued yet. Pass the returned cursor as "after" next time.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the language server returns an error, times out
+    /// (5 seconds for a request), or exits. Its message is the transport's JSON,
+    /// such as `{"error":"language server exited before responding to textDocument/definition"}`.
     pub fn call(&self, action: &str, payload: &Value) -> Result<Value, Box<dyn Error>> {
         let body = serde_json::to_string(payload)?;
         let mut stream = TcpStream::connect(&self.address)?;
