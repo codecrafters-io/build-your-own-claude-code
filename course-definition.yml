@@ -199,19 +199,12 @@ stages:
       In this stage, you'll add support for skills that are handed to a subagent, which works through them and reports back a single answer.
 
   # Extension: Language Server Protocol
-  - slug: "dz5"
-    name: "Connect the LSP client"
-    difficulty: easy
-    primary_extension_slug: "lsp"
-    marketing_md: |-
-      In this stage, you'll initialize the supplied LSP client.
-
   - slug: "iy3"
-    name: "Advertise the LSP tool"
+    name: "Add the LSP tool"
     difficulty: easy
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll advertise the `LSP` tool to the model.
+      In this stage, you'll make the `LSP` tool available to the model.
 
   - slug: "gz6"
     name: "Find the implementation"
@@ -232,7 +225,7 @@ stages:
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll synchronize `Write` edits to keep language-server answers current.
+      In this stage, you'll synchronize `Write` edits so definition and reference lookups use the updated code.
 
   - slug: "ql9"
     name: "Repair edits with diagnostics"

@@ -1,11 +1,10 @@
-In Stage 2, your LSP handler returned a placeholder. Now you'll implement
-`goToDefinition` to return a definition location from the language server.
-Keep Stage 1's client, your tool specification, and your existing tool-result flow.
+In this stage, you'll implement `goToDefinition` so your agent can find the function behind a call.
 
 ### Handle the tool call
 
-In the invoice project, `invoice_total` in `checkout.py` resolves to
-`pricing.total`.
+Your LSP handler currently returns a placeholder. Now it will ask the language
+server where a symbol is defined. In the invoice project, `invoice_total` in
+`checkout.py` resolves to `pricing.total`.
 
 In your existing `LSP` branch, parse the tool call's `function.arguments` as JSON
 to obtain `operation`, `filePath`, `line`, and `character`. The arguments look
@@ -22,24 +21,6 @@ like this:
 
 Line 5, character 12 identifies the first character of `invoice_total` in
 `checkout.py`'s return statement.
-
-The examples below use the initialized client as `lsp` inside your LSP handler.
-
-{{#lang_is_cpp}}
-Check `if (lsp_client)` and bind `auto& lsp = *lsp_client;` in that branch.
-{{/lang_is_cpp}}
-{{#lang_is_rust}}
-Use `if let Some(lsp) = lsp_client.as_ref()` to access it in that branch.
-{{/lang_is_rust}}
-{{#lang_is_zig}}
-Use `if (lsp_client) |*lsp|` to access it in that branch.
-{{/lang_is_zig}}
-{{#lang_is_typescript}}
-Check `if (lsp)` in that branch so TypeScript narrows it to `LSPClient`.
-{{/lang_is_typescript}}
-{{#lang_is_csharp}}
-Check `if (lsp is not null)` in that branch to access the initialized client.
-{{/lang_is_csharp}}
 
 The names describe different parts of this lookup:
 
@@ -64,7 +45,7 @@ below.
 
 The server also needs to know the file's language. During initialization, the
 client fetched and stored a mapping from file extensions to language IDs. The
-course's invoice project is Python regardless of your agent's implementation
+invoice project is Python regardless of your agent's implementation
 language, so the mapping is:
 
 ```json
@@ -262,7 +243,7 @@ Send this object through the client's `notify` action only if `uri` is absent
 from the set. Add the URI after that call succeeds. The handler code in the next
 section shows this order.
 
-Version 1 identifies the file's initial contents. Stage 5 adds edit synchronization.
+Version 1 identifies the file's initial contents. Later stages send new versions when files change.
 
 ### 3. Request the definition
 
@@ -313,7 +294,7 @@ Serialize this object as `definition_json`.
 ```
 
 Use the two payloads and the opened-URI set in your LSP handler. The `notify`
-call sends the document contents; the `request` call asks for the definition:
+call sends the document contents, and the `request` call asks for the definition:
 
 {{#lang_is_python}}
 
@@ -371,7 +352,7 @@ if err != nil {
 content := string(result)
 ```
 
-Use the `log` import from Stage 1. `result` already contains serialized JSON.
+Use the `log` import you added when connecting the client. `result` already contains serialized JSON.
 
 {{/lang_is_go}}
 
@@ -401,8 +382,8 @@ let result = lsp.call("request", &definition_payload)?;
 let content = result.to_string();
 ```
 
-Use `?` in a function returning a compatible `Result`, as in Stage 1. Here,
-`uri` is a `String`; cloning it gives the set its own copy.
+Use `?` in a function returning a compatible `Result`, as in your client setup.
+Here, `uri` is a `String`, so cloning it gives the set its own copy.
 
 {{/lang_is_rust}}
 
@@ -467,8 +448,8 @@ const content = try lsp.call("request", definition_json);
 defer allocator.free(content);
 ```
 
-Use the supplied [Zig client][client-zig] with the optional-client cleanup from
-Stage 1. Copy `content` into the tool message before freeing it.
+Use the supplied [Zig client][client-zig] with the optional-client cleanup you
+added when connecting the client. Copy `content` into the tool message before freeing it.
 
 [client-zig]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/starter_templates/zig/code/src/lsp_client.zig
 
@@ -493,34 +474,37 @@ The returned URI points to `pricing.py`. The zero-based range covers the name
 
 Put the code's `content` string in a tool message's `content` field. Set
 `tool_call_id` to the ID of the model's LSP call and continue the agent loop.
-Serialize the server result once; clients returning JSON text need no additional
-serialization.
+Serialize the server result once. Clients that return JSON text need no
+additional serialization.
 
 Keep the returned URI and range unchanged. The model decodes the file URI to
-obtain a path for Read. Your LSP handler returns the location; the model chooses
+obtain a path for Read. Your LSP handler returns the location, and the model chooses
 the subsequent Read call.
 
 If the model reuses a returned position in another LSP call, it must add 1 to
-both coordinates: returned position `0:4` becomes tool input `1:5`. Stage 2's
-tool description already specifies this conversion.
+both coordinates: returned position `0:4` becomes tool input `1:5`. The tool
+description you advertised already specifies this conversion.
 
 ### Tests
 
-The tester supplies the invoice project and runs:
+The tester will create the invoice project and execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Read the returned implementation and explain which total is called; preview.total is unrelated."
+<the model's explanation that checkout calls pricing.total>
 ```
 
-The tester checks that the LSP response identifies `total` in `pricing.py` and
-reaches the model with the matching call ID. The model must then use Read to
-retrieve the implementation from `pricing.py`.
+The tester will verify that:
 
-This stage covers one successful lookup with a single definition location.
-Multiple definitions, missing definitions, and server-error responses aren't
-required here.
+- Your program sends `textDocument/didOpen` for `checkout.py`, then `textDocument/definition` at position 4:11
+- The tool result for that call contains the server's location for `total` in `pricing.py`, with the matching `tool_call_id`
+- Read returns the complete contents of `pricing.py` to the model
+- Your program exits with code `0`
 
-Next, you'll find where that function is used.
+### Notes
+
+- The tester's project directory is named `invoice project`, with a space, so every URI it sees contains `%20`. Build URIs with an encoder rather than by joining strings.
+- This stage covers one successful lookup with a single definition location. Multiple definitions, missing definitions, and server-error responses are out of scope.
 
 [position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen
