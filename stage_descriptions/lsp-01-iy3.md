@@ -1,4 +1,4 @@
-In this stage, you'll initialize the supplied LSP client and log when it connects.
+In this stage, you'll make the `LSP` tool available to the model.
 
 ### Why LSP?
 
@@ -10,7 +10,8 @@ function is defined and where it is used. Editors like VS Code run one in the
 background to answer questions such as "Where is this function defined?" Your
 agent can ask the same questions using the **[Language Server Protocol (LSP)][lsp]**.
 
-In the supplied [invoice project][example], `checkout.py` contains:
+For example, take this `checkout.py` from the
+[invoice project][example] the tester uses:
 
 ```python
 from pricing import total as invoice_total
@@ -33,14 +34,14 @@ Instead, the agent can ask the language server where `invoice_total` is
 defined. The server follows the import and returns the location of `total` in
 `pricing.py` in a single request.
 
-### Connect the supplied client
+### Connect the supplied LSP client
 
 We've written an LSP client for your language. It connects to the language
 server and sends it your agent's requests, so you don't write that part
 yourself. The tester starts the language server, and the client connects to it.
 
-Create the client once at startup, before your first model request. Keep it,
-because later stages call it from your tool handlers.
+Create the client once at startup, before your first model request, and store it
+where your tool handlers can reach it.
 
 {{#lang_is_c}}
 
@@ -274,25 +275,112 @@ if (lsp_client != null) {
 
 {{/lang_is_zig}}
 
+### Add the tool specification
+
+The model doesn't know about the language server yet. Just as you advertised
+Read in previous stages, you'll describe LSP in the `tools` array, so the model
+knows when to call it and what arguments to send.
+
+Once the LSP client has connected, add this specification to every model
+request's `tools` array, alongside Read, Write, and Bash. Earlier stages run
+without a language server, so leave the tool out when there's no client.
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "LSP",
+    "description": "Returns the file, line, and character where a symbol is defined.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": ["goToDefinition"]
+        },
+        "filePath": {
+          "type": "string",
+          "description": "Absolute path, or a path relative to the agent's current working directory."
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-based line number of the symbol."
+        },
+        "character": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-based character offset in UTF-16 code units (same as character count for ASCII)."
+        }
+      },
+      "required": ["operation", "filePath", "line", "character"]
+    }
+  }
+}
+```
+
+The tool's arguments point at one spot in a file, not at a name. A name alone
+can be ambiguous: the invoice project defines `total` in `pricing.py`,
+`discounts.py`, and `preview.py`. A file, line, and character pick out exactly
+one occurrence. For example, these arguments point at `invoice_total` in
+`checkout.py`'s return statement:
+
+```json
+{
+  "operation": "goToDefinition",
+  "filePath": "checkout.py",
+  "line": 5,
+  "character": 12
+}
+```
+
+Line 5, character 12 is the `i` in `invoice_total`. Lines and characters count
+from 1, as in an editor.
+
+### Update your system prompt
+
+Tell the model how to use the tool in your system prompt:
+
+```text
+Use the LSP tool to find where a symbol is defined. Lines and characters are 1-based, as in an editor.
+```
+
+If your agent doesn't send a system message yet, add one at the start of
+`messages`:
+
+```diff
+ messages = [
++  { "role": "system", "content": "Use the LSP tool to find where a symbol is defined. Lines and characters are 1-based, as in an editor." },
+   { "role": "user", "content": prompt }
+ ]
+```
+
+### Add a temporary LSP handler
+
+Your agent already picks Read, Write, or Bash by the tool call's
+`function.name`. Add a case for `LSP` that returns `LSP is not implemented yet`
+through your existing tool-result flow, then continue the agent loop.
+
 ### Tests
 
-The tester will create the invoice project in your program's working directory and execute your program like this:
+The tester will create the invoice project and execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Use only Read to inspect checkout.py and pricing.py. Explain how checkout uses the pricing function."
+$ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. If navigation is not implemented yet, report the tool response without retrying."
 LSP client connected
-<the model's explanation of how checkout uses pricing.total>
+<the model's report of the tool response>
 ```
 
 The tester will verify that:
 
 - Your program connects the supplied LSP client before its first model request
-- Read returns the complete contents of `checkout.py` and `pricing.py` to the model
+- Every model request advertises the `LSP` tool, with `operation`, `filePath`, `line`, and `character` required
+- The model's `goToDefinition` call gets the tool result `LSP is not implemented yet`, with the matching `tool_call_id`
 - Your program exits with code `0`
 
 ### Notes
 
-- This stage only connects the client. You'll send lookups to the language server in later stages.
+- Only `goToDefinition` is offered for now. Reference lookup, and a handler that contacts the language server, come in later stages.
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
 [lsp]: https://microsoft.github.io/language-server-protocol/
