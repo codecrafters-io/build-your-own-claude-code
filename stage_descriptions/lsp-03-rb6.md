@@ -43,7 +43,7 @@ Add `findReferences` to the LSP tool's `operation` enum, so it becomes
 `["goToDefinition", "findReferences"]`. Replace the tool's description with:
 
 ```text
-Returns the file, line, and character where a symbol is defined or referenced.
+Returns the locations, each a file URI and a zero-based range, where a symbol is defined or referenced.
 ```
 
 Replace the LSP guidance you added to your system prompt when you advertised the tool:
@@ -171,7 +171,7 @@ The tester will verify that:
 - The tool result contains every location the server returned, with the matching `tool_call_id`
 - Your program exits with code `0`
 
-The tester will also run this prompt on a project without `reports.py`, and against a server that returns an empty array.
+The tester will also run this prompt against a server that returns an empty array.
 
 ### Notes
 

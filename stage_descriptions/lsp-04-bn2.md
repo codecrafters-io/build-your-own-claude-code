@@ -3,24 +3,18 @@ lookups use the updated code.
 
 ### Why is the answer still pointing to the old file?
 
-Suppose definition lookup on checkout's `invoice_total` call points to
-`pricing.total`. The model then changes the import from `pricing` to `discounts`,
-keeping the alias and call unchanged. The same lookup should now point to
-`discounts.total`.
+Suppose the model changes `checkout.py`'s import from `pricing` to `discounts`,
+keeping the `invoice_total` alias. A definition lookup on `invoice_total` should
+now point to `discounts.total` instead of `pricing.total`.
 
-Saving updates the file on disk. The language server also needs its new contents
-through the existing client. Otherwise, it keeps answering from the old code.
-
-Add this guidance to your system prompt:
-
-```text
-Edit files with Write so the language server sees changes.
-```
+Your Write tool saves the new text to disk, but the language server still has
+the copy you sent with `didOpen`, and keeps answering from it. To keep its
+answers current, send it every change your Write tool makes.
 
 ### Track each document's state
 
 Replace the set of opened URIs from definition lookup with a map from URI to document version.
-Keep this map beside the client, outside the agent loop, and share it between
+Keep one map for the whole run, not one tool call, and share it between
 navigation and Write. A URI in the map is open, and a URI absent from it is closed.
 Reuse navigation's path resolution and URI builder in Write so both handlers
 find the same record.
@@ -35,21 +29,17 @@ For a Write to a file supported by the client's language mapping (`.py` maps to
 `python` in the [invoice project][example]):
 
 1. Save the file using your existing Write handler.
-2. After the save succeeds, send its complete new contents through `notify`.
-   For an open URI, send `didChange` with its recorded version plus one.
-   For a closed URI, reuse the `didOpen` payload from definition lookup with its URI, mapped
-   language ID, version 1, and complete new contents.
+2. After the save succeeds, send its complete new contents with `call` and
+   `"notify"`. For an open URI, send `didChange` with its recorded version plus
+   one. For a closed URI, send `didOpen` with version 1 and the new contents. The
+   server may already hold the old file from disk, for example to answer
+   references, and `didOpen` replaces it.
 3. Wait for the notification call to complete, record the sent version in the
    shared map, then return Write's tool result. In JavaScript, TypeScript, and
    C#, `await` the `notify` call before returning.
 
-Finish synchronization before the model's next lookup on the same connection.
-
-### Synchronize a Write to an open document
-
-If `checkout.py` is open at version 1, changing its import to `discounts` requires
-this [`didChange` notification][did-change]. After saving, send it through `notify`
-using your language's client-call pattern from definition lookup:
+For example, if `checkout.py` is open at version 1, changing its import to
+`discounts` sends this [`didChange` notification][did-change]:
 
 ```json
 {
@@ -63,36 +53,42 @@ using your language's client-call pattern from definition lookup:
 
 The server uses full synchronization: `contentChanges` contains one object with
 the complete text that was saved, including line breaks. No diff or edit range
-is needed. A further Write to this document uses version 3.
+is needed.
 
-### Synchronize a Write to a closed document
+The version tells the server which copy is newest, so each change must use a
+higher number than the last. The next Write to `checkout.py` sends version 3.
 
-A references request on `pricing.py` can discover uses in `reports.py` without
-opening it. After Write edits that closed file, sending `didOpen` refreshes any
-previously indexed contents. This keeps later references current even when the
-query targets another file.
+### Tell the model to edit with Write
+
+Add this guidance to your system prompt, so the model doesn't edit files with
+Bash (for example, `sed`), which would skip synchronization:
+
+```text
+Edit files with Write so the language server sees changes.
+```
 
 ### Tests
 
 The tester will create the [invoice project][example] and execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Use Write to change its import from pricing to discounts, preserving the invoice_total alias. Repeat definition lookup at the same position and report the new target."
-<the model's report that the definition moved to discounts.total>
+$ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Use Write to change its import from pricing to discounts, preserving the invoice_total alias. Repeat definition lookup at the same position and report the new target. Restore the pricing import using Write and repeat the lookup."
+<the model's report of the three definition targets>
 ```
 
 The tester will verify that:
 
-- The first lookup's tool result points to `pricing.py`, and the lookup after the Write points to `discounts.py`
-- `checkout.py` on disk imports from `discounts`
+- The three lookups' tool results point to `pricing.py`, then `discounts.py`, then `pricing.py` again
+- Each Write sends `checkout.py` with a higher version than the last
+- `checkout.py` on disk ends with the `pricing` import
 - The server's copy of every open document matches the file on disk
 - Your program exits with code `0`
 
-The tester will also run a prompt that restores the `pricing` import and looks up the definition a third time, which needs version 3. Another prompt writes `checkout.py` before any lookup, so the Write has to send `didOpen`.
+The tester will also run a prompt that writes `checkout.py` before any lookup, so the Write has to send `didOpen`.
 
 ### Notes
 
-- Every test case uses a successful Write to a supported Python file. Failed writes and files outside the language mapping are out of scope.
+- Every test case uses a successful Write to a supported Python file. We won't deal with failed writes or files outside the language mapping in this extension.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
