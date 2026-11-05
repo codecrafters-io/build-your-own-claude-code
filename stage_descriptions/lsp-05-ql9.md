@@ -11,7 +11,7 @@ fixing.
 
 ### Change the API and repair its callers
 
-The tester supplies the same Python invoice project. The task is to change
+The tester supplies the same Python [invoice project][example]. The task is to change
 `pricing.total` from returning integer cents to returning a `Price` TypedDict:
 
 ```python
@@ -161,7 +161,7 @@ errors, and the five supplied Python tests check the new API and preserved behav
 
 ### Tests
 
-The tester will create the invoice project with `test_invoice.py` and execute your program like this:
+The tester will create the [invoice project][example] with `test_invoice.py` and execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an integer cents field. Update checkout.py and reports.py so their results stay unchanged. Before any Write edits, use LSP goToDefinition on checkout.py at line 5, character 12, and LSP findReferences on the returned pricing.total definition. After all Write edits, repeat LSP goToDefinition on the invoice_total call in checkout.py at its current line and character, and LSP findReferences at the updated pricing.total definition. Use the returned definition position for findReferences, converting its zero-based range to one-based tool inputs. Both post-edit LSP queries are required even if diagnostics are clean and the project tests pass. Use diagnostic feedback from Write to fix type errors. Report any diagnostic timeout. Leave tests and unrelated files unchanged. Run python3 -m unittest -v test_invoice.py and report the result."
@@ -185,3 +185,4 @@ The tester will also run this prompt against servers that send a stale report be
 - The model chooses its own edits, so a run may or may not hit a type error. You don't need to introduce errors yourself. Each Write only has to return the report the server published for it, which is often an empty `diagnostics` array.
 - An agent that synchronizes edits but doesn't return diagnostics fails this stage.
 
+[example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise

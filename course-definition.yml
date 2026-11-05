@@ -211,7 +211,7 @@ stages:
     difficulty: medium
     primary_extension_slug: "lsp"
     marketing_md: |-
-      In this stage, you'll implement `goToDefinition` so your agent can find the function behind a call.
+      In this stage, you'll implement `goToDefinition`, which tells the model where a function is defined.
 
   - slug: "rb6"
     name: "Find the affected callers"
