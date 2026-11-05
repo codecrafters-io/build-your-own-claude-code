@@ -72,7 +72,7 @@ Edit files with Write so the language server sees changes.
 The tester will create the [invoice project][example] and execute your program like this:
 
 ```bash
-$ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Use Write to change its import from pricing to discounts, preserving the invoice_total alias. Repeat definition lookup at the same position and report the new target. Restore the pricing import using Write and repeat the lookup."
+$ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. Use Write to change its import from pricing to discounts, preserving the invoice_total alias. Repeat definition lookup at the same position and report the new target. Restore the pricing import using Write and repeat the definition lookup."
 <the model's report of the three definition targets>
 ```
 
