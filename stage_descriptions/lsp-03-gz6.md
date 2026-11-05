@@ -63,7 +63,7 @@ below.
 
 The server also needs to know the file's language. During initialization, the
 client fetched and stored a mapping from file extensions to language IDs. The
-course's invoice project is Python regardless of your agent's implementation
+invoice project is Python regardless of your agent's implementation
 language, so the mapping is:
 
 ```json

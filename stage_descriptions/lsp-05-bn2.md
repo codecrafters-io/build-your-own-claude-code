@@ -32,7 +32,7 @@ its location in an LSP result, doesn't open it in the language server.
 ### Add synchronization to Write
 
 For a Write to a file supported by the client's language mapping (`.py` maps to
-`python` in this exercise):
+`python` in the invoice project):
 
 1. Save the file using your existing Write handler.
 2. After the save succeeds, send its complete new contents through `notify`.
