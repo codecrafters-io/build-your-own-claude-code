@@ -369,6 +369,13 @@ LSP client connected
 <the model's report of the tool response>
 ```
 
+When your program passes, the tester prints:
+
+```text
+[tester::#IY3] Advertised LSP and returned a matching tool response
+[tester::#IY3] Case lsp-tool-call-and-response passed protocol, tool-result and file checks
+```
+
 The tester will verify that:
 
 - Your program connects the supplied LSP client before its first model request

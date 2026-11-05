@@ -76,6 +76,13 @@ $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, charact
 <the model's report of the three definition targets>
 ```
 
+When your program passes, the tester prints:
+
+```text
+[tester::#BN2] Definition lookup followed the updated import without restarting the server
+[tester::#BN2] Case successive-document-versions passed protocol, tool-result and file checks
+```
+
 The tester will verify that:
 
 - The three lookups' tool results point to `pricing.py`, then `discounts.py`, then `pricing.py` again

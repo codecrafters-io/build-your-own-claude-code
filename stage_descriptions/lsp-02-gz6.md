@@ -119,6 +119,13 @@ $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, charact
 <the model's explanation that checkout calls pricing.total>
 ```
 
+When your program passes, the tester prints:
+
+```text
+[tester::#GZ6] Resolved invoice_total to pricing.total; preview.total is unrelated
+[tester::#GZ6] Case resolve-and-read-implementation passed protocol, tool-result and file checks
+```
+
 The tester will verify that:
 
 - Your program sends `textDocument/didOpen` for `checkout.py`, then `textDocument/definition` at position 4:11

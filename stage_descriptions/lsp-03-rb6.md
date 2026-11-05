@@ -183,6 +183,13 @@ $ ./your_program.sh -p "Use LSP findReferences on pricing.py at line 1, characte
 <the model's list of the affected callers>
 ```
 
+When your program passes, the tester prints:
+
+```text
+[tester::#RB6] Returned the affected pricing callers; excluded unrelated preview.total
+[tester::#RB6] Case affected-callers-across-files passed protocol, tool-result and file checks
+```
+
 The tester will verify that:
 
 - Your program sends `textDocument/references` for `pricing.py` at position 0:4, with `includeDeclaration` set to `true`

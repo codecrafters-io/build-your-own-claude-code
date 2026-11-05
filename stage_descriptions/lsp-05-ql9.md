@@ -140,6 +140,15 @@ $ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an
 <the model's summary of the migration and the test result>
 ```
 
+When your program passes, the tester prints:
+
+```text
+[tester::#QL9] Migrated pricing.total and its callers; unrelated preview.total is unchanged
+[tester::#QL9] Reported new diagnostics to the model, including errors in callers that were not written
+[tester::#QL9] Project tests passed through Bash: checkout 500 cents, reporting 600 cents
+[tester::#QL9] Case api-migration-across-files passed protocol, tool-result and file checks
+```
+
 The tester will verify that:
 
 - Every current diagnostic the server published, for any file, reaches the model with its file, message, and 1-based line and character
