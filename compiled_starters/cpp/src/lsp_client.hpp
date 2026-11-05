@@ -1,3 +1,5 @@
+// Only needed for the LSP extension.
+// You can ignore this file until you reach that extension.
 // Course-supplied transport, using the starter's existing HTTP and JSON libraries.
 #pragma once
 #include <cstdlib>

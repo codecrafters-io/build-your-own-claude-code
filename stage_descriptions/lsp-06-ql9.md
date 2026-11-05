@@ -166,16 +166,12 @@ Run python3 -m unittest -v test_invoice.py and report the result.
 The live model chooses its tool calls and edits during grading. Your agent must
 execute each tool call, collect its real feedback, and return it with the matching
 `tool_call_id` before continuing the loop. You do not need to deliberately
-introduce errors. Before the first Write and after the last Write, the task
-requires both definition lookup and references; project tests do not replace
-those navigation checks. Either lookup order is accepted within each phase.
+introduce errors. Either lookup order is accepted within each phase.
 An edit can move the checkout call to a different line or column; locate it in
 the updated source before the follow-up definition lookup.
 
 Diagnostics and project tests serve different purposes. Diagnostics locate type
 errors; the five supplied Python tests check the new API and preserved behavior.
-Return the actual Bash output, leave the tests unchanged, and use the updated
-function's position for follow-up references.
 
 ### Tests
 
@@ -183,10 +179,6 @@ Run `codecrafters test`. Stage 6 checks that every successful Write returns the
 current diagnostic report, including a new, empty report when an edit clears
 earlier errors. It also checks stale and unrelated notifications, reports without
 versions, and an explicit timeout when the server publishes no report.
-Both LSP operations must run before editing and after all edits, using the
-current checkout call position for definition lookup and the updated pricing
-definition position for references. Migration, unchanged-file, and Bash-output
-checks remain in place.
-
-A Stage 5 agent that only synchronizes edits will fail this stage until it
-returns diagnostic feedback.
+It also verifies the migration and navigation requirements in the task above,
+that unrelated files remain unchanged, and that the model receives the actual
+Bash output.

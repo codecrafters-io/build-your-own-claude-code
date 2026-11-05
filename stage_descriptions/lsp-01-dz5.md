@@ -38,29 +38,25 @@ the function. **LSP locates the definition; Read retrieves the code.**
 
 ### Connect the supplied client
 
-The language server is a separate program that analyzes code and answers
-questions about definitions and references. It stays running across requests,
-so your agent can query it repeatedly. The supplied LSP client sends your
-agent's requests to the server and returns its responses.
+The supplied LSP client sends your agent's requests to the language server and
+returns its responses. The server runs as a separate program and stays running
+across requests.
 
 LSP course tests provide the server connection automatically. You don't need to
 configure it yourself.
 
 The client is included in your starter repository. Use the setup call below once
 during startup, before your first model request, and keep the client for your
-tool handlers. You'll connect the model's LSP calls to this client in later
-stages.
+tool handlers.
 
-After initialization, check whether you received a client and print
-`LSP client connected` to standard error when connected. This confirms the
-connection in your test logs and gives you a first use of the client. If no
-connection is configured, continue without printing the message. Keep standard
-output for your agent's answer.
+After initialization, print `LSP client connected` to standard error if you
+received a client. If no connection is configured, continue without printing the
+message. Keep standard output for your agent's answer.
 
 {{#lang_is_c}}
 
-The supplied client is in `src/lsp_client.h`. If it is missing or outdated,
-[download the current client][client-c] and save it to that path.
+The supplied client is in `src/lsp_client.h`. You can
+[download the latest copy here][client-c] and save it to that path.
 
 At the top of your agent's C source, add:
 
@@ -89,8 +85,8 @@ libcurl cleanup. `lsp_call` still sends requests through the supplied connection
 
 {{#lang_is_cpp}}
 
-The supplied client is in `src/lsp_client.hpp`. If it is missing or outdated,
-[download the current client][client-cpp] and save it to that path.
+The supplied client is in `src/lsp_client.hpp`. You can
+[download the latest copy here][client-cpp] and save it to that path.
 
 At the top of your C++ source, add:
 
@@ -118,8 +114,8 @@ handle them with your agent's existing exception handling.
 
 {{#lang_is_csharp}}
 
-The supplied client is in `src/LSPClient.cs`. If it is missing or outdated,
-[download the current client][client-csharp] and save it to that path.
+The supplied client is in `src/LSPClient.cs`. You can
+[download the latest copy here][client-csharp] and save it to that path.
 
 The starter includes `.cs` files under `src/`
 automatically. No client import is needed. In your top-level startup code or an
@@ -142,8 +138,8 @@ existing error handling.
 
 {{#lang_is_go}}
 
-The supplied client is in `app/lsp_client.go`. If it is missing or outdated,
-[download the current client][client-go] and save it to that path.
+The supplied client is in `app/lsp_client.go`. You can
+[download the latest copy here][client-go] and save it to that path.
 
 The client shares the same `package main` as your agent. No client import is
 needed. Add `log` to your imports, then place this inside your startup function:
@@ -167,8 +163,8 @@ The client is `nil` when no connection is configured. Run the whole package with
 
 {{#lang_is_java}}
 
-The supplied client is in `src/main/java/LSPClient.java`. If it is missing or outdated,
-[download the current client][client-java] and save it to that path.
+The supplied client is in `src/main/java/LSPClient.java`. You can
+[download the latest copy here][client-java] and save it to that path.
 
 It shares the starter's default package with
 `Main`, so no client import is needed. Inside your startup method:
@@ -190,8 +186,8 @@ or declare `throws Exception` on your startup method.
 
 {{#lang_is_javascript}}
 
-The supplied client is in `app/lsp_client.js`. If it is missing or outdated,
-[download the current client][client-javascript] and save it to that path.
+The supplied client is in `app/lsp_client.js`. You can
+[download the latest copy here][client-javascript] and save it to that path.
 
 From another file in `app/`, import the client and await
 initialization at module scope or inside your async startup function:
@@ -213,8 +209,8 @@ The factory returns `null` when no connection is configured.
 
 {{#lang_is_python}}
 
-The supplied client is in `app/lsp_client.py`. If it is missing or outdated,
-[download the current client][client-python] and save it to that path.
+The supplied client is in `app/lsp_client.py`. You can
+[download the latest copy here][client-python] and save it to that path.
 
 In your agent's Python module:
 
@@ -237,8 +233,8 @@ initialization or calls raise exceptions.
 
 {{#lang_is_rust}}
 
-The supplied client is in `src/lsp_client.rs`. If it is missing or outdated,
-[download the current client][client-rust] and save it to that path.
+The supplied client is in `src/lsp_client.rs`. You can
+[download the latest copy here][client-rust] and save it to that path.
 
 At the top level of `src/main.rs`, add:
 
@@ -257,10 +253,6 @@ if lsp_client.is_some() {
 ```
 
 The result is `Option<LspClient>`, with `None` meaning no connection is configured.
-Both `from_environment` and `call` return a `Result`. The `?` operator propagates
-errors from a function returning a compatible `Result`, such as the starter's
-`Result<(), Box<dyn std::error::Error>>`. If your startup function returns another
-type, handle these results explicitly instead.
 
 [client-rust]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/rust/code/src/lsp_client.rs
 
@@ -268,8 +260,8 @@ type, handle these results explicitly instead.
 
 {{#lang_is_typescript}}
 
-The supplied client is in `app/lsp_client.ts`. If it is missing or outdated,
-[download the current client][client-typescript] and save it to that path.
+The supplied client is in `app/lsp_client.ts`. You can
+[download the latest copy here][client-typescript] and save it to that path.
 
 From another file in `app/`, import the client and await
 initialization at module scope or inside your async startup function:
@@ -291,8 +283,8 @@ The factory returns `null` when no connection is configured.
 
 {{#lang_is_zig}}
 
-The supplied client is in `src/lsp_client.zig`. If it is missing or outdated,
-[download the current client][client-zig] and save it to that path.
+The supplied client is in `src/lsp_client.zig`. You can
+[download the latest copy here][client-zig] and save it to that path.
 
 At the top of `src/main.zig`, add:
 
@@ -329,14 +321,11 @@ invoice project in your agent's working directory and runs:
 $ ./your_program.sh -p "Use only Read to inspect checkout.py and pricing.py. Explain how checkout uses the pricing function."
 ```
 
-Your agent must initialize the client before its first model request. The tester
-checks that the client connected successfully. You don't need to advertise an
-LSP tool yet. The connection message helps you confirm startup in the logs;
-the tester checks the connection itself, not the message text.
+The connection message helps you confirm startup in the logs. The tester checks
+the connection itself, not the message text.
 
-After passing this stage, your agent initializes the client successfully before
-starting its model conversation. Next, you'll advertise the `LSP` tool so the
-model knows it can request code navigation.
+Next, you'll advertise the `LSP` tool so the model knows it can request code
+navigation.
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
 [lsp]: https://microsoft.github.io/language-server-protocol/

@@ -1,3 +1,5 @@
+// Only needed for the LSP extension.
+// You can ignore this file until you reach that extension.
 // Course-supplied transport; the agent owns document state and tool results.
 package main
 

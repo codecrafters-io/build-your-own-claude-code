@@ -7,8 +7,8 @@ available. Just as you advertised Read in the base course, you'll describe LSP i
 the `tools` array so the model knows when to call it and what arguments to send.
 
 For example, the model will be able to ask where `invoice_total` in `checkout.py`
-is defined. You'll implement that lookup in the next stage. Here, you'll register
-the tool and add a temporary response so your agent can handle a call safely.
+is defined. Here, you'll register the tool and add a temporary response so your
+agent can handle a call safely.
 
 ### Add the tool specification
 
@@ -113,7 +113,7 @@ if call.function.name == "LSP":
 {{/lang_is_python}}
 
 Then continue the agent loop. This placeholder does not contact the language
-server. In the next stage, you'll replace it with a definition lookup.
+server.
 
 ### Tests
 
@@ -127,5 +127,4 @@ The tester checks that every model request advertises `LSP` and that the tool
 response reaches the model with the matching `tool_call_id`. The placeholder
 response is sufficient.
 
-The model can now request the LSP tool, and your agent can respond to that
-request. Next, you'll replace the placeholder with a real definition lookup.
+Next, you'll replace the placeholder with a real definition lookup.

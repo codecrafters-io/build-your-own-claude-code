@@ -1,3 +1,5 @@
+// Only needed for the LSP extension.
+// You can ignore this file until you reach that extension.
 // Course-supplied transport. This client talks only to the local HTTP bridge.
 use serde_json::Value;
 use std::collections::HashMap;

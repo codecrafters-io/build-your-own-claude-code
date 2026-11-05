@@ -1,3 +1,5 @@
+// Only needed for the LSP extension.
+// You can ignore this file until you reach that extension.
 // Course-supplied transport; your agent owns document state and tool results.
 export class LSPClient {
   static async fromEnvironment() {

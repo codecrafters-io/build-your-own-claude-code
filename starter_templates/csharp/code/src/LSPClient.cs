@@ -1,3 +1,5 @@
+// Only needed for the LSP extension.
+// You can ignore this file until you reach that extension.
 // Course-supplied transport; pass JSON using your existing JSON library.
 using System;
 using System.Collections.Generic;

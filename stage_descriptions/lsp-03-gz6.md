@@ -2,23 +2,10 @@ In Stage 2, your LSP handler returned a placeholder. Now you'll implement
 `goToDefinition` to return a definition location from the language server.
 Keep Stage 1's client, your tool specification, and your existing tool-result flow.
 
-### Why look up a definition?
+### Handle the tool call
 
-`checkout.py` imports the `total` function from `pricing.py` as `invoice_total`,
-then calls it using that alias:
-
-```python
-from pricing import total as invoice_total
-
-
-def checkout_total() -> int:
-    return invoice_total(250, 2)
-```
-
-Definition lookup asks where `invoice_total` in the return statement is defined.
-The server resolves the alias to `pricing.total` and returns its location in
-`pricing.py`. The model can then use Read to inspect that file. The unrelated
-`preview.total` has the same function name but isn't the target of checkout's import.
+In the invoice project, `invoice_total` in `checkout.py` resolves to
+`pricing.total`.
 
 In your existing `LSP` branch, parse the tool call's `function.arguments` as JSON
 to obtain `operation`, `filePath`, `line`, and `character`. The arguments look
@@ -66,8 +53,7 @@ The names describe different parts of this lookup:
 
 Your LSP handler reads the source file and sends its contents to the language
 server before that file's first lookup. This gives the server the code to
-analyze. Later, the model uses the Read tool to inspect the implementation at
-the returned location.
+analyze.
 
 Load `filePath` using your existing path resolution and UTF-8 reading code.
 Resolve relative paths against the agent's working directory, which the tester
@@ -515,12 +501,8 @@ obtain a path for Read. Your LSP handler returns the location; the model chooses
 the subsequent Read call.
 
 If the model reuses a returned position in another LSP call, it must add 1 to
-both coordinates: returned position `0:4` becomes tool input `1:5`. Include this
-convention in your LSP tool description or system prompt:
-
-```text
-LSP inputs are one-based UTF-16; returned ranges are zero-based. Add 1 to each returned coordinate before reusing it as input.
-```
+both coordinates: returned position `0:4` becomes tool input `1:5`. Stage 2's
+tool description already specifies this conversion.
 
 ### Tests
 
@@ -538,8 +520,7 @@ This stage covers one successful lookup with a single definition location.
 Multiple definitions, missing definitions, and server-error responses aren't
 required here.
 
-Your agent can now follow a call to its definition and let the model inspect
-the implementation. Next, you'll find where that function is used.
+Next, you'll find where that function is used.
 
 [position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen

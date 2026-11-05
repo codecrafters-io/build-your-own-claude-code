@@ -1,3 +1,5 @@
+/* Only needed for the LSP extension.
+ * You can ignore this file until you reach that extension. */
 /* Course-supplied transport. The returned JSON string belongs to the caller. */
 #ifndef CODECRAFTERS_LSP_CLIENT_H
 #define CODECRAFTERS_LSP_CLIENT_H

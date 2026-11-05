@@ -1,3 +1,5 @@
+// Only needed for the LSP extension.
+// You can ignore this file until you reach that extension.
 // Course-supplied transport, using the same HTTP API as the Zig starter.
 const std = @import("std");
 

@@ -33,11 +33,7 @@ add two objects. The unrelated `total` in `preview.py` should stay unchanged.
 
 Searching for `total` also finds unrelated functions and comments. A
 [references request][references] asks the language server for locations tied to
-`pricing.total`, including uses through an alias. **LSP locates references; Read
-gives the model the surrounding code it needs to understand each use.**
-
-In this stage, implement reference lookup so the model can discover those
-callers.
+`pricing.total`, including uses through an alias.
 
 ### Add references to your LSP tool
 
@@ -54,13 +50,11 @@ Find where a symbol at a given file position is defined or referenced. Input lin
 Replace Stage 2's LSP guidance in your system prompt with:
 
 ```text
-Use LSP to find where a symbol is defined or referenced. LSP inputs are one-based UTF-16; returned ranges are zero-based. Add 1 to each returned coordinate before reusing it as input.
+Use LSP to find where a symbol is defined or referenced.
 ```
 
 In your handler, route `findReferences` to a references request. Reuse document
 opening, file URIs, position conversion, and tool-result handling from Stage 3.
-The new operation changes the question you send, while keeping the same connection
-and document tracking.
 
 ### Ask where the function is used
 
@@ -196,8 +190,6 @@ The tester checks references across files, multiple locations in one file,
 declaration inclusion, and an empty array. Each response must preserve the
 server's locations and reach the model with the matching `tool_call_id`.
 
-Your agent can now find a function's definition and references so the model can
-inspect the affected code. Next, you'll keep those results current after file
-edits.
+Next, you'll keep navigation results current after file edits.
 
 [references]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_references

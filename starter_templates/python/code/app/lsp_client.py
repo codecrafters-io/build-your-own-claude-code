@@ -1,3 +1,5 @@
+# Only needed for the LSP extension.
+# You can ignore this file until you reach that extension.
 """Course-supplied LSP transport client. Document state belongs in your agent."""
 
 import json
