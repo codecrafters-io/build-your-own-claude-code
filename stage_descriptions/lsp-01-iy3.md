@@ -87,8 +87,8 @@ At the top of `src/main.cpp`, add:
 Inside `main`, before the agent loop:
 
 ```cpp
-auto lsp_client = LSPClient::from_environment(); // std::nullopt when not configured
-if (lsp_client) {
+auto lsp = LSPClient::from_environment(); // std::nullopt when not configured
+if (lsp) {
     std::cerr << "LSP client connected\n";
 }
 ```
@@ -220,8 +220,8 @@ use lsp_client::LspClient;
 At the start of `main`:
 
 ```rust
-let lsp_client = LspClient::from_environment()?; // None when not configured
-if lsp_client.is_some() {
+let lsp = LspClient::from_environment()?; // None when not configured
+if lsp.is_some() {
     eprintln!("LSP client connected");
 }
 ```
@@ -267,9 +267,9 @@ Inside `main(init: std.process.Init) !void`, after the starter's `allocator` and
 `io` declarations:
 
 ```zig
-var lsp_client = try LSPClient.fromEnvironment(allocator, io, init.environ_map); // null when not configured
-defer if (lsp_client) |*lsp| lsp.deinit();
-if (lsp_client != null) {
+var lsp = try LSPClient.fromEnvironment(allocator, io, init.environ_map); // null when not configured
+defer if (lsp) |*client| client.deinit();
+if (lsp != null) {
     std.debug.print("LSP client connected\n", .{});
 }
 ```
