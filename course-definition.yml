@@ -3,12 +3,12 @@ name: "Build your own Claude Code"
 short_name: "Claude Code"
 release_status: "beta"
 description_md: |-
-  Build a terminal-based AI coding assistant that reads files, edits code, and runs commands. Learn large language model (LLM) APIs, tool calling, and agent loops.
+  Claude Code is a terminal-based AI coding assistant that uses Large Language Models (LLMs) to understand code and complete programming tasks. In this challenge, you'll build your own Claude Code that is capable of editing files, running commands, and iterating until the task is done.
 
-  Then add Skills and language-server support to find relevant code and complete changes across multiple files.
+  Along the way, you'll learn about LLM APIs, tool calling, agent loops, and how to integrate multiple tools into an AI assistant.
 
 short_description_md: |-
-  Build an AI coding agent with tool calling, Skills, and language-server navigation
+  Learn about LLM APIs, tool calling, agent loops and more
 
 completion_percentage: 15
 
@@ -27,59 +27,61 @@ languages:
 marketing:
   difficulty: medium
   sample_extension_idea_title: "Add a WebFetch Tool"
-  sample_extension_idea_description:
-    "Implement a WebFetch tool that allows the LLM to fetch content from URLs.
-    This tool would take a URL as a parameter, make an HTTP request, and return
-    the response body, enabling the AI assistant to retrieve information from
-    the web."
+  sample_extension_idea_description: "Implement a WebFetch tool that allows the LLM to fetch content from URLs. This tool would take a URL as a parameter, make an HTTP request, and return the response body, enabling the AI assistant to retrieve information from the web."
   frequently_asked_questions:
     - question_markdown: "What exactly will I build?"
       answer_markdown: |-
-        You'll build a command-line program in a supported language of your choice. Given a prompt, it calls an LLM, executes the tools the model requests, and returns their results to the model until it produces a final response.
+        You’ll start by building the core of an AI agent:
 
-        The six base stages give your agent tools to read files, write changes, and run shell commands. You can ask it to inspect a project, make an edit, and run a command to check the result.
+        * Connecting to an LLM via a REST API
+        * Defining tools that the AI can use for performing tasks
+        * Implementing an agent loop that lets the AI think, act, and observe results
 
-        Two extensions build on that agent:
+        At this stage, your assistant will feel alive. You’ll be able to tell it "Refactor main.py to use a class," and watch it read the file, generate a new version, and apply the edit autonomously.
 
-        * Skills: load reusable task instructions when needed, pass arguments, run bundled scripts, and hand a skill to a subagent.
-        * Language Server Protocol (LSP): find definitions and references, synchronize edits, and use diagnostic feedback to repair changes across files.
+        As you progress, you’ll implement advanced features like:
 
-        You'll finish with a working codebase you can inspect, modify, and extend.
+        * Interactive mode
+        * ACP support
+        * LSP servers
+
+        At the end, you'll have a GitHub repo to show off.
     - question_markdown: "What exactly will I learn?"
       answer_markdown: |-
-        In the six base stages, you'll learn how to:
+        In the first 7 stages, you'll learn:
 
-        * Call an LLM API and parse its responses.
-        * Describe tools with JSON schemas and dispatch the model's tool calls.
-        * Preserve conversation history and feed tool results back into an agent loop.
-        * Implement file-reading, file-writing, and shell-command tools.
+        * How to communicate with LLMs (using REST APIs)
+        * How tool calling works under the hood (how JSON schemas turn into actions)
+        * What an agent loop is and how to implement it
+        * How to safely execute system commands and file edits
+        * Managing conversation history and context windows
 
-        The Skills extension covers discovering instructions on disk, loading them on demand, substituting arguments, and running a skill in a separate agent conversation.
+        In the advanced stages, you'll discover AI concepts, such as integrating the Model Context Protocol (MCP), connecting to LSP servers for better code understanding, building interactive TUIs, and adding web search capabilities.
 
-        The LSP extension covers symbol navigation, document synchronization, and diagnostic feedback. In the final stage, your agent uses type errors to repair an API migration and checks the result with project tests.
+        As your code gets more complex, you'll be forced to structure and refactor it to avoid regressions and make adding new features easier.
     - question_markdown: "Why should I build such a project?"
       answer_markdown: |-
-        Building an agent makes its behavior visible. You can follow a model's tool request into your own code, inspect the result it receives, and see why it takes another step or stops.
+        The industry is shifting from simple chatbots to AI agents that can autonomously perform tasks. Building your own version of Claude Code is the best way to understand this shift.
 
-        One useful milestone is watching your program read a file, change it, and use feedback to continue working from a single prompt. In the LSP extension, you'll watch the agent follow a symbol across files, update its callers, and run tests to check the result.
+        If you've ever wondered how tools like GitHub Copilot or Cursor actually read your codebase and apply changes, this challenge reveals the magic.
 
-        That gives you practical experience for debugging coding agents and experimenting with your own tools and workflows.
+        Beyond technical depth, there's something uniquely satisfying about understanding an AI tool used by millions of developers every day. You'll come out of it as a more confident and interesting developer.
     - question_markdown: "What are the pre-requisites for this challenge?"
       answer_markdown: |-
-        You should be comfortable programming in one of the supported languages, working with files, and using Git. Familiarity with HTTP requests and JSON will help when you connect to the LLM API.
+        You should be comfortable writing code in any one language and using Git. You don't need any prior experience with LLMs or machine learning.
 
-        You don't need prior experience with LLMs or machine learning. The stages introduce tool calling and agent loops as you build them.
+        Most learners pick up the required concepts (e.g., agent loop) as they go.
 
-        Each stage describes the required behavior, and automated tests give feedback on your implementation. You'll choose the implementation and work through failures using the test feedback. Both extensions build on the base agent; you can take the LSP extension without completing Skills first.
+        What matters most is curiosity and persistence. You'll develop intuition by exploring, debugging, and discovering solutions yourself.
+
+        While we will make it extremely simple to get started, don't expect this to be a follow-along tutorial.
 
   testimonials:
     - author_name: "Ananthalakshmi Sankar"
       author_description: "Automation Engineer at Apple"
       author_avatar: "https://codecrafters.io/images/external/testimonials/oxta.jpeg"
       link: "https://github.com/anu294"
-      text:
-        "There are few sites I like as much that have a step by step guide. The
-        real-time feedback is so good, it's creepy!"
+      text: "There are few sites I like as much that have a step by step guide. The real-time feedback is so good, it's creepy!"
 
     - author_name: "Patrick Burris"
       author_description: "Senior Software Developer, CenturyLink"
