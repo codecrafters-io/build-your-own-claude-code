@@ -78,70 +78,70 @@ initialization. Its API for your language is:
 
 {{#lang_is_c}}
 
-The supplied client is [lsp_client.h][client-c], at `src/lsp_client.h`.
+The supplied client is [lsp_client.h](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/c/code/src/lsp_client.h), at `src/lsp_client.h`.
 Its initialization call is `lsp_from_environment(&lsp)`. `1` means connected, `0` unconfigured, and `-1` an initialization error.
 
 {{/lang_is_c}}
 
 {{#lang_is_cpp}}
 
-The supplied client is [lsp_client.hpp][client-cpp], at `src/lsp_client.hpp`.
+The supplied client is [lsp_client.hpp](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/cpp/code/src/lsp_client.hpp), at `src/lsp_client.hpp`.
 Its initialization call is `LSPClient::from_environment()`. It returns an optional client, with `std::nullopt` when unconfigured.
 
 {{/lang_is_cpp}}
 
 {{#lang_is_csharp}}
 
-The supplied client is [LSPClient.cs][client-csharp], at `src/LSPClient.cs`.
+The supplied client is [LSPClient.cs](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/csharp/code/src/LSPClient.cs), at `src/LSPClient.cs`.
 Its initialization call is `await LSPClient.FromEnvironmentAsync()`. It returns a client, or `null` when unconfigured.
 
 {{/lang_is_csharp}}
 
 {{#lang_is_go}}
 
-The supplied client is [lsp_client.go][client-go], at `app/lsp_client.go`.
+The supplied client is [lsp_client.go](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/go/code/app/lsp_client.go), at `app/lsp_client.go`.
 Its initialization call is `LSPClientFromEnvironment()`. It returns a client and an error; the client is `nil` when unconfigured.
 
 {{/lang_is_go}}
 
 {{#lang_is_java}}
 
-The supplied client is [LSPClient.java][client-java], at `src/main/java/LSPClient.java`.
+The supplied client is [LSPClient.java](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/java/code/src/main/java/LSPClient.java), at `src/main/java/LSPClient.java`.
 Its initialization call is `LSPClient.fromEnvironment()`. It returns a client, or `null` when unconfigured. Initialization can throw checked exceptions.
 
 {{/lang_is_java}}
 
 {{#lang_is_javascript}}
 
-The supplied client is [lsp_client.js][client-javascript], at `app/lsp_client.js`.
+The supplied client is [lsp_client.js](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/javascript/code/app/lsp_client.js), at `app/lsp_client.js`.
 Its initialization call is `await LSPClient.fromEnvironment()`. It returns a client, or `null` when unconfigured.
 
 {{/lang_is_javascript}}
 
 {{#lang_is_python}}
 
-The supplied client is [lsp_client.py][client-python], at `app/lsp_client.py`.
+The supplied client is [lsp_client.py](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/python/code/app/lsp_client.py), at `app/lsp_client.py`.
 Its initialization call is `LSPClient.from_environment()`. It returns a client, or `None` when unconfigured.
 
 {{/lang_is_python}}
 
 {{#lang_is_rust}}
 
-The supplied client is [lsp_client.rs][client-rust], at `src/lsp_client.rs`.
+The supplied client is [lsp_client.rs](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/rust/code/src/lsp_client.rs), at `src/lsp_client.rs`.
 Its initialization call is `LspClient::from_environment()`. It returns a `Result` holding an optional client, with `None` when unconfigured.
 
 {{/lang_is_rust}}
 
 {{#lang_is_typescript}}
 
-The supplied client is [lsp_client.ts][client-typescript], at `app/lsp_client.ts`.
+The supplied client is [lsp_client.ts](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/typescript/code/app/lsp_client.ts), at `app/lsp_client.ts`.
 Its initialization call is `await LSPClient.fromEnvironment()`. It returns a client, or `null` when unconfigured.
 
 {{/lang_is_typescript}}
 
 {{#lang_is_zig}}
 
-The supplied client is [lsp_client.zig][client-zig], at `src/lsp_client.zig`.
+The supplied client is [lsp_client.zig](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/zig/code/src/lsp_client.zig), at `src/lsp_client.zig`.
 Its initialization call is `LSPClient.fromEnvironment(allocator, io, init.environ_map)`. It returns an error union holding an optional client, with `null` when unconfigured.
 
 {{/lang_is_zig}}
@@ -180,13 +180,3 @@ The tester will verify that:
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
 [lsp]: https://microsoft.github.io/language-server-protocol/
 [claude-lsp]: https://code.claude.com/docs/en/tools-reference#lsp-tool-behavior
-[client-c]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/c/code/src/lsp_client.h
-[client-cpp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/cpp/code/src/lsp_client.hpp
-[client-csharp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/csharp/code/src/LSPClient.cs
-[client-go]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/go/code/app/lsp_client.go
-[client-java]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/java/code/src/main/java/LSPClient.java
-[client-javascript]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/javascript/code/app/lsp_client.js
-[client-python]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/python/code/app/lsp_client.py
-[client-rust]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/rust/code/src/lsp_client.rs
-[client-typescript]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/typescript/code/app/lsp_client.ts
-[client-zig]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/zig/code/src/lsp_client.zig
