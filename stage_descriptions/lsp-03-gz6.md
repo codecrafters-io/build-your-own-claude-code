@@ -1,15 +1,10 @@
-In Stage 2, your LSP handler returned a placeholder. Now you'll implement
-`goToDefinition` to return a definition location from the language server.
-Keep Stage 1's client, your tool specification, and your existing tool-result flow.
+In the previous stage, your LSP handler returned a placeholder. Now you'll
+implement `goToDefinition` to return a definition location from the language server.
 
-### Handle the tool call
+### Definition lookup
 
 In the invoice project, `invoice_total` in `checkout.py` resolves to
-`pricing.total`.
-
-In your existing `LSP` branch, parse the tool call's `function.arguments` as JSON
-to obtain `operation`, `filePath`, `line`, and `character`. The arguments look
-like this:
+`pricing.total`. The model identifies the call with these tool arguments:
 
 ```json
 {
@@ -20,229 +15,26 @@ like this:
 }
 ```
 
-Line 5, character 12 identifies the first character of `invoice_total` in
-`checkout.py`'s return statement.
-
-The examples below use the initialized client as `lsp` inside your LSP handler.
-
-{{#lang_is_cpp}}
-Check `if (lsp_client)` and bind `auto& lsp = *lsp_client;` in that branch.
-{{/lang_is_cpp}}
-{{#lang_is_rust}}
-Use `if let Some(lsp) = lsp_client.as_ref()` to access it in that branch.
-{{/lang_is_rust}}
-{{#lang_is_zig}}
-Use `if (lsp_client) |*lsp|` to access it in that branch.
-{{/lang_is_zig}}
-{{#lang_is_typescript}}
-Check `if (lsp)` in that branch so TypeScript narrows it to `LSPClient`.
-{{/lang_is_typescript}}
-{{#lang_is_csharp}}
-Check `if (lsp is not null)` in that branch to access the initialized client.
-{{/lang_is_csharp}}
-
-The names describe different parts of this lookup:
+The tool call and the language-server request use different names:
 
 | Name | Role |
 | --- | --- |
 | `LSP` | The tool the model calls. |
 | `goToDefinition` | The operation in that tool call's arguments. |
-| `textDocument/definition` | The request your handler sends to the language server. |
+| `textDocument/definition` | The request sent to the language server. |
 
-### 1. Prepare the source document
+### Source documents
 
-Your LSP handler reads the source file and sends its contents to the language
-server before that file's first lookup. This gives the server the code to
-analyze.
+Before a file's first lookup, the server needs its contents in a
+[`textDocument/didOpen` notification][did-open]. Each file URI must be opened
+only once per connection, even if the model looks up several symbols in it.
 
-Load `filePath` using your existing path resolution and UTF-8 reading code.
 Resolve relative paths against the agent's working directory, which the tester
-sets to the invoice project. Convert the absolute path to a file URI, encoding
-special characters: `/project/cart notes.py` becomes
-`file:///project/cart%20notes.py`. Use this resolved URI as `uri` in the examples
-below.
+sets to the invoice project. LSP identifies files by absolute file URIs with
+special characters encoded: `/project/cart notes.py` becomes
+`file:///project/cart%20notes.py`.
 
-The server also needs to know the file's language. During initialization, the
-client fetched and stored a mapping from file extensions to language IDs. The
-course's invoice project is Python regardless of your agent's implementation
-language, so the mapping is:
-
-```json
-{ ".py": "python" }
-```
-
-{{#lang_is_c}}
-Read this mapping from `lsp.extension_to_language`, a cJSON object.
-{{/lang_is_c}}
-{{#lang_is_cpp}}
-Read this mapping from `lsp.extension_to_language`, a JSON object.
-{{/lang_is_cpp}}
-{{#lang_is_csharp}}
-Read this mapping from `lsp.ExtensionToLanguage`, a dictionary.
-{{/lang_is_csharp}}
-{{#lang_is_go}}
-Read this mapping from `lsp.ExtensionToLanguage`, a `map[string]string`.
-{{/lang_is_go}}
-{{#lang_is_java}}
-Read this mapping from `lsp.extensionToLanguage`, a `Map<String, String>`.
-{{/lang_is_java}}
-{{#lang_is_javascript}}
-Read this mapping from `lsp.extensionToLanguage`, an object.
-{{/lang_is_javascript}}
-{{#lang_is_python}}
-Read this mapping from `lsp.extension_to_language`, a dict.
-{{/lang_is_python}}
-{{#lang_is_rust}}
-Read this mapping from `lsp.extension_to_language`, a `HashMap<String, String>`.
-{{/lang_is_rust}}
-{{#lang_is_typescript}}
-Read this mapping from `lsp.extensionToLanguage`, a `Record<string, string>`.
-{{/lang_is_typescript}}
-{{#lang_is_zig}}
-Read this mapping from `lsp.extension_to_language`, a `std.json.ObjectMap`.
-{{/lang_is_zig}}
-
-Look up the queried file's extension in this mapping and use the returned value
-as `languageId`. For `checkout.py`, `.py` maps to `python`.
-
-### 2. Track and open documents
-
-The server keeps the contents sent in a `textDocument/didOpen` notification.
-Send it before the first lookup for a file. Keep a set of opened URIs so later
-lookups for the same file skip `didOpen`.
-
-Initialize this set once beside the client, outside the agent loop:
-
-{{#lang_is_python}}
-
-```python
-opened_uris = set()
-```
-
-{{/lang_is_python}}
-
-{{#lang_is_javascript}}
-
-```javascript
-const openedUris = new Set();
-```
-
-{{/lang_is_javascript}}
-
-{{#lang_is_typescript}}
-
-```typescript
-const openedUris = new Set<string>();
-```
-
-{{/lang_is_typescript}}
-
-{{#lang_is_go}}
-
-```go
-openedURIs := make(map[string]bool)
-```
-
-{{/lang_is_go}}
-
-{{#lang_is_java}}
-
-```java
-var openedUris = new java.util.HashSet<String>();
-```
-
-{{/lang_is_java}}
-
-{{#lang_is_rust}}
-
-```rust
-let mut opened_uris = std::collections::HashSet::<String>::new();
-```
-
-{{/lang_is_rust}}
-
-{{#lang_is_c}}
-
-```c
-cJSON *opened_uris = cJSON_CreateObject();
-if (!opened_uris) exit(1);
-```
-
-Use the cJSON object as a set of URI keys. Call `cJSON_Delete(opened_uris)`
-after the agent loop.
-
-{{/lang_is_c}}
-
-{{#lang_is_cpp}}
-
-```cpp
-std::unordered_set<std::string> opened_uris;
-```
-
-Add `#include <unordered_set>` to your imports.
-
-{{/lang_is_cpp}}
-
-{{#lang_is_csharp}}
-
-```csharp
-var openedUris = new HashSet<string>();
-```
-
-Use `System.Collections.Generic`.
-
-{{/lang_is_csharp}}
-
-{{#lang_is_zig}}
-
-```zig
-var opened_uris = std.StringHashMap(void).init(allocator);
-defer {
-    var keys = opened_uris.keyIterator();
-    while (keys.next()) |key| allocator.free(key.*);
-    opened_uris.deinit();
-}
-```
-
-The set owns a copy of each URI string. The deferred cleanup frees those
-strings and the set after the agent loop.
-
-{{/lang_is_zig}}
-
-In your LSP handler, build the following [`didOpen` object][did-open]. Replace
-`uri` with the resolved file URI, `text` with the complete file contents, and
-`languageId` with the mapped language ID.
-
-{{#lang_is_python}}
-Store this object as `open_payload`.
-{{/lang_is_python}}
-{{#lang_is_javascript}}
-Store this object as `openPayload`.
-{{/lang_is_javascript}}
-{{#lang_is_typescript}}
-Store this object as `openPayload`.
-{{/lang_is_typescript}}
-{{#lang_is_go}}
-Store this object as `openPayload`.
-{{/lang_is_go}}
-{{#lang_is_java}}
-Store this object as `openPayload`.
-{{/lang_is_java}}
-{{#lang_is_rust}}
-Store this object as `open_payload`.
-{{/lang_is_rust}}
-{{#lang_is_c}}
-Serialize this object as `open_json`.
-{{/lang_is_c}}
-{{#lang_is_cpp}}
-Store this object as `open_payload`.
-{{/lang_is_cpp}}
-{{#lang_is_csharp}}
-Store this object as `openPayload`.
-{{/lang_is_csharp}}
-{{#lang_is_zig}}
-Serialize this object as `open_json`.
-{{/lang_is_zig}}
+A `didOpen` payload looks like this:
 
 ```json
 {
@@ -258,49 +50,19 @@ Serialize this object as `open_json`.
 }
 ```
 
-Send this object through the client's `notify` action only if `uri` is absent
-from the set. Add the URI after that call succeeds. The handler code in the next
-section shows this order.
+Send notifications through the supplied client's `notify` action. The server
+must receive `didOpen` before the definition request. A failed notification
+doesn't mark the file as open.
 
-Version 1 identifies the file's initial contents. Stage 5 adds edit synchronization.
+The client exposes an extension-to-language mapping fetched during
+initialization. Use it to determine `languageId`. The invoice project is Python
+regardless of your agent's implementation language, so `.py` maps to `python`.
+Version 1 identifies the initial contents; a later stage adds edit synchronization.
 
-### 3. Request the definition
+### Definition requests
 
-Build the following [`definition` object][definition] using the same `uri`.
-Subtract one from the tool's `line` and `character`: line 5, character 12 becomes
-zero-based LSP [position][position] 4:11. Both interfaces count columns in UTF-16
-code units.
-
-{{#lang_is_python}}
-Store this object as `definition_payload`.
-{{/lang_is_python}}
-{{#lang_is_javascript}}
-Store this object as `definitionPayload`.
-{{/lang_is_javascript}}
-{{#lang_is_typescript}}
-Store this object as `definitionPayload`.
-{{/lang_is_typescript}}
-{{#lang_is_go}}
-Store this object as `definitionPayload`.
-{{/lang_is_go}}
-{{#lang_is_java}}
-Store this object as `definitionPayload`.
-{{/lang_is_java}}
-{{#lang_is_rust}}
-Store this object as `definition_payload`.
-{{/lang_is_rust}}
-{{#lang_is_c}}
-Serialize this object as `definition_json`.
-{{/lang_is_c}}
-{{#lang_is_cpp}}
-Store this object as `definition_payload`.
-{{/lang_is_cpp}}
-{{#lang_is_csharp}}
-Store this object as `definitionPayload`.
-{{/lang_is_csharp}}
-{{#lang_is_zig}}
-Serialize this object as `definition_json`.
-{{/lang_is_zig}}
+Send a [`textDocument/definition` request][definition] through the client's
+`request` action with this payload:
 
 ```json
 {
@@ -312,169 +74,11 @@ Serialize this object as `definition_json`.
 }
 ```
 
-Use the two payloads and the opened-URI set in your LSP handler. The `notify`
-call sends the document contents; the `request` call asks for the definition:
+The URI must identify the same document that was opened. LSP [positions][position]
+are zero-based, while your tool inputs are one-based: tool line 5, character 12
+becomes LSP line 4, character 11. Both count columns in UTF-16 code units.
 
-{{#lang_is_python}}
-
-```python
-if uri not in opened_uris:
-    lsp.call("notify", open_payload)
-    opened_uris.add(uri)
-result = lsp.call("request", definition_payload)
-content = json.dumps(result)
-```
-
-Use the standard `json` module.
-
-{{/lang_is_python}}
-
-{{#lang_is_javascript}}
-
-```javascript
-if (!openedUris.has(uri)) {
-  await lsp.call("notify", openPayload);
-  openedUris.add(uri);
-}
-const result = await lsp.call("request", definitionPayload);
-const content = JSON.stringify(result);
-```
-
-{{/lang_is_javascript}}
-
-{{#lang_is_typescript}}
-
-```typescript
-if (!openedUris.has(uri)) {
-  await lsp.call("notify", openPayload);
-  openedUris.add(uri);
-}
-const result = await lsp.call("request", definitionPayload);
-const content = JSON.stringify(result)!;
-```
-
-{{/lang_is_typescript}}
-
-{{#lang_is_go}}
-
-```go
-if !openedURIs[uri] {
-    if _, err := lsp.Call("notify", openPayload); err != nil {
-        log.Fatal(err)
-    }
-    openedURIs[uri] = true
-}
-result, err := lsp.Call("request", definitionPayload)
-if err != nil {
-    log.Fatal(err)
-}
-content := string(result)
-```
-
-Use the `log` import from Stage 1. `result` already contains serialized JSON.
-
-{{/lang_is_go}}
-
-{{#lang_is_java}}
-
-```java
-var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-if (!openedUris.contains(uri)) {
-    lsp.call("notify", mapper.writeValueAsString(openPayload));
-    openedUris.add(uri);
-}
-String content = lsp.call("request", mapper.writeValueAsString(definitionPayload));
-```
-
-Jackson is included by the starter. Successful `lsp.call` results are JSON text.
-
-{{/lang_is_java}}
-
-{{#lang_is_rust}}
-
-```rust
-if !opened_uris.contains(&uri) {
-    lsp.call("notify", &open_payload)?;
-    opened_uris.insert(uri.clone());
-}
-let result = lsp.call("request", &definition_payload)?;
-let content = result.to_string();
-```
-
-Use `?` in a function returning a compatible `Result`, as in Stage 1. Here,
-`uri` is a `String`; cloning it gives the set its own copy.
-
-{{/lang_is_rust}}
-
-{{#lang_is_c}}
-
-```c
-if (!cJSON_HasObjectItem(opened_uris, uri)) {
-    char *ack = lsp_call("notify", open_json);
-    if (!ack) exit(1);
-    free(ack);
-    cJSON_AddBoolToObject(opened_uris, uri, 1);
-}
-char *content = lsp_call("request", definition_json);
-if (!content) exit(1);
-```
-
-The supplied [C client][client-c] returns allocated JSON text. Copy `content`
-into the tool message, then free it.
-
-[client-c]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/starter_templates/c/code/src/lsp_client.h
-
-{{/lang_is_c}}
-
-{{#lang_is_cpp}}
-
-```cpp
-if (!opened_uris.contains(uri)) {
-    lsp.call("notify", open_payload);
-    opened_uris.insert(uri);
-}
-std::string content = lsp.call("request", definition_payload).dump();
-```
-
-{{/lang_is_cpp}}
-
-{{#lang_is_csharp}}
-
-```csharp
-if (!openedUris.Contains(uri)) {
-    await lsp.Call("notify", JsonSerializer.Serialize(openPayload));
-    openedUris.Add(uri);
-}
-string content = await lsp.Call("request", JsonSerializer.Serialize(definitionPayload));
-```
-
-Use `System.Text.Json` in addition to the collection import above. Successful
-`lsp.Call` results are JSON text.
-
-{{/lang_is_csharp}}
-
-{{#lang_is_zig}}
-
-```zig
-if (!opened_uris.contains(uri)) {
-    const ack = try lsp.call("notify", open_json);
-    allocator.free(ack);
-    const saved_uri = try allocator.dupe(u8, uri);
-    errdefer allocator.free(saved_uri);
-    try opened_uris.put(saved_uri, {});
-}
-const content = try lsp.call("request", definition_json);
-defer allocator.free(content);
-```
-
-Use the supplied [Zig client][client-zig] with the optional-client cleanup from
-Stage 1. Copy `content` into the tool message before freeing it.
-
-[client-zig]: https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/starter_templates/zig/code/src/lsp_client.zig
-
-{{/lang_is_zig}}
-
-### 4. Return the location to the model
+### Returning locations
 
 For the call in `checkout.py`, the server can return this definition location:
 
@@ -488,21 +92,83 @@ For the call in `checkout.py`, the server can return this definition location:
 }
 ```
 
-The returned URI points to `pricing.py`. The zero-based range covers the name
-`total` in its definition, starting at the `t` and ending just after the name.
+The URI points to `pricing.py`. The range covers the name `total` in its
+definition, starting at the `t` and ending just after the name.
 
-Put the code's `content` string in a tool message's `content` field. Set
-`tool_call_id` to the ID of the model's LSP call and continue the agent loop.
-Serialize the server result once; clients returning JSON text need no additional
-serialization.
+Return the server's result as JSON text in a tool message with the matching
+`tool_call_id`, then continue the agent loop. Preserve the URI and range
+unchanged. Clients returning JSON text need no additional serialization.
 
-Keep the returned URI and range unchanged. The model decodes the file URI to
-obtain a path for Read. Your LSP handler returns the location; the model chooses
-the subsequent Read call.
+The model can use Read to retrieve the code at the returned location. If it
+reuses that location in another LSP call, it must convert the zero-based range
+back to one-based tool inputs: `0:4` becomes `1:5`. The tool description from
+the previous stage explains this conversion.
 
-If the model reuses a returned position in another LSP call, it must add 1 to
-both coordinates: returned position `0:4` becomes tool input `1:5`. Stage 2's
-tool description already specifies this conversion.
+### Supplied client API
+
+The calls below use `lsp` to refer to your initialized client. Each takes an
+action (`notify` or `request`) and one of the payloads shown above.
+
+{{#lang_is_c}}
+The language mapping is `lsp.extension_to_language`, a cJSON object.
+`lsp_call(action, json)` takes serialized JSON and returns allocated JSON text.
+Free the returned text after use.
+{{/lang_is_c}}
+
+{{#lang_is_cpp}}
+The language mapping is `lsp.extension_to_language`.
+`lsp.call(action, payload)` takes and returns nlohmann JSON values. The factory
+returns an optional client; access its value when configured.
+{{/lang_is_cpp}}
+
+{{#lang_is_csharp}}
+The language mapping is `lsp.ExtensionToLanguage`.
+`await lsp.Call(action, json)` takes serialized JSON and returns JSON text.
+{{/lang_is_csharp}}
+
+{{#lang_is_go}}
+The language mapping is `lsp.ExtensionToLanguage`.
+`lsp.Call(action, payload)` accepts a JSON-serializable value and returns
+`(json.RawMessage, error)`. A successful result already contains JSON text.
+{{/lang_is_go}}
+
+{{#lang_is_java}}
+The language mapping is `lsp.extensionToLanguage`.
+`lsp.call(action, json)` takes serialized JSON and returns JSON text.
+Jackson is included by the starter.
+{{/lang_is_java}}
+
+{{#lang_is_javascript}}
+The language mapping is `lsp.extensionToLanguage`.
+`await lsp.call(action, payload)` takes and returns JavaScript values.
+{{/lang_is_javascript}}
+
+{{#lang_is_python}}
+The language mapping is `lsp.extension_to_language`.
+`lsp.call(action, payload)` takes and returns Python values. Use the standard
+`json` module to serialize the result for a tool message.
+{{/lang_is_python}}
+
+{{#lang_is_rust}}
+The language mapping is `lsp.extension_to_language`.
+`lsp.call(action, &payload)` takes a `serde_json::Value` by reference and returns
+a `Result<Value, Box<dyn Error>>`. The factory returns an optional client;
+access its value when configured.
+{{/lang_is_rust}}
+
+{{#lang_is_typescript}}
+The language mapping is `lsp.extensionToLanguage`.
+`await lsp.call(action, payload)` takes a value and returns `unknown`.
+The client can be `null` when unconfigured.
+{{/lang_is_typescript}}
+
+{{#lang_is_zig}}
+The language mapping is `lsp.extension_to_language`, a `std.json.ObjectMap`.
+`try lsp.call(action, json)` takes serialized JSON and returns allocated JSON
+text. Free responses after use, including notification acknowledgements. A tool
+message must own its content before that response is freed. The factory returns
+an optional client; access its value when configured.
+{{/lang_is_zig}}
 
 ### Tests
 

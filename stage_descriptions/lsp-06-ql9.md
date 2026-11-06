@@ -48,16 +48,16 @@ The server sends diagnostics asynchronously in `textDocument/publishDiagnostics`
 notifications. They are not the response to `didChange`. The supplied helper
 queues them while your agent executes other calls.
 
-Keep a notification cursor beside the client and Stage 5's document-version map.
-Initialize it to `0`. Call the client's `call` method with action `notifications`
-and this payload, using the same language-specific call pattern as earlier stages:
+The client's `notifications` action retrieves queued messages after a cursor.
+The initial cursor is `0`:
 
 ```json
 { "after": 0, "timeoutMs": 0 }
 ```
 
-Use your saved cursor as `after`. A zero timeout drains queued messages without
-waiting. The response contains a new cursor and a notification array:
+`after` is the last cursor you received. `timeoutMs` controls how long the call
+waits for new messages; zero drains queued messages without waiting. The response
+contains a new cursor and a notification array:
 
 ```json
 {
@@ -84,29 +84,28 @@ waiting. The response contains a new cursor and a notification array:
 }
 ```
 
-Save every returned cursor, including when the batch is empty or contains only
-unrelated messages. Diagnostic ranges are zero-based, like navigation results.
+Each subsequent call uses the returned cursor, including after an empty batch
+or one containing only unrelated messages. Diagnostic ranges are zero-based,
+like navigation results.
 
 ### Add feedback to Write
 
-For each successful Write to a supported Python file:
+Each successful Write to a supported Python file must return its current
+diagnostic report along with the existing success information. Synchronization
+from the previous stage must finish before feedback is collected, and feedback
+collection must finish before the tool result reaches the model.
 
-1. **Drain old notifications before the edit.** Advance the cursor so a queued
-   report from an earlier edit cannot satisfy this Write.
-2. **Save and synchronize.** Keep Stage 5's save, `didOpen` or `didChange`, and
-   per-URI version tracking. Finish synchronization before collecting feedback.
-3. **Wait for the written file's report.** Poll `notifications` after the saved
-   cursor with a short timeout, such as `200` milliseconds. Use an overall
-   deadline, such as two seconds; each empty batch must not restart that deadline.
-4. **Select current feedback.** Consider only `textDocument/publishDiagnostics`
-   for the written file's URI. If a version is supplied, it must match the version
-   just synchronized. Accept unversioned reports received after the pre-edit
-   drain. Choose the latest matching report in each batch. Ignore other methods,
-   other files, and older versions.
-5. **Return the result to the model.** Preserve your Write success information
-   and add the selected report's complete `params` object under `diagnostics`.
-   Wait for this collection to finish before returning the tool result. Use
-   `await` with asynchronous clients.
+A current report is a `textDocument/publishDiagnostics` notification for the
+written file's URI. If it includes a version, that version must match the one
+just synchronized. Unversioned reports are accepted when received after old
+notifications have been drained before the edit. Queued reports from earlier
+edits cannot satisfy the current Write. When a batch contains several matching
+reports, the latest one takes precedence.
+
+The wait must have a finite overall deadline, even if batches are empty or
+contain only unrelated messages. Return the selected report's complete `params`
+object under `diagnostics`, preserving its URI, optional version, and diagnostic
+array.
 
 For example, after the repair, Write's result could contain:
 
@@ -121,9 +120,8 @@ For example, after the repair, Write's result could contain:
 }
 ```
 
-Your existing success fields may differ; the new `diagnostics` field contains
-the server's report. Preserve its URI, optional version, and complete diagnostic
-array. An empty diagnostic array clears the previous errors for that file.
+Your existing success fields may differ. An empty diagnostic array clears the
+previous errors for that file.
 An empty notification batch means no report arrived yet; it does not mean the
 file is error-free.
 
@@ -133,7 +131,7 @@ If the overall deadline expires, keep the successful Write result and add
 that result. The save succeeded, but analysis is unavailable. Do not invent a
 clean report or turn the successful save into a file-write failure.
 
-Add this guidance to the system prompt:
+Your system prompt should explain how to use the feedback, for example:
 
 ```text
 Inspect diagnostic feedback from Write and repair reported type errors.
@@ -142,33 +140,19 @@ A diagnostic timeout means feedback is unavailable, not that the file is clean.
 
 ### Complete the migration
 
-The tester gives your agent this task:
+The tester asks the model to migrate `pricing.total` and its callers, use LSP
+navigation and diagnostic feedback, and run `python3 -m unittest -v test_invoice.py`.
+The completed migration must preserve caller behavior and leave tests and
+unrelated files unchanged.
 
-```text
-Change pricing.total to return a Price TypedDict with an integer cents field.
-Update checkout.py and reports.py so their results stay unchanged.
+The live model chooses its tool calls and edits during grading. Your agent
+executes those calls and returns real feedback with the matching `tool_call_id`.
+Keep your handlers general so they execute whichever edits the model requests.
+There is no need to deliberately introduce errors to demonstrate a repair.
 
-Before any Write edits, use LSP goToDefinition on checkout.py at line 5,
-character 12, and LSP findReferences on the returned pricing.total definition.
-After all Write edits, repeat LSP goToDefinition on the invoice_total call in
-checkout.py at its current line and character, and LSP findReferences at the
-updated pricing.total definition.
-Use the returned definition position for findReferences, converting its
-zero-based range to one-based tool inputs. Both post-edit LSP queries are
-required even if diagnostics are clean and the project tests pass.
-
-Use diagnostic feedback from Write to fix type errors. Report any diagnostic timeout.
-
-Leave tests and unrelated files unchanged.
-Run python3 -m unittest -v test_invoice.py and report the result.
-```
-
-The live model chooses its tool calls and edits during grading. Your agent must
-execute each tool call, collect its real feedback, and return it with the matching
-`tool_call_id` before continuing the loop. You do not need to deliberately
-introduce errors. Either lookup order is accepted within each phase.
-An edit can move the checkout call to a different line or column; locate it in
-the updated source before the follow-up definition lookup.
+Edits can move symbols to different lines or columns. Any subsequent LSP request
+must use the current source position, with the usual conversion between
+zero-based returned ranges and one-based tool inputs.
 
 Diagnostics and project tests serve different purposes. Diagnostics locate type
 errors; the five supplied Python tests check the new API and preserved behavior.

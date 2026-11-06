@@ -11,45 +11,38 @@ keeping the alias and call unchanged. The same lookup should now point to
 Saving updates the file on disk. The language server also needs its new contents
 through the existing client; otherwise, it can keep answering from the old code.
 
-Add this guidance to your system prompt:
+Your system prompt should direct the model to use Write for edits, for example:
 
 ```text
 Edit files with Write so the language server sees changes.
 ```
 
-### Track each document's state
+### Document synchronization
 
-Replace Stage 3's set of opened URIs with a map from URI to document version.
-Keep this map beside the client, outside the agent loop, and share it between
-navigation and Write. A URI in the map is open; a URI absent from it is closed.
-Reuse navigation's path resolution and URI builder in Write so both handlers
-find the same record.
+After a successful Write to a supported file, the server must receive its
+complete saved contents through the client's `notify` action. The client's
+language mapping identifies supported files (`.py` maps to `python` here).
 
-Whenever either handler successfully sends `didOpen`, record version 1.
-Each URI has its own version counter. Reading a file with Read, or receiving
-its location in an LSP result, doesn't open it in the language server.
+The notification depends on whether the document is already open:
 
-### Add synchronization to Write
+| Document state | Notification | Version |
+| --- | --- | --- |
+| Open through a previous lookup or Write | `textDocument/didChange` | Previous version plus one |
+| Not yet open | `textDocument/didOpen`, including its mapped language ID | 1 |
 
-For a Write to a file supported by the client's language mapping (`.py` maps to
-`python` in this exercise):
+Versions are independent for each URI and advance only after a successful
+notification. Navigation and Write must agree on the document's URI, open state,
+and current version across agent-loop iterations. Reading a file with Read, or
+receiving its location in an LSP result, doesn't open it in the language server.
 
-1. Save the file using your existing Write handler.
-2. After the save succeeds, send its complete new contents through `notify`.
-   For an open URI, send `didChange` with its recorded version plus one.
-   For a closed URI, reuse Stage 3's `didOpen` payload with its URI, mapped
-   language ID, version 1, and complete new contents.
-3. Wait for the notification call to complete, record the sent version in the
-   shared map, then return Write's tool result. Use `await` with asynchronous
-   clients.
-
-Finish synchronization before the model's next lookup on the same connection.
+The save must succeed before notification, and synchronization must complete
+before Write returns its tool result. Subsequent lookups on the same connection
+must use the new contents.
 
 ### Synchronize a Write to an open document
 
 If `checkout.py` is open at version 1, changing its import to `discounts` requires
-this [didChange notification][did-change]. After saving, send it through `notify`
-using your language's client-call pattern from Stage 3:
+this [didChange notification][did-change]:
 
 ```json
 {

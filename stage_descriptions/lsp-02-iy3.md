@@ -79,9 +79,8 @@ in these exercises. Here, line 5, character 12 identifies the start of
 
 ### Update your system prompt
 
-The specification describes the tool's interface. Add this guidance to your
-existing system prompt when LSP is configured to explain when the model should
-use it:
+The model should know when to use LSP and how its positions are counted. For
+example, your system prompt could include this guidance when LSP is configured:
 
 ```text
 Use LSP to find where a symbol is defined. Tool positions are one-based UTF-16.
@@ -89,31 +88,9 @@ Use LSP to find where a symbol is defined. Tool positions are one-based UTF-16.
 
 ### Add a temporary LSP handler
 
-The model can now return a tool call whose `function.name` is `LSP`. Your agent
-already checks this field to decide whether to run Read, Write, or Bash. Extend
-that check to recognize `LSP` too.
-
-For now, respond with `LSP is not implemented yet` using your existing
-tool-result flow. Set the response's `tool_call_id` to the incoming tool call's
-`id`. This tells the model which call the response answers.
-
-{{#lang_is_python}}
-
-For a tool call stored in `call`, the new case can look like this:
-
-```python
-if call.function.name == "LSP":
-    messages.append({
-        "role": "tool",
-        "tool_call_id": call.id,
-        "content": "LSP is not implemented yet"
-    })
-```
-
-{{/lang_is_python}}
-
-Then continue the agent loop. This placeholder does not contact the language
-server.
+When the model calls `LSP`, return `LSP is not implemented yet` as a tool
+result with the matching `tool_call_id`, then continue the agent loop. This
+placeholder does not contact the language server.
 
 ### Tests
 
