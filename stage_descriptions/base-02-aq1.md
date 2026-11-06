@@ -35,7 +35,7 @@ For this stage, the `tools` array should include the `Read` tool's specification
       "properties": {
         "file_path": {
           "type": "string",
-          "description": "Absolute path, or a path relative to the agent's current working directory."
+          "description": "The path to the file to read"
         }
       },
       "required": ["file_path"]
