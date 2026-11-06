@@ -40,42 +40,30 @@ The latest current report replaces the previous report for that file. An empty
 shown for that file should be appended to a tool result. Unchanged issues must
 not be repeated on every turn.
 
-### Change the API and repair its callers
+### Feedback during a migration
 
-In this example, the model migrates the [invoice project][example] using your
-agent's tools. It changes `pricing.total` from returning integer cents, such as
-`500`, to returning a `Price`, a dictionary with a `cents` key such as
-`{"cents": 500}`:
+The tester asks the model to migrate the [invoice project][example] using your
+agent's tools. The required behavior is:
 
-```python
-from typing import TypedDict
+| Function | Before migration | After migration |
+| --- | --- | --- |
+| `pricing.total(250, 2)` | Integer `500` | A `Price` TypedDict with an integer `cents` field: `{"cents": 500}` |
+| `checkout_total()` | Integer `500` | Integer `500` |
+| `report_total()` | Integer `600` | Integer `600` |
 
+Tests and the unrelated `preview.total` must stay unchanged. The model chooses
+its edits and uses your agent's diagnostic feedback to repair any type errors.
 
-class Price(TypedDict):
-    cents: int
-
-
-def total(price: int, quantity: int) -> Price:
-    return {"cents": price * quantity}
-```
-
-The callers in `checkout.py` and `reports.py` have to read the `cents` field to
-keep their results unchanged: `checkout_total()` must still return the integer
-`500`, and `report_total()` the integer `600`. The unrelated `preview.total`
-stays as it is.
-
-Suppose the model writes the new `pricing.py` first. `checkout.py` is still
-open from the earlier definition lookup, and its unchanged return statement now
-returns a `Price` from a function declared to return an `int`:
+For example, changing `pricing.total` can make this unchanged caller invalid:
 
 ```python
 def checkout_total() -> int:
     return invoice_total(250, 2)
 ```
 
-The language server reports that mismatch in `checkout.py`, even though nothing
-wrote to it. Your agent passes the report on, so the model can fix the caller by
-returning `invoice_total(250, 2)["cents"]`.
+It now returns a `Price` where its annotation promises an `int`. The language
+server can report that mismatch in `checkout.py` even when the last edit was to
+`pricing.py`. That report must reach the model so it can repair the caller.
 
 ### Read the server's reports
 
@@ -125,14 +113,8 @@ empty or contains only unrelated notifications. Diagnostic ranges count from
 zero, like the locations the server returns for navigation. Convert their start
 positions to one-based coordinates for the model.
 
-### Tell the model to use the reports
-
-Your system prompt should encourage the model to repair the reported issues,
-for example:
-
-```text
-Fix the issues reported in new diagnostics.
-```
+The model should understand that new diagnostics are feedback to use when
+repairing its edits.
 
 ### Tests
 
@@ -154,12 +136,6 @@ The tester will verify that:
 - Your program exits with code `0`
 
 The tester will also run this prompt against a server that sends stale reports and current reports without a `version`. Its `pricing.py` has a comment line above `def total`, so the definition is not on line 1.
-
-### Hint: reading and comparing reports
-
-Use the client's `call` method with action `notifications` and the cursor
-payload above. Keeping the latest current report and the diagnostics already
-shown for each URI can help identify what to send on the next model request.
 
 ### Notes
 

@@ -74,7 +74,7 @@ information.
 ### Supplied client
 
 The client handles the server connection and fetches its configuration during
-initialization. Use the factory for your language:
+initialization. Its API for your language is:
 
 {{#lang_is_c}}
 
@@ -163,252 +163,14 @@ The tester will verify that:
 - The model's `goToDefinition` call gets a tool result, with the matching `tool_call_id`
 - Your program exits with code `0`
 
-### Hint: connecting the client
-
-These examples show imports and initialization for the supplied starter. Adapt
-the placement to your agent's startup code.
+### Notes
 
 {{#lang_is_c}}
-
-Download [`lsp_client.h`][client-c] and save it as `src/lsp_client.h`.
-
-At the top of `src/main.c`, add:
-
-```c
-#include "lsp_client.h"
-```
-
-Inside `main`, after your existing `curl_global_init` and before the agent loop:
-
-```c
-LSPClient lsp;
-int lsp_status = lsp_from_environment(&lsp); // 1: connected, 0: not configured, -1: error
-if (lsp_status < 0) return 1;
-if (lsp_status == 1) {
-    fprintf(stderr, "LSP client connected\n");
-}
-```
-
-Call `lsp_deinit(&lsp)` after the agent loop, before your existing libcurl
-cleanup.
-
-[client-c]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/c/code/src/lsp_client.h
-
+- `lsp_from_environment` initializes an `LSPClient` value. Release it with `lsp_deinit` when the agent is finished with the connection.
 {{/lang_is_c}}
-
-{{#lang_is_cpp}}
-
-Download [`lsp_client.hpp`][client-cpp] and save it as `src/lsp_client.hpp`.
-
-At the top of `src/main.cpp`, add:
-
-```cpp
-#include "lsp_client.hpp"
-```
-
-Inside `main`, before the agent loop:
-
-```cpp
-auto lsp = LSPClient::from_environment(); // std::nullopt when not configured
-if (lsp) {
-    std::cerr << "LSP client connected\n";
-}
-```
-
-The client uses the CPR and nlohmann JSON libraries your starter already
-includes.
-
-[client-cpp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/cpp/code/src/lsp_client.hpp
-
-{{/lang_is_cpp}}
-
-{{#lang_is_csharp}}
-
-Download [`LSPClient.cs`][client-csharp] and save it as `src/LSPClient.cs`.
-
-No import is needed, because the starter compiles every `.cs` file under
-`src/`. In `src/Program.cs`, after the prompt is read:
-
-```csharp
-var lsp = await LSPClient.FromEnvironmentAsync(); // null when not configured
-if (lsp is not null) {
-    Console.Error.WriteLine("LSP client connected");
-}
-```
-
-[client-csharp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/csharp/code/src/LSPClient.cs
-
-{{/lang_is_csharp}}
-
-{{#lang_is_go}}
-
-Download [`lsp_client.go`][client-go] and save it as `app/lsp_client.go`.
-
-The client shares the same `package main` as your agent, so no client import is
-needed. Add `log` to your imports, then place this at the start of `main` in
-`app/main.go`:
-
-```go
-lsp, err := LSPClientFromEnvironment() // lsp is nil when not configured
-if err != nil {
-    log.Fatal(err)
-}
-if lsp != nil {
-    log.Print("LSP client connected")
-}
-```
-
-[client-go]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/go/code/app/lsp_client.go
-
-{{/lang_is_go}}
-
-{{#lang_is_java}}
-
-Download [`LSPClient.java`][client-java] and save it as `src/main/java/LSPClient.java`.
-
-It shares the starter's default package with `Main`, so no client import is
-needed. At the start of `main` in `src/main/java/Main.java`:
-
-```java
-var lsp = LSPClient.fromEnvironment(); // null when not configured
-if (lsp != null) {
-    System.err.println("LSP client connected");
-}
-```
-
-`fromEnvironment` throws checked exceptions, so add `throws Exception` to
-`main`.
-
-[client-java]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/java/code/src/main/java/LSPClient.java
-
-{{/lang_is_java}}
-
-{{#lang_is_javascript}}
-
-Download [`lsp_client.js`][client-javascript] and save it as `app/lsp_client.js`.
-
-At the top of `app/main.js`, add:
-
-```javascript
-import { LSPClient } from "./lsp_client.js";
-```
-
-At the start of your `main` function:
-
-```javascript
-const lsp = await LSPClient.fromEnvironment(); // null when not configured
-if (lsp !== null) {
-    console.error("LSP client connected");
-}
-```
-
-[client-javascript]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/javascript/code/app/lsp_client.js
-
-{{/lang_is_javascript}}
-
-{{#lang_is_python}}
-
-Download [`lsp_client.py`][client-python] and save it as `app/lsp_client.py`.
-
-At the top of `app/main.py`, add:
-
-```python
-from app.lsp_client import LSPClient
-```
-
-At the start of `main()`:
-
-```python
-lsp = LSPClient.from_environment()  # None when not configured
-if lsp is not None:
-    print("LSP client connected", file=sys.stderr)
-```
-
-[client-python]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/python/code/app/lsp_client.py
-
-{{/lang_is_python}}
-
-{{#lang_is_rust}}
-
-Download [`lsp_client.rs`][client-rust] and save it as `src/lsp_client.rs`.
-
-At the top level of `src/main.rs`, add:
-
-```rust
-mod lsp_client;
-use lsp_client::LspClient;
-```
-
-At the start of `main`:
-
-```rust
-let lsp = LspClient::from_environment()?; // None when not configured
-if lsp.is_some() {
-    eprintln!("LSP client connected");
-}
-```
-
-[client-rust]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/rust/code/src/lsp_client.rs
-
-{{/lang_is_rust}}
-
-{{#lang_is_typescript}}
-
-Download [`lsp_client.ts`][client-typescript] and save it as `app/lsp_client.ts`.
-
-At the top of `app/main.ts`, add:
-
-```typescript
-import { LSPClient } from "./lsp_client.ts";
-```
-
-At the start of your `main` function:
-
-```typescript
-const lsp = await LSPClient.fromEnvironment(); // null when not configured
-if (lsp !== null) {
-    console.error("LSP client connected");
-}
-```
-
-[client-typescript]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/typescript/code/app/lsp_client.ts
-
-{{/lang_is_typescript}}
-
 {{#lang_is_zig}}
-
-Download [`lsp_client.zig`][client-zig] and save it as `src/lsp_client.zig`.
-
-At the top of `src/main.zig`, add:
-
-```zig
-const LSPClient = @import("lsp_client.zig").LSPClient;
-```
-
-Inside `main(init: std.process.Init) !void`, after the starter's `allocator` and
-`io` declarations:
-
-```zig
-var lsp = try LSPClient.fromEnvironment(allocator, io, init.environ_map); // null when not configured
-defer if (lsp) |*client| client.deinit();
-if (lsp != null) {
-    std.debug.print("LSP client connected\n", .{});
-}
-```
-
-[client-zig]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/zig/code/src/lsp_client.zig
-
+- Release the client with `deinit` when the agent is finished with the connection.
 {{/lang_is_zig}}
-
-### Hint: guiding the model
-
-Your system prompt can include:
-
-```text
-Use the LSP tool to find where a symbol is defined. Lines and characters are 1-based, as in an editor.
-```
-
-### Notes
 
 - `LSP client connected` is a startup log on standard error. Standard output is reserved for the model's answer.
 - Only `goToDefinition` is offered for now. Reference lookup and a handler that contacts the language server come in later stages.
@@ -418,3 +180,13 @@ Use the LSP tool to find where a symbol is defined. Lines and characters are 1-b
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
 [lsp]: https://microsoft.github.io/language-server-protocol/
 [claude-lsp]: https://code.claude.com/docs/en/tools-reference#lsp-tool-behavior
+[client-c]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/c/code/src/lsp_client.h
+[client-cpp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/cpp/code/src/lsp_client.hpp
+[client-csharp]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/csharp/code/src/LSPClient.cs
+[client-go]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/go/code/app/lsp_client.go
+[client-java]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/java/code/src/main/java/LSPClient.java
+[client-javascript]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/javascript/code/app/lsp_client.js
+[client-python]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/python/code/app/lsp_client.py
+[client-rust]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/rust/code/src/lsp_client.rs
+[client-typescript]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/typescript/code/app/lsp_client.ts
+[client-zig]: https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/zig/code/src/lsp_client.zig

@@ -49,7 +49,6 @@ A notification payload looks like this:
 }
 ```
 
-
 A notification tells the server something without expecting an LSP reply. The
 client sends it with the `notify` action. The server must receive `didOpen`
 before the definition request, and a failed notification doesn't mark the
@@ -78,7 +77,6 @@ Both interfaces count columns in UTF-16 code units.
 }
 ```
 
-
 For this lookup, the server returns:
 
 ```json
@@ -91,10 +89,17 @@ For this lookup, the server returns:
 }
 ```
 
-
 The range covers the name `total` in its definition, starting at the `t` and
 ending just after the name. Its start position, 0:4, becomes the one-based 1:5
 in your tool result.
+
+### Supplied client API
+
+The client's `call` method takes an action (`notify` or `request`) and a payload.
+Read its definition in your supplied `lsp_client` file for the exact argument
+and return types. The language mapping is exposed as `extension_to_language`,
+`extensionToLanguage`, or `ExtensionToLanguage`, depending on your language.
+Include the dot when looking up an extension, such as `.py`.
 
 ### Tests
 
@@ -111,19 +116,6 @@ The tester will verify that:
 - The tool result for that call names `pricing.py` at line 1, character 5, with the matching `tool_call_id`
 - Read returns the complete contents of `pricing.py` to the model
 - Your program exits with code `0`
-
-### Hint: tracking open documents
-
-A set of opened URIs can help ensure that each document is opened only once.
-Its state needs to survive across tool calls in the same run.
-
-### Hint: using the supplied client
-
-The client's `call` method takes an action (`notify` or `request`) and a payload.
-Read its definition in your supplied `lsp_client` file for the exact argument
-and return types. The language mapping is exposed as `extension_to_language`,
-`extensionToLanguage`, or `ExtensionToLanguage`, depending on your language.
-Include the dot when looking up an extension, such as `.py`.
 
 ### Notes
 

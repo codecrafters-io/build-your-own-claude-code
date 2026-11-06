@@ -48,14 +48,7 @@ is needed.
 The version tells the server which copy is newest, so each change must use a
 higher number than the last. The next Write to `checkout.py` sends version 3.
 
-### Tell the model to edit with Write
-
-The model should use Write for edits so they reach the language server. For
-example, your system prompt can include:
-
-```text
-Edit files with Write so the language server sees changes.
-```
+The model should use Write for edits so they reach the language server.
 
 ### Tests
 
@@ -75,12 +68,6 @@ The tester will verify that:
 - Your program exits with code `0`
 
 The tester will also run a prompt that writes `checkout.py` before any lookup, so the Write has to send `didOpen`.
-
-### Hint: tracking versions
-
-A map from URI to version can track both open state and the latest version.
-An entry can represent an open document; an absent entry can represent a closed
-one. Navigation and Write can share this state.
 
 ### Notes
 

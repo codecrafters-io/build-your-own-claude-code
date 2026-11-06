@@ -31,25 +31,15 @@ reports.py:
   Line 5:28
 ```
 
-
 Return the result with the matching `tool_call_id`. When the server returns an
 empty array, report that no references were found, for example `No references found.`
 
-### Add references to your LSP tool
+### Tool interface
 
-Add `findReferences` to the LSP tool's `operation` enum, so it becomes
-`["goToDefinition", "findReferences"]`. The tool description should cover both
-operations, for example:
-
-```text
-Returns the file, line, and character of each place where a symbol is defined or referenced.
-```
-
-Your system prompt can reinforce when to use either operation:
-
-```text
-Use the LSP tool to find where a symbol is defined or referenced. Lines and characters are 1-based, as in an editor.
-```
+The `LSP` tool must advertise both `goToDefinition` and `findReferences`.
+Both operations identify a symbol with `filePath`, `line`, and `character`,
+using the same one-based input positions. The model should understand that it
+can use the tool to find definitions and references.
 
 ### Ask where the function is used
 
@@ -72,8 +62,8 @@ The queried file must be open before the request, following the URI and position
 rules from definition lookup. Opening `checkout.py` in an earlier lookup doesn't
 open `pricing.py`.
 
-This time the request is [`textDocument/references`][references], at the
-zero-based position 0:4. Send it with `call` and `"request"`:
+The corresponding `textDocument/references` request uses the zero-based
+position 0:4 and the client's `request` action:
 
 ```json
 {
