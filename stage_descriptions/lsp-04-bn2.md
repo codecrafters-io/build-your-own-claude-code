@@ -1,42 +1,32 @@
 In this stage, you'll synchronize `Write` edits so definition and reference
 lookups use the updated code.
 
-### Why is the answer still pointing to the old file?
+### Why synchronize edits?
 
-Suppose the model changes `checkout.py`'s import from `pricing` to `discounts`,
-keeping the `invoice_total` alias. A definition lookup on `invoice_total` should
-now point to `discounts.total` instead of `pricing.total`.
+After the model changes checkout's import from `pricing` to `discounts`, a
+lookup on `invoice_total` should find `discounts.total`. Saving the file updates
+the disk, but the language server still holds the text sent with `didOpen`.
+Synchronizing Write edits keeps its answers consistent with the saved code.
 
-Your Write tool saves the new text to disk, but the language server still has
-the copy you sent with `didOpen`, and keeps answering from it. To keep its
-answers current, send it every change your Write tool makes.
+### Expected behavior
 
-### Track each document's state
+Every successful Write to a supported file must synchronize the complete saved
+text before returning its tool result. Subsequent definition and reference
+lookups must reflect the edits. The client's language mapping identifies
+supported files (`.py` maps to `python` in the [invoice project][example]).
 
-Replace the set of opened URIs from definition lookup with a map from URI to document version.
-Keep one map for the whole run, not one tool call, and share it between
-navigation and Write. A URI in the map is open, and a URI absent from it is closed.
-Reuse navigation's path resolution and URI builder in Write so both handlers
-find the same record.
+The notification depends on the document's state on the current connection:
 
-Whenever either handler successfully sends `didOpen`, record version 1.
-Each URI has its own version counter. Reading a file with Read, or receiving
-its location in an LSP result, doesn't open it in the language server.
+| Document state | Notification | Version |
+| --- | --- | --- |
+| Already open through navigation or Write | `textDocument/didChange` | Previous version plus one |
+| Not yet open | `textDocument/didOpen`, including its mapped language ID | 1 |
 
-### Add synchronization to Write
+Navigation and Write must agree on the URI, open state, and current version of
+each document throughout the run. The save must succeed before the notification,
+and the recorded version advances only after that notification succeeds.
 
-For a Write to a file supported by the client's language mapping (`.py` maps to
-`python` in the [invoice project][example]):
-
-1. Save the file using your existing Write handler.
-2. After the save succeeds, send its complete new contents with `call` and
-   `"notify"`. For an open URI, send `didChange` with its recorded version plus
-   one. For a closed URI, send `didOpen` with version 1 and the new contents. The
-   server may already hold the old file from disk, for example to answer
-   references, and `didOpen` replaces it.
-3. Wait for the notification call to complete, record the sent version in the
-   shared map, then return Write's tool result. In JavaScript, TypeScript, and
-   C#, `await` the `notify` call before returning.
+### Full document updates
 
 For example, if `checkout.py` is open at version 1, changing its import to
 `discounts` sends this [`didChange` notification][did-change]:
@@ -60,8 +50,8 @@ higher number than the last. The next Write to `checkout.py` sends version 3.
 
 ### Tell the model to edit with Write
 
-Add this guidance to your system prompt, so the model doesn't edit files with
-Bash (for example, `sed`), which would skip synchronization:
+The model should use Write for edits so they reach the language server. For
+example, your system prompt can include:
 
 ```text
 Edit files with Write so the language server sees changes.
@@ -86,8 +76,17 @@ The tester will verify that:
 
 The tester will also run a prompt that writes `checkout.py` before any lookup, so the Write has to send `didOpen`.
 
+### Hint: tracking versions
+
+A map from URI to version can track both open state and the latest version.
+An entry can represent an open document; an absent entry can represent a closed
+one. Navigation and Write can share this state.
+
 ### Notes
 
+- Read and returned reference locations don't open documents in the language server. A Write to an indexed but closed file still needs `didOpen` with the new contents.
+- JavaScript, TypeScript, and C# clients are asynchronous; await the notification before returning Write's result.
+- The protocol defines the [didChange notification][did-change].
 - Every test case uses a successful Write to a supported Python file. We won't deal with failed writes or files outside the language mapping in this extension.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
