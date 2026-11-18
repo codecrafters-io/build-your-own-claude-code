@@ -1,44 +1,17 @@
-In this stage, you'll report language-server diagnostics to the model so it can repair an API migration.
+In this stage, you'll feed language-server error reports back into your agent
+loop so the model can repair problems its edits introduce. You'll combine this
+feedback with navigation and synchronized edits to complete an API migration
+across files.
 
 ### Why diagnostics?
 
-A change to one file can break a caller in another. A language-server diagnostic
-describes the issue with a message, severity, and source range. Passing new
-reports to the model lets it find and repair these mistakes, including problems
-in files it hasn't edited.
+A successful `Write` means the file was saved. The change can still break a
+caller in another file. The language server can detect problems such as a
+function returning the wrong type without running the program.
 
-### Expected feedback
-
-Before each model request, any newly available, current diagnostics must reach
-the model through the latest tool result. Each diagnostic needs its relative
-file path, message, and one-based start line and character. For example:
-
-```text
-<new-diagnostics>The following new diagnostic issues were detected:
-
-checkout.py:
-  [Line 5:12] Type Price is not assignable to return type int</new-diagnostics>
-```
-
-The wording and grouping can differ. Write keeps its existing success result;
-diagnostics arrive as additional feedback on a later turn. Reports for any file
-count, including files that the last Write didn't change.
-
-### Current and new reports
-
-Only `textDocument/publishDiagnostics` notifications carry diagnostic reports.
-Their version determines whether the contents are current:
-
-| Report | Required behavior |
-| --- | --- |
-| Version matches the last version sent for that file | Accept the report |
-| Version differs from the last version sent for that file | Ignore the report |
-| No version supplied | Accept the report |
-
-The latest current report replaces the previous report for that file. An empty
-`diagnostics` array clears its earlier issues. Only issues absent from those last
-shown for that file should be appended to a tool result. Unchanged issues must
-not be repeated on every turn.
+It reports each problem as a **diagnostic**, with a message, severity, and
+source range. Passing those reports to the model lets it locate and repair
+mistakes, including problems in files it hasn't edited.
 
 ### Feedback during a migration
 
@@ -51,8 +24,13 @@ agent's tools. The required behavior is:
 | `checkout_total()` | Integer `500` | Integer `500` |
 | `report_total()` | Integer `600` | Integer `600` |
 
-Tests and the unrelated `preview.total` must stay unchanged. The model chooses
-its edits and uses your agent's diagnostic feedback to repair any type errors.
+Here, `Price` is a `TypedDict`, a Python type that specifies a dictionary's keys
+and value types. The function will return a dictionary, while checkout and
+reporting must continue returning integers. Tests and the unrelated
+`preview.total` must stay unchanged.
+
+The model chooses and applies these edits through your tools. Your program
+supplies the diagnostic feedback it needs to repair any type errors.
 
 For example, changing `pricing.total` can make this unchanged caller invalid:
 
@@ -67,21 +45,23 @@ server can report that mismatch in `checkout.py` even when the last edit was to
 
 ### Read the server's reports
 
-The server sends diagnostics asynchronously in `textDocument/publishDiagnostics`
-notifications. They are not the response to `didChange`. Your LSP client queues
-them while your agent executes other calls.
+Saving a file and analyzing its consequences are separate steps. The server
+sends `textDocument/publishDiagnostics` notifications as analysis finishes,
+independently of your `didChange` call. These messages wait in a queue that
+your agent can read through the supplied client.
 
-The client's `notifications` action reads this queue using a cursor, starting
+Before each model request, use the client's `notifications` action to read
+this queue. It takes a cursor, a number marking how far you've read, starting
 at `0`:
 
 ```json
 { "after": 0, "timeoutMs": 0 }
 ```
 
-`after` identifies the notifications already read. The response contains newer
-notifications and a new cursor for the next call. `timeoutMs: 0` reads queued
-messages without waiting for analysis to finish. After the `pricing.py` write
-above, a response can contain:
+Set `after` to the cursor from the previous read. The response contains newer
+notifications and the cursor to use next. `timeoutMs: 0` reads queued messages
+without waiting for analysis to finish. After the `pricing.py` write above, a
+response can contain:
 
 ```json
 {
@@ -108,13 +88,50 @@ above, a response can contain:
 }
 ```
 
-Every returned cursor applies to the next queue read, even when the batch is
-empty or contains only unrelated notifications. Diagnostic ranges count from
-zero, like the locations the server returns for navigation. Convert their start
-positions to one-based coordinates for the model.
+Always advance to the returned cursor, even when the batch is empty or contains
+only unrelated notifications. Process the `textDocument/publishDiagnostics`
+notifications using the rules below.
 
-The model should understand that new diagnostics are feedback to use when
-repairing its edits.
+### Keep current reports and avoid repeated feedback
+
+A report can describe a version of a file that your agent has already replaced.
+Use the document versions you tracked in the previous stage to decide whether
+to accept it:
+
+| Report | Required behavior |
+| --- | --- |
+| Version matches the last version sent for that file | Accept the report |
+| Version differs from the last version sent for that file | Ignore the report |
+| No version supplied | Accept the report |
+
+The latest current report replaces the previous report for that file. An empty
+`diagnostics` array clears its earlier issues. Compare the current issues with
+those last shown to the model for that file, and send only the new ones.
+Unchanged issues must not be repeated on every turn. If an issue clears and
+later reappears, it is new again.
+
+Reports for any file count, including files that the last `Write` didn't
+change. A change to `pricing.py` can produce a diagnostic for `checkout.py`,
+whose own document version hasn't changed.
+
+### Return the feedback to the model
+
+Keep `Write`'s existing success result. After reading the queue and selecting
+new, current diagnostics, append them to the latest tool result before sending
+the next model request. Each issue needs its relative file path, message, and
+one-based start line and character. Use the same coordinate conversion as for
+navigation. For example:
+
+```text
+<new-diagnostics>The following new diagnostic issues were detected:
+
+checkout.py:
+  [Line 5:12] Type Price is not assignable to return type int</new-diagnostics>
+```
+
+The wording and grouping can differ. Tell the model to use these reports when
+repairing its edits. A report that arrives after a model request will be read
+before the next request.
 
 ### Tests
 
@@ -140,8 +157,6 @@ The tester will also run this prompt against a server that sends stale reports a
 ### Notes
 
 - Await asynchronous `notifications` calls before sending the next model request.
-- Write's own result stays as it was. Diagnostics reach the model through a later tool result instead.
-- A report can arrive after the model request that followed its change. Your agent reads it before the next request.
 - The model chooses its own edits, so a run may or may not hit a type error. You don't need to introduce errors yourself.
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise

@@ -3,9 +3,11 @@ name: "Build your own Claude Code"
 short_name: "Claude Code"
 release_status: "beta"
 description_md: |-
-  Claude Code is a terminal-based AI coding assistant that uses Large Language Models (LLMs) to understand code and complete programming tasks. In this challenge, you'll build your own Claude Code that is capable of editing files, running commands, and iterating until the task is done.
+  How does an LLM turn "fix this bug" into changes to your files?
 
-  Along the way, you'll learn about LLM APIs, tool calling, agent loops, and how to integrate multiple tools into an AI assistant.
+  The model requests actions through tool calls. Your program executes them and sends back results, repeating until the model finishes. You'll build this loop with file and shell tools. Extensions add reusable task instructions called skills, delegation to separate agent conversations, and a language server that locates code and reports errors.
+
+  You'll learn how to dispatch tool calls, manage conversation history, and feed code-analysis results back into an editing loop.
 
 short_description_md: |-
   Learn about LLM APIs, tool calling, agent loops and more

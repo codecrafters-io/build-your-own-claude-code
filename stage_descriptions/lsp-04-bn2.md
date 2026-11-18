@@ -1,12 +1,14 @@
-In this stage, you'll synchronize `Write` edits so definition and reference
-lookups use the updated code.
+In this stage, you'll update `Write` to send saved edits to the language
+server. The navigation you've built should keep finding the right code after
+the model changes a file.
 
 ### Why synchronize edits?
 
 After the model changes checkout's import from `pricing` to `discounts`, a
 lookup on `invoice_total` should find `discounts.total`. Saving the file updates
 the disk, but the language server still holds the text sent with `didOpen`.
-Synchronizing Write edits keeps its answers consistent with the saved code.
+Your `Write` handler must update that remembered copy before the model asks
+for another lookup.
 
 ### Expected behavior
 
@@ -48,7 +50,8 @@ is needed.
 The version tells the server which copy is newest, so each change must use a
 higher number than the last. The next Write to `checkout.py` sends version 3.
 
-The model should use Write for edits so they reach the language server.
+Tell the model to use `Write` for edits so they pass through this synchronization.
+An edit made through `Bash` would bypass your `Write` handler.
 
 ### Tests
 
@@ -71,8 +74,8 @@ The tester will also run a prompt that writes `checkout.py` before any lookup, s
 
 ### Notes
 
-- Read and returned reference locations don't open documents in the language server. A Write to an indexed but closed file still needs `didOpen` with the new contents.
-- JavaScript, TypeScript, and C# clients are asynchronous; await the notification before returning Write's result.
+- `Read` and returned reference locations don't open documents in the language server. If your agent hasn't sent `didOpen` for a file, its first `Write` must do so with the saved contents.
+- JavaScript, TypeScript, and C# clients are asynchronous. Await the notification before returning `Write`'s result.
 - The protocol defines the [didChange notification][did-change].
 - Every test case uses a successful Write to a supported Python file. We won't deal with failed writes or files outside the language mapping in this extension.
 

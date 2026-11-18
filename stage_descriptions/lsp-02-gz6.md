@@ -1,11 +1,13 @@
-In this stage, you'll implement `goToDefinition`, which tells the model where a function is defined.
+In this stage, you'll replace the `LSP` tool's placeholder with a
+`goToDefinition` lookup. The model will get the location of a function's
+definition so it can read the implementation before changing it.
 
-### Why look up a definition?
+### Follow the imported function
 
-A call may use an imported alias rather than the function's original name. In
-the [invoice project][example], `invoice_total` in `checkout.py` calls
-`pricing.total`. Definition lookup follows that relationship so the model can
-use Read to inspect the right implementation.
+In the [invoice project][example] introduced in the previous stage,
+`checkout.py` imports `pricing.total` as `invoice_total`. Definition lookup
+follows that import to `pricing.py`. The unrelated `total` functions in
+`discounts.py` and `preview.py` should stay out of the result.
 
 ### Expected tool result
 
@@ -23,15 +25,21 @@ model to retrieve the implementation with Read.
 
 ### Opening source documents
 
-Before a file's first lookup, the language server needs its contents in a
-`textDocument/didOpen` notification. The server remembers the document for the
-connection; a second `didOpen` for the same URI is rejected.
+The server keeps its own copy of the documents your agent opens. Before a
+file's first lookup, send its complete contents in a `textDocument/didOpen`
+notification. A notification tells the server something without asking for a
+reply. Use the client's `notify` action to send it.
 
-LSP identifies documents by absolute file URIs. Resolve relative paths against
-the agent's working directory and encode special characters: `/project/cart notes.py`
-becomes `file:///project/cart%20notes.py`. A document's initial version is 1.
+Track which documents you've opened on this connection. The server rejects a
+second `didOpen` for the same document. Mark it open only after the notification
+succeeds, then reuse that state for later lookups.
+
+LSP identifies documents by absolute file URIs, which begin with `file://`.
+Resolve relative paths against the agent's working directory and encode
+special characters. For example, `/project/cart notes.py` becomes
+`file:///project/cart%20notes.py`. A document's initial version is 1.
 Its `languageId` comes from the client's configured extension-to-language
-mapping; `.py` maps to `python` in this project.
+mapping. In this project, `.py` maps to `python`.
 
 A notification payload looks like this:
 
@@ -49,23 +57,27 @@ A notification payload looks like this:
 }
 ```
 
-A notification tells the server something without expecting an LSP reply. The
-client sends it with the `notify` action. The server must receive `didOpen`
-before the definition request, and a failed notification doesn't mark the
-file as open.
+Here, `/project` stands for the agent's actual working directory, and the `text`
+field must contain the complete file contents. Send this notification before
+the definition request.
 
 ### Definition requests and positions
 
-The model's `goToDefinition` call corresponds to a `textDocument/definition`
-request, sent through the client's `request` action. It uses the same URI as
-`didOpen`, but positions count from zero:
+The model's `goToDefinition` call becomes a `textDocument/definition` request.
+Use the client's `request` action because this message expects a result.
+It uses the same URI as `didOpen`, but positions count from zero:
 
 | Position | Line | Character |
 | --- | --- | --- |
 | Model's tool input | 5 | 12 |
 | Language-server request | 4 | 11 |
 
-Both interfaces count columns in UTF-16 code units.
+Both interfaces measure the character offset in UTF-16 code units. An ASCII
+character occupies one unit, while a character such as `😀` occupies two. A
+Python string index counts Unicode code points, so it can differ from this
+offset. The model's input already uses UTF-16 units: subtract one from each
+coordinate when sending it to the server, and add one to each returned start
+coordinate for the model.
 
 ```json
 {
@@ -119,7 +131,7 @@ The tester will verify that:
 
 ### Notes
 
-- The LSP tool's path argument is `filePath`, not `file_path` as in Read.
+- The LSP tool's path argument is `filePath`. The existing `Read` tool uses `file_path`.
 - Await asynchronous client calls so the opening notification completes before the request.
 - A definition lookup can also return several locations, no location, or a server error. We won't deal with those in this extension.
 - The protocol defines [positions][position], [document opening][did-open], and [definition requests][definition].

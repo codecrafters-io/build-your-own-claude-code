@@ -1,19 +1,32 @@
-In this stage, you'll make the `LSP` tool available to the model.
+In this stage, you'll connect the supplied language-server client and advertise
+an `LSP` tool. This gives your agent access to the code analysis behind editor
+features such as "Go to definition". The tool will return a placeholder for now.
 
 ### Why LSP?
 
-Searching for a function name can find unrelated functions or miss uses through
-an alias. A language server analyzes a project's code to connect those uses to
-their definitions. The Language Server Protocol (LSP) lets your agent ask that
-server where a symbol is defined, just as an editor does.
+Your agent can already read files, edit them, and run commands. Finding the
+right code to change takes more than searching for a name. A project can have
+several functions called `total`, and an import can give one of them an alias.
+
+A language server is a program that analyzes source code. It can connect a
+function call to its definition and report problems such as type errors. The
+Language Server Protocol (LSP) defines the messages an editor or your agent
+uses to ask for that analysis.
+
+Across this extension, you'll give the model enough information to change a
+function's return type and repair its callers across files. You'll start with
+tool registration, then add navigation, keep the server up to date after edits,
+and return error reports to the model. Your existing agent loop and `Read`,
+`Write`, and `Bash` tools provide the starting point.
 
 ### Expected behavior
 
-The supplied client connects to the language server started by the tester.
-Your agent must initialize the client before its first model request and keep
-the connection available throughout the run. When connected, every model request
-must advertise the `LSP` tool below. When unconfigured, the agent continues with
-its existing tools.
+The tester starts the language server and supplies its connection settings.
+The client handles communication with it, so you can focus on connecting the
+analysis to your agent. Initialize the client before the first model request
+and keep it available throughout the run. When connected, every model request
+must advertise the `LSP` tool below alongside your existing tools. When
+unconfigured, continue with the existing tools alone.
 
 For now, an LSP call receives a placeholder such as `LSP is not implemented yet`
 as a tool result with the matching `tool_call_id`. The agent then continues its
@@ -53,10 +66,22 @@ conversation with the model. Definition lookup comes in the next stage.
 }
 ```
 
-The arguments point at a spot in a file rather than a name, because `total`
-alone could mean the one in `pricing.py`, `discounts.py`, or `preview.py`. For
-example, to point at `invoice_total` in `checkout.py`'s return statement, the
-model sends line 5, character 12. Both count from 1, as in an editor:
+The arguments identify a symbol, such as a function name, at a particular spot
+in a file. That position distinguishes uses of functions with the same name.
+The [invoice project][example] contains this code at the start of `checkout.py`:
+
+```python
+from pricing import total as invoice_total
+
+
+def checkout_total() -> int:
+    return invoice_total(250, 2)
+```
+
+The model points at the `i` in the return statement's `invoice_total` with line
+5, character 12. Both count from 1. For the ASCII text shown here, each character
+occupies one position. We'll look at the server's position format in the next
+stage.
 
 ```json
 {
@@ -73,8 +98,9 @@ information.
 
 ### Supplied client
 
-The client handles the server connection and fetches its configuration during
-initialization. Its API for your language is:
+Your starter project includes the client below. If it's missing, download it
+from the linked source and save it at the shown path. The client fetches its
+configuration during initialization. Its API for your language is:
 
 {{#lang_is_c}}
 
@@ -100,7 +126,7 @@ Its initialization call is `await LSPClient.FromEnvironmentAsync()`. It returns 
 {{#lang_is_go}}
 
 The supplied client is [lsp_client.go](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/go/code/app/lsp_client.go), at `app/lsp_client.go`.
-Its initialization call is `LSPClientFromEnvironment()`. It returns a client and an error; the client is `nil` when unconfigured.
+Its initialization call is `LSPClientFromEnvironment()`. It returns a client and an error. The client is `nil` when unconfigured.
 
 {{/lang_is_go}}
 
@@ -152,9 +178,11 @@ The tester will create the [invoice project][example] and execute your program l
 
 ```bash
 $ ./your_program.sh -p "Use LSP goToDefinition on checkout.py at line 5, character 12. If navigation is not implemented yet, report the tool response without retrying."
-LSP client connected
 <the model's report of the tool response>
 ```
+
+Write the startup log `LSP client connected` to standard error after connecting.
+Standard output remains reserved for the model's answer.
 
 The tester will verify that:
 
@@ -172,7 +200,6 @@ The tester will verify that:
 - Release the client with `deinit` when the agent is finished with the connection.
 {{/lang_is_zig}}
 
-- `LSP client connected` is a startup log on standard error. Standard output is reserved for the model's answer.
 - Only `goToDefinition` is offered for now. Reference lookup and a handler that contacts the language server come in later stages.
 - The supplied project is Python regardless of the language you use to implement your agent.
 - For more background, see the [LSP specification][lsp] and [Claude Code's LSP tool][claude-lsp].

@@ -1,19 +1,21 @@
-In this stage, you'll implement `findReferences` to find the callers affected by an API change.
+In this stage, you'll add `findReferences` so the model can find the callers
+affected by a change to a function. Your agent can already locate the
+definition. Now it will also report where that function is used.
 
 ### Why find references?
 
-Changing a function's return type can break callers in other files. In the
-[invoice project][example], checkout imports `pricing.total` as `invoice_total`,
-while reporting calls it by its original name. Reference lookup finds uses tied
-to that definition, including aliases, while excluding the unrelated
-`preview.total` and comments that merely mention the name.
+Changing `pricing.total`'s return type can break both checkout and reporting.
+The model needs to find those uses before deciding what else to edit. For the
+[invoice project][example], the test server returns references tied to that
+function, including the `invoice_total` alias in `checkout.py`. It excludes
+the unrelated `preview.total` and comments that merely mention the name.
 
 ### Expected tool result
 
-Each location returned by the server must reach the model with its relative
-file path and one-based start line and character. Several locations in one
-file remain separate references. For the full invoice project, a result can
-look like this:
+A reference result can contain the function's declaration, imports, and calls.
+Return every location the server supplies with its relative file path and
+one-based start line and character. Several locations in one file remain
+separate references. For the full invoice project, a result can look like this:
 
 ```text
 Found 6 references across 3 files:
@@ -54,9 +56,8 @@ The model starts at the definition of `pricing.total`:
 }
 ```
 
-Line 1, character 5 points to the `t` in `def total`. This tells the server which
-function's references to find, rather than asking it to match every occurrence of
-the word `total`.
+Line 1, character 5 points to the `t` in `def total`, identifying the function
+whose references the server should find.
 
 The queried file must be open before the request, following the URI and position
 rules from definition lookup. Opening `checkout.py` in an earlier lookup doesn't
@@ -104,9 +105,8 @@ these two locations identify separate calls in `reports.py`:
 ]
 ```
 
-The full result also includes imports, the declaration in `pricing.py`, and
-uses in `checkout.py`. Reference locations can describe any of these; each
-must remain represented in the tool result.
+These become line 5, characters 12 and 28 in the tool result. Keep both
+locations even though they share a file and line.
 
 ### Tests
 
