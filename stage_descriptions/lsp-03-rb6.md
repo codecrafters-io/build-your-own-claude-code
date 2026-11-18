@@ -1,4 +1,6 @@
-In this stage, you'll implement `findReferences` to find the callers affected by an API change.
+Definition lookup takes the model from a function call to its implementation.
+In this stage, you'll add `findReferences` to find where that function is used,
+so the model can identify callers affected by an API change.
 
 ### Why find references?
 
@@ -12,8 +14,8 @@ to that definition, including aliases, while excluding the unrelated
 
 Each location returned by the server must reach the model with its relative
 file path and one-based start line and character. Several locations in one
-file remain separate references. For the full invoice project, a result can
-look like this:
+file remain separate references. For the invoice project, a nonempty result
+from the tester's server can be formatted like this:
 
 ```text
 Found 6 references across 3 files:
@@ -77,8 +79,8 @@ position 0:4 and the client's `request` action:
 ```
 
 Its `context.includeDeclaration` setting asks the server to include the symbol's
-own declaration along with its uses. This stage requires `includeDeclaration`
-to be `true`.
+own declaration along with its uses. Here, that declaration is the `def total`
+line in `pricing.py`. This stage requires `includeDeclaration` to be `true`.
 
 ### Understanding reference locations
 
@@ -105,7 +107,7 @@ these two locations identify separate calls in `reports.py`:
 ```
 
 The full result also includes imports, the declaration in `pricing.py`, and
-uses in `checkout.py`. Reference locations can describe any of these; each
+uses in `checkout.py`. Reference locations can describe any of these. Each
 must remain represented in the tool result.
 
 ### Tests

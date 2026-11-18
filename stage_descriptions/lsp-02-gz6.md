@@ -1,4 +1,6 @@
-In this stage, you'll implement `goToDefinition`, which tells the model where a function is defined.
+Your `LSP` tool can now receive a model's request. In this stage, you'll replace
+its placeholder result with `goToDefinition`, which tells the model where a
+function is defined.
 
 ### Why look up a definition?
 
@@ -23,17 +25,24 @@ model to retrieve the implementation with Read.
 
 ### Opening source documents
 
-Before a file's first lookup, the language server needs its contents in a
-`textDocument/didOpen` notification. The server remembers the document for the
-connection; a second `didOpen` for the same URI is rejected.
+LSP calls a source file a document. Opening a document gives the server a copy
+of its text to analyze. Your `Read` tool alone doesn't open it in the server.
+Before a file's first lookup in this extension, send its complete contents in a
+`textDocument/didOpen` notification. The server keeps that copy for the
+connection, and rejects a second `didOpen` for the same document.
 
-LSP identifies documents by absolute file URIs. Resolve relative paths against
-the agent's working directory and encode special characters: `/project/cart notes.py`
-becomes `file:///project/cart%20notes.py`. A document's initial version is 1.
-Its `languageId` comes from the client's configured extension-to-language
-mapping; `.py` maps to `python` in this project.
+LSP identifies documents with a URI (Uniform Resource Identifier). For a local
+file, this is an absolute path with a `file://` prefix. Resolve relative paths
+against the agent's working directory and encode special characters: `/project/cart notes.py`
+becomes `file:///project/cart%20notes.py`.
 
-A notification payload looks like this:
+The document's version number identifies the copy of the text you've sent.
+Start at version 1. Its `languageId` tells the server which programming language
+to analyze. Use the client's configured extension-to-language mapping, where
+`.py` maps to `python` in this project.
+
+A notification sends information without expecting an LSP response. Use the
+client's `notify` action with this payload:
 
 ```json
 {
@@ -49,23 +58,22 @@ A notification payload looks like this:
 }
 ```
 
-A notification tells the server something without expecting an LSP reply. The
-client sends it with the `notify` action. The server must receive `didOpen`
-before the definition request, and a failed notification doesn't mark the
-file as open.
+The opening notification must complete before the definition request. A failed
+notification doesn't mark the file as open.
 
 ### Definition requests and positions
 
-The model's `goToDefinition` call corresponds to a `textDocument/definition`
-request, sent through the client's `request` action. It uses the same URI as
-`didOpen`, but positions count from zero:
+A request asks the server for a result. The model's `goToDefinition` call maps
+to a `textDocument/definition` request, sent through the client's `request`
+action. It uses the same URI as `didOpen`, but positions count from zero:
 
 | Position | Line | Character |
 | --- | --- | --- |
 | Model's tool input | 5 | 12 |
 | Language-server request | 4 | 11 |
 
-Both interfaces count columns in UTF-16 code units.
+Both interfaces count columns in UTF-16 code units. Only the starting index
+changes between the model's tool call and the server request.
 
 ```json
 {
@@ -95,11 +103,64 @@ in your tool result.
 
 ### Supplied client API
 
-The client's `call` method takes an action (`notify` or `request`) and a payload.
-Read its definition in your supplied `lsp_client` file for the exact argument
-and return types. The language mapping is exposed as `extension_to_language`,
-`extensionToLanguage`, or `ExtensionToLanguage`, depending on your language.
-Include the dot when looking up an extension, such as `.py`.
+Use the client initialized in earlier stages to send the payloads above.
+The helper handles message delivery and request IDs. Your agent supplies the
+document information and returns the resulting location to the model.
+
+{{#lang_is_c}}
+The call is `lsp_call(action, json)`, with a JSON string as its payload. It
+returns an allocated JSON string on success, which you must free after use.
+`NULL` indicates an error, available through `lsp_last_error()`. The language
+mapping is `lsp.extension_to_language`, a cJSON object.
+{{/lang_is_c}}
+{{#lang_is_cpp}}
+The call is `lsp.call(action, payload)`, with a `nlohmann::json` payload and
+result. The language mapping is `lsp.extension_to_language`.
+{{/lang_is_cpp}}
+{{#lang_is_csharp}}
+The call is `await lsp.Call(action, json)`, with a JSON string as its payload
+and result. The language mapping is `lsp.ExtensionToLanguage`.
+{{/lang_is_csharp}}
+{{#lang_is_go}}
+The call is `lsp.Call(action, payload)`. It encodes the payload as JSON and
+returns a `json.RawMessage` and an error. The language mapping is
+`lsp.ExtensionToLanguage`.
+{{/lang_is_go}}
+{{#lang_is_java}}
+The call is `lsp.call(action, json)`, with a JSON string as its payload and
+result. It can throw checked exceptions. The language mapping is
+`lsp.extensionToLanguage`.
+{{/lang_is_java}}
+{{#lang_is_javascript}}
+The call is `await lsp.call(action, payload)`, with a JSON-compatible object as
+its payload and a decoded JSON result. The language mapping is
+`lsp.extensionToLanguage`.
+{{/lang_is_javascript}}
+{{#lang_is_python}}
+The call is `lsp.call(action, payload)`, with a dictionary as its payload and a
+decoded JSON result. The language mapping is `lsp.extension_to_language`.
+{{/lang_is_python}}
+{{#lang_is_rust}}
+The call is `lsp.call(action, &payload)`, with a `serde_json::Value` payload.
+It returns a `Result` containing a `serde_json::Value`. The language mapping is
+`lsp.extension_to_language`.
+{{/lang_is_rust}}
+{{#lang_is_typescript}}
+The call is `await lsp.call(action, payload)`, with a JSON-compatible object as
+its payload. The decoded JSON result has type `unknown`. The language mapping
+is `lsp.extensionToLanguage`.
+{{/lang_is_typescript}}
+{{#lang_is_zig}}
+The call is `lsp.call(action, json)`, with a JSON string as its payload. It
+returns an error union containing allocated JSON bytes, which you must free
+with the client's allocator after use. The language mapping is
+`lsp.extension_to_language`.
+{{/lang_is_zig}}
+
+Here, `lsp` is your initialized client. Include the dot when looking up an
+extension, such as `.py`. The `notify` action returns JSON `null` after sending
+the notification. The `request` action returns the server's result, such as the
+location shown above.
 
 ### Tests
 
@@ -119,10 +180,9 @@ The tester will verify that:
 
 ### Notes
 
-- The LSP tool's path argument is `filePath`, not `file_path` as in Read.
+- The LSP tool's path argument is `filePath`. Read continues to use `file_path`.
 - Await asynchronous client calls so the opening notification completes before the request.
-- A definition lookup can also return several locations, no location, or a server error. We won't deal with those in this extension.
-- The protocol defines [positions][position], [document opening][did-open], and [definition requests][definition].
+- A definition lookup can also return several locations, no location, or a server error. We won't deal with those in this extension. The protocol defines [positions][position], [document opening][did-open], and [definition requests][definition].
 
 [position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen

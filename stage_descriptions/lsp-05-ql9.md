@@ -1,11 +1,14 @@
-In this stage, you'll report language-server diagnostics to the model so it can repair an API migration.
+Your agent now keeps the language server's copy of edited files current. In
+this stage, you'll return the server's error reports to the model so it can
+repair callers when a function's return type changes.
 
 ### Why diagnostics?
 
-A change to one file can break a caller in another. A language-server diagnostic
-describes the issue with a message, severity, and source range. Passing new
-reports to the model lets it find and repair these mistakes, including problems
-in files it hasn't edited.
+A change to one file can break a caller in another. A diagnostic is a report
+about a problem the language server found while analyzing code. It includes a
+message, a severity such as error or warning, and the source range where the
+problem occurs. Passing these reports to the model lets it find and repair
+mistakes, including problems in files it hasn't edited.
 
 ### Expected feedback
 
@@ -20,8 +23,8 @@ checkout.py:
   [Line 5:12] Type Price is not assignable to return type int</new-diagnostics>
 ```
 
-The wording and grouping can differ. Write keeps its existing success result;
-diagnostics arrive as additional feedback on a later turn. Reports for any file
+The wording and grouping can differ. Write keeps its existing success result.
+Diagnostics arrive as additional feedback on a later turn. Reports for any file
 count, including files that the last Write didn't change.
 
 ### Current and new reports
@@ -35,6 +38,9 @@ Their version determines whether the contents are current:
 | Version differs from the last version sent for that file | Ignore the report |
 | No version supplied | Accept the report |
 
+An unversioned report can't identify which document version was analyzed.
+This extension accepts those reports in arrival order.
+
 The latest current report replaces the previous report for that file. An empty
 `diagnostics` array clears its earlier issues. Only issues absent from those last
 shown for that file should be appended to a tool result. Unchanged issues must
@@ -42,8 +48,11 @@ not be repeated on every turn.
 
 ### Feedback during a migration
 
-The tester asks the model to migrate the [invoice project][example] using your
-agent's tools. The required behavior is:
+The tester asks the model to change the return type of `pricing.total` in the
+[invoice project][example]. This API migration also requires updating callers
+that expect the old return type. A Python `TypedDict` describes the keys and
+value types of a dictionary. Here, `Price` describes a dictionary with an
+integer `cents` field. The required behavior is:
 
 | Function | Before migration | After migration |
 | --- | --- | --- |
@@ -71,8 +80,8 @@ The server sends diagnostics asynchronously in `textDocument/publishDiagnostics`
 notifications. They are not the response to `didChange`. Your LSP client queues
 them while your agent executes other calls.
 
-The client's `notifications` action reads this queue using a cursor, starting
-at `0`:
+The client's `notifications` action reads this queue using a cursor, a position
+marking how much of the queue you've read. Start at `0`:
 
 ```json
 { "after": 0, "timeoutMs": 0 }
@@ -80,8 +89,11 @@ at `0`:
 
 `after` identifies the notifications already read. The response contains newer
 notifications and a new cursor for the next call. `timeoutMs: 0` reads queued
-messages without waiting for analysis to finish. After the `pricing.py` write
-above, a response can contain:
+messages without waiting for analysis to finish. An empty batch means no new
+notifications are available yet. Only a diagnostic report with an empty
+`diagnostics` array clears a file's earlier issues.
+
+After the `pricing.py` write above, a response can contain:
 
 ```json
 {
@@ -139,9 +151,8 @@ The tester will also run this prompt against a server that sends stale reports a
 
 ### Notes
 
-- Await asynchronous `notifications` calls before sending the next model request.
-- Write's own result stays as it was. Diagnostics reach the model through a later tool result instead.
-- A report can arrive after the model request that followed its change. Your agent reads it before the next request.
+- Await asynchronous `notifications` calls before sending the next model request. A report can arrive after the model request that followed its change. Your agent reads it before the next request.
 - The model chooses its own edits, so a run may or may not hit a type error. You don't need to introduce errors yourself.
+- A clean diagnostic report doesn't establish that the program behaves correctly. The project tests still check the migration's results.
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise

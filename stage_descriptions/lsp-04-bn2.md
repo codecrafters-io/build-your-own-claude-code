@@ -41,9 +41,9 @@ For example, if `checkout.py` is open at version 1, changing its import to
 }
 ```
 
-The server uses full synchronization: `contentChanges` contains one object with
-the complete text that was saved, including line breaks. No diff or edit range
-is needed.
+The server in this extension uses full synchronization. This means
+`contentChanges` contains one object with the complete text that was saved,
+including line breaks. No diff or edit range is needed.
 
 The version tells the server which copy is newest, so each change must use a
 higher number than the last. The next Write to `checkout.py` sends version 3.
@@ -71,9 +71,8 @@ The tester will also run a prompt that writes `checkout.py` before any lookup, s
 
 ### Notes
 
-- Read and returned reference locations don't open documents in the language server. A Write to an indexed but closed file still needs `didOpen` with the new contents.
-- JavaScript, TypeScript, and C# clients are asynchronous; await the notification before returning Write's result.
-- The protocol defines the [didChange notification][did-change].
+- Read and returned reference locations don't open documents in the language server. The server may have analyzed a file from disk without receiving `didOpen` for it. Writing that file still requires `didOpen` with the new contents.
+- If the client call is asynchronous, await the notification before returning Write's result. See the [didChange notification specification][did-change] for the protocol details.
 - Every test case uses a successful Write to a supported Python file. We won't deal with failed writes or files outside the language mapping in this extension.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
