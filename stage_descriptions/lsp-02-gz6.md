@@ -58,14 +58,14 @@ placeholder with the complete file contents.
 
 The model's `goToDefinition` call becomes a [`textDocument/definition`][definition] request.
 Use the client's `request` action because this message expects a result.
-It uses the same URI as `didOpen`, but positions count from zero:
+It uses the same URI as `didOpen`, but [positions][position] count from zero:
 
 | Position | Line | Character |
 | --- | --- | --- |
 | Model's tool input | 5 | 12 |
 | Language-server request | 4 | 11 |
 
-Both interfaces measure [character offsets][position] in UTF-16 code units:
+Both interfaces measure character offsets in UTF-16 code units:
 an ASCII character occupies one, while `😀` occupies two. Python string indexes
 count Unicode code points, so they can differ. The model already supplies
 UTF-16 units. Subtract one from each input coordinate and add one to each
