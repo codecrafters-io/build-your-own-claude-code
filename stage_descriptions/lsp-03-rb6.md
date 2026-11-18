@@ -1,6 +1,6 @@
-In this stage, you'll add `findReferences` so the model can find the callers
-affected by a change to a function. Your agent can already locate the
-definition. Now it will also report where that function is used.
+Your agent can already locate a function's definition. In this stage, you'll
+add `findReferences` so the model can find the callers affected by a change to
+that function.
 
 ### Why find references?
 

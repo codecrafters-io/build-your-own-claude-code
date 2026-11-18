@@ -1,22 +1,27 @@
-In this stage, you'll feed language-server error reports back into your agent
-loop so the model can repair problems its edits introduce. You'll combine this
-feedback with navigation and synchronized edits to complete an API migration
-across files.
+In this stage, you'll return language-server diagnostics to the model so it
+can repair an API migration across files.
 
 ### Why diagnostics?
 
-A successful `Write` means the file was saved. The change can still break a
-caller in another file. The language server can detect problems such as a
-function returning the wrong type without running the program.
+Your `Write` tool saves edits and updates the language server. A successful
+save can still break a caller elsewhere. The server detects type errors without
+running the program and reports them as **diagnostics**, each with a message,
+severity, and source range.
 
-It reports each problem as a **diagnostic**, with a message, severity, and
-source range. Passing those reports to the model lets it locate and repair
-mistakes, including problems in files it hasn't edited.
+Suppose `pricing.total` starts returning a dictionary. This caller still
+promises an integer:
 
-### Feedback during a migration
+```python
+def checkout_total() -> int:
+    return invoice_total(250, 2)
+```
 
-The tester asks the model to migrate the [invoice project][example] using your
-agent's tools. The required behavior is:
+The server can report the mismatch in `checkout.py` even though the last edit
+was to `pricing.py`. Returning that report lets the model repair the caller.
+
+### The migration
+
+The tester asks the model to make these changes to the [invoice project][example]:
 
 | Function | Before migration | After migration |
 | --- | --- | --- |
@@ -24,44 +29,25 @@ agent's tools. The required behavior is:
 | `checkout_total()` | Integer `500` | Integer `500` |
 | `report_total()` | Integer `600` | Integer `600` |
 
-Here, `Price` is a `TypedDict`, a Python type that specifies a dictionary's keys
-and value types. The function will return a dictionary, while checkout and
-reporting must continue returning integers. Tests and the unrelated
-`preview.total` must stay unchanged.
+A `TypedDict` describes a dictionary's keys and value types. The model chooses
+the edits through your tools.
 
-The model chooses and applies these edits through your tools. Your program
-supplies the diagnostic feedback it needs to repair any type errors.
+### Read the diagnostic queue
 
-For example, changing `pricing.total` can make this unchanged caller invalid:
+Diagnostics arrive in `textDocument/publishDiagnostics` notifications,
+independently of `didChange`. The supplied client exposes a queue of these
+messages.
 
-```python
-def checkout_total() -> int:
-    return invoice_total(250, 2)
-```
-
-It now returns a `Price` where its annotation promises an `int`. The language
-server can report that mismatch in `checkout.py` even when the last edit was to
-`pricing.py`. That report must reach the model so it can repair the caller.
-
-### Read the server's reports
-
-Saving a file and analyzing its consequences are separate steps. The server
-sends `textDocument/publishDiagnostics` notifications as analysis finishes,
-independently of your `didChange` call. These messages wait in a queue that
-your agent can read through the supplied client.
-
-Before each model request, use the client's `notifications` action to read
-this queue. It takes a cursor, a number marking how far you've read, starting
-at `0`:
+Before each model request, read the queue with the client's `notifications`
+action:
 
 ```json
 { "after": 0, "timeoutMs": 0 }
 ```
 
-Set `after` to the cursor from the previous read. The response contains newer
-notifications and the cursor to use next. `timeoutMs: 0` reads queued messages
-without waiting for analysis to finish. After the `pricing.py` write above, a
-response can contain:
+`after` is a cursor marking how far you've read, initially `0`.
+`timeoutMs: 0` reads without waiting for analysis to finish. A response can
+contain:
 
 ```json
 {
@@ -88,39 +74,31 @@ response can contain:
 }
 ```
 
-Always advance to the returned cursor, even when the batch is empty or contains
-only unrelated notifications. Process the `textDocument/publishDiagnostics`
-notifications using the rules below.
+Use the returned cursor for the next read, even for empty or unrelated batches.
+Process only `textDocument/publishDiagnostics` notifications.
 
-### Keep current reports and avoid repeated feedback
+### Select current, new issues
 
-A report can describe a version of a file that your agent has already replaced.
-Use the document versions you tracked in the previous stage to decide whether
-to accept it:
+Compare each report's version with the last version your agent sent for that file:
 
 | Report | Required behavior |
 | --- | --- |
-| Version matches the last version sent for that file | Accept the report |
-| Version differs from the last version sent for that file | Ignore the report |
+| Version matches | Accept the report |
+| Version differs | Ignore the report |
 | No version supplied | Accept the report |
 
-The latest current report replaces the previous report for that file. An empty
-`diagnostics` array clears its earlier issues. Compare the current issues with
-those last shown to the model for that file, and send only the new ones.
-Unchanged issues must not be repeated on every turn. If an issue clears and
-later reappears, it is new again.
+The latest accepted report replaces the previous report for that file. An empty
+`diagnostics` array clears its issues. Track the issues last shown for each file
+and send only new ones. Unchanged issues must not repeat. An issue that clears
+and later reappears is new again.
 
-Reports for any file count, including files that the last `Write` didn't
-change. A change to `pricing.py` can produce a diagnostic for `checkout.py`,
-whose own document version hasn't changed.
+Process reports for every file, including files the last `Write` left untouched.
 
-### Return the feedback to the model
+### Return feedback
 
-Keep `Write`'s existing success result. After reading the queue and selecting
-new, current diagnostics, append them to the latest tool result before sending
-the next model request. Each issue needs its relative file path, message, and
-one-based start line and character. Use the same coordinate conversion as for
-navigation. For example:
+Append new diagnostics to the latest tool result before the model request,
+preserving `Write`'s normal success result. Include each issue's relative path,
+message, and one-based start position, using the navigation coordinate conversion:
 
 ```text
 <new-diagnostics>The following new diagnostic issues were detected:
@@ -129,13 +107,12 @@ checkout.py:
   [Line 5:12] Type Price is not assignable to return type int</new-diagnostics>
 ```
 
-The wording and grouping can differ. Tell the model to use these reports when
-repairing its edits. A report that arrives after a model request will be read
-before the next request.
+The wording and grouping can differ. Tell the model to repair reported issues.
+Reports arriving after a model request are read before the next request.
 
 ### Tests
 
-The tester will create the [invoice project][example] with `test_invoice.py` and execute your program like this:
+The tester creates the invoice project with `test_invoice.py` and runs:
 
 ```bash
 $ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an integer cents field. Update checkout.py and reports.py so their results stay unchanged. Before any Write edits, use LSP goToDefinition on checkout.py at line 5, character 12, and LSP findReferences on the returned pricing.total definition. After all Write edits, repeat LSP findReferences at the updated pricing.total definition. That query is required even if the project tests pass. Fix the type errors your tools report. Leave tests and unrelated files unchanged. Run python3 -m unittest -v test_invoice.py and report the result."
@@ -144,19 +121,20 @@ $ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an
 
 The tester will verify that:
 
-- Every current diagnostic the server published, for any file, reaches the model with its file, message, and 1-based line and character
-- No diagnostic from a report for an older version reaches the model
-- Both lookups run, in either order, before the first Write
-- A references lookup runs after the last Write, and its result matches the edited files
-- The Bash output shows `Ran 5 tests` and `OK`, `checkout_total()` returns `500`, and `report_total()` returns `600`
+- Current diagnostics reach the model with their file, message, and one-based line and character
+- Stale diagnostics never reach the model
+- Definition and references lookups run, in either order, before the first `Write`
+- A references lookup after the last `Write` matches the edited files
+- `Bash` output shows `Ran 5 tests` and `OK`. `checkout_total()` returns `500` and `report_total()` returns `600`
 - `preview.py` and `test_invoice.py` are unchanged
 - Your program exits with code `0`
 
-The tester will also run this prompt against a server that sends stale reports and current reports without a `version`. Its `pricing.py` has a comment line above `def total`, so the definition is not on line 1.
+Another case sends stale and unversioned reports. Its `pricing.py` starts with
+a comment, shifting the definition away from line 1.
 
 ### Notes
 
 - Await asynchronous `notifications` calls before sending the next model request.
-- The model chooses its own edits, so a run may or may not hit a type error. You don't need to introduce errors yourself.
+- The model may complete the migration without type errors. Don't introduce errors deliberately.
 
 [example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise

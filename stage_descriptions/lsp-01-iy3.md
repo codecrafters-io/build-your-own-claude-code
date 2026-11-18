@@ -1,6 +1,5 @@
 In this stage, you'll connect the supplied language-server client and advertise
-an `LSP` tool. This gives your agent access to the code analysis behind editor
-features such as "Go to definition". The tool will return a placeholder for now.
+an `LSP` tool.
 
 ### Why LSP?
 
@@ -16,8 +15,7 @@ uses to ask for that analysis.
 Across this extension, you'll give the model enough information to change a
 function's return type and repair its callers across files. You'll start with
 tool registration, then add navigation, keep the server up to date after edits,
-and return error reports to the model. Your existing agent loop and `Read`,
-`Write`, and `Bash` tools provide the starting point.
+and return error reports to the model.
 
 ### Expected behavior
 
@@ -30,7 +28,7 @@ unconfigured, continue with the existing tools alone.
 
 For now, an LSP call receives a placeholder such as `LSP is not implemented yet`
 as a tool result with the matching `tool_call_id`. The agent then continues its
-conversation with the model. Definition lookup comes in the next stage.
+conversation with the model. Definition lookup comes later.
 
 ```json
 {
@@ -80,8 +78,8 @@ def checkout_total() -> int:
 
 The model points at the `i` in the return statement's `invoice_total` with line
 5, character 12. Both count from 1. For the ASCII text shown here, each character
-occupies one position. We'll look at the server's position format in the next
-stage.
+occupies one position. We'll cover the server's position format when
+implementing lookups.
 
 ```json
 {
@@ -106,6 +104,7 @@ configuration during initialization. Its API for your language is:
 
 The supplied client is [lsp_client.h](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/c/code/src/lsp_client.h), at `src/lsp_client.h`.
 Its initialization call is `lsp_from_environment(&lsp)`. `1` means connected, `0` unconfigured, and `-1` an initialization error.
+Release the initialized `LSPClient` value with `lsp_deinit` when finished.
 
 {{/lang_is_c}}
 
@@ -169,6 +168,7 @@ Its initialization call is `await LSPClient.fromEnvironment()`. It returns a cli
 
 The supplied client is [lsp_client.zig](https://raw.githubusercontent.com/codecrafters-io/build-your-own-claude-code/main/starter_templates/zig/code/src/lsp_client.zig), at `src/lsp_client.zig`.
 Its initialization call is `LSPClient.fromEnvironment(allocator, io, init.environ_map)`. It returns an error union holding an optional client, with `null` when unconfigured.
+Release the client with `deinit` when finished.
 
 {{/lang_is_zig}}
 
@@ -193,14 +193,6 @@ The tester will verify that:
 
 ### Notes
 
-{{#lang_is_c}}
-- `lsp_from_environment` initializes an `LSPClient` value. Release it with `lsp_deinit` when the agent is finished with the connection.
-{{/lang_is_c}}
-{{#lang_is_zig}}
-- Release the client with `deinit` when the agent is finished with the connection.
-{{/lang_is_zig}}
-
-- Only `goToDefinition` is offered for now. Reference lookup and a handler that contacts the language server come in later stages.
 - The supplied project is Python regardless of the language you use to implement your agent.
 - For more background, see the [LSP specification][lsp] and [Claude Code's LSP tool][claude-lsp].
 

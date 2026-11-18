@@ -1,6 +1,5 @@
 In this stage, you'll update `Write` to send saved edits to the language
-server. The navigation you've built should keep finding the right code after
-the model changes a file.
+server so navigation keeps finding the right code after a change.
 
 ### Why synchronize edits?
 
@@ -76,7 +75,6 @@ The tester will also run a prompt that writes `checkout.py` before any lookup, s
 
 - `Read` and returned reference locations don't open documents in the language server. If your agent hasn't sent `didOpen` for a file, its first `Write` must do so with the saved contents.
 - JavaScript, TypeScript, and C# clients are asynchronous. Await the notification before returning `Write`'s result.
-- The protocol defines the [didChange notification][did-change].
 - Every test case uses a successful Write to a supported Python file. We won't deal with failed writes or files outside the language mapping in this extension.
 
 [did-change]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange

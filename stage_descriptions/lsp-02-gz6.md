@@ -1,13 +1,10 @@
 In this stage, you'll replace the `LSP` tool's placeholder with a
-`goToDefinition` lookup. The model will get the location of a function's
-definition so it can read the implementation before changing it.
+`goToDefinition` lookup so the model can find the implementation to read.
 
 ### Follow the imported function
 
-In the [invoice project][example] introduced in the previous stage,
-`checkout.py` imports `pricing.total` as `invoice_total`. Definition lookup
-follows that import to `pricing.py`. The unrelated `total` functions in
-`discounts.py` and `preview.py` should stay out of the result.
+In the [invoice project][example], `checkout.py` imports `pricing.total` as
+`invoice_total`. Definition lookup follows that import to `pricing.py`.
 
 ### Expected tool result
 
@@ -19,20 +16,17 @@ to the agent's working directory and a one-based position, for example:
 Defined in pricing.py:1:5
 ```
 
-The result must reach the model through the existing tool-result flow with the
-matching `tool_call_id`. The agent continues its conversation, allowing the
-model to retrieve the implementation with Read.
+Return this through the existing tool-result flow with the matching `tool_call_id`.
 
 ### Opening source documents
 
-The server keeps its own copy of the documents your agent opens. Before a
-file's first lookup, send its complete contents in a `textDocument/didOpen`
-notification. A notification tells the server something without asking for a
-reply. Use the client's `notify` action to send it.
+The server keeps a copy of each document your agent opens. Before a file's
+first lookup, send its contents in a [`textDocument/didOpen`][did-open]
+notification. A notification expects no LSP reply. Send it through the client's
+`notify` action.
 
-Track which documents you've opened on this connection. The server rejects a
-second `didOpen` for the same document. Mark it open only after the notification
-succeeds, then reuse that state for later lookups.
+Track open documents on this connection. Mark a document open only after the
+notification succeeds, and reuse that state. A second `didOpen` is rejected.
 
 LSP identifies documents by absolute file URIs, which begin with `file://`.
 Resolve relative paths against the agent's working directory and encode
@@ -57,13 +51,12 @@ A notification payload looks like this:
 }
 ```
 
-Here, `/project` stands for the agent's actual working directory, and the `text`
-field must contain the complete file contents. Send this notification before
-the definition request.
+Here, `/project` stands for the actual working directory. Replace the `text`
+placeholder with the complete file contents.
 
 ### Definition requests and positions
 
-The model's `goToDefinition` call becomes a `textDocument/definition` request.
+The model's `goToDefinition` call becomes a [`textDocument/definition`][definition] request.
 Use the client's `request` action because this message expects a result.
 It uses the same URI as `didOpen`, but positions count from zero:
 
@@ -72,12 +65,11 @@ It uses the same URI as `didOpen`, but positions count from zero:
 | Model's tool input | 5 | 12 |
 | Language-server request | 4 | 11 |
 
-Both interfaces measure the character offset in UTF-16 code units. An ASCII
-character occupies one unit, while a character such as `😀` occupies two. A
-Python string index counts Unicode code points, so it can differ from this
-offset. The model's input already uses UTF-16 units: subtract one from each
-coordinate when sending it to the server, and add one to each returned start
-coordinate for the model.
+Both interfaces measure [character offsets][position] in UTF-16 code units:
+an ASCII character occupies one, while `😀` occupies two. Python string indexes
+count Unicode code points, so they can differ. The model already supplies
+UTF-16 units. Subtract one from each input coordinate and add one to each
+returned start coordinate.
 
 ```json
 {
@@ -101,9 +93,8 @@ For this lookup, the server returns:
 }
 ```
 
-The range covers the name `total` in its definition, starting at the `t` and
-ending just after the name. Its start position, 0:4, becomes the one-based 1:5
-in your tool result.
+The range covers `total`, from its `t` to just after the name. Its start, 0:4,
+becomes 1:5 in your tool result.
 
 ### Supplied client API
 
@@ -134,7 +125,6 @@ The tester will verify that:
 - The LSP tool's path argument is `filePath`. The existing `Read` tool uses `file_path`.
 - Await asynchronous client calls so the opening notification completes before the request.
 - A definition lookup can also return several locations, no location, or a server error. We won't deal with those in this extension.
-- The protocol defines [positions][position], [document opening][did-open], and [definition requests][definition].
 
 [position]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [did-open]: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen
