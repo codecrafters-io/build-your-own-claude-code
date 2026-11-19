@@ -1,5 +1,6 @@
-@@ -20,32 +20,28 @@
-             baseUrl = "https://openrouter.ai/api/v1";
+@@ -25,32 +25,28 @@
+         if (model == null || model.isEmpty()) {
+             model = "anthropic/claude-haiku-4.5";
          }
 
          if (apiKey == null || apiKey.isEmpty()) {
@@ -14,8 +15,7 @@
 
          ChatCompletion response = client.chat().completions().create(
                  ChatCompletionCreateParams.builder()
-                         // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
-                         .model("anthropic/claude-haiku-4.5")
+                         .model(model)
                          .addUserMessage(prompt)
                          .build()
          );

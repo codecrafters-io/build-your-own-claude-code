@@ -1,10 +1,10 @@
-@@ -33,31 +33,27 @@
+@@ -38,31 +38,27 @@
+ 	}
 
  	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
  	resp, err := client.Chat.Completions.New(context.Background(),
  		openai.ChatCompletionNewParams{
- 			// Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
- 			Model: "anthropic/claude-haiku-4.5",
+ 			Model: model,
  			Messages: []openai.ChatCompletionMessageParamUnion{
  				{
  					OfUser: &openai.ChatCompletionUserMessageParam{

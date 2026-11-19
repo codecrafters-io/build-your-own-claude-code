@@ -1,4 +1,5 @@
-@@ -25,35 +25,31 @@
+@@ -28,35 +28,31 @@
+             "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key."
          );
          process::exit(1);
      });
@@ -19,8 +20,7 @@
                      "content": args.prompt
                  }
              ],
-             // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
-             "model": "anthropic/claude-haiku-4.5",
+             "model": model,
          }))
          .await?;
 

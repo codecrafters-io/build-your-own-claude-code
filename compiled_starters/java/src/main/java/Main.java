@@ -20,6 +20,12 @@ public class Main {
             baseUrl = "https://openrouter.ai/api/v1";
         }
 
+        // Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+        String model = System.getenv("OPENROUTER_MODEL");
+        if (model == null || model.isEmpty()) {
+            model = "anthropic/claude-haiku-4.5";
+        }
+
         if (apiKey == null || apiKey.isEmpty()) {
             throw new RuntimeException(
                     "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.");
@@ -32,8 +38,7 @@ public class Main {
 
         ChatCompletion response = client.chat().completions().create(
                 ChatCompletionCreateParams.builder()
-                        // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
-                        .model("anthropic/claude-haiku-4.5")
+                        .model(model)
                         .addUserMessage(prompt)
                         .build()
         );

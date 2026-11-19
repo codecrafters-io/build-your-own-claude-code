@@ -27,6 +27,12 @@ func main() {
 		baseUrl = "https://openrouter.ai/api/v1"
 	}
 
+	// Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+	model := os.Getenv("OPENROUTER_MODEL")
+	if model == "" {
+		model = "anthropic/claude-haiku-4.5"
+	}
+
 	if apiKey == "" {
 		panic("OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.")
 	}
@@ -34,8 +40,7 @@ func main() {
 	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
 	resp, err := client.Chat.Completions.New(context.Background(),
 		openai.ChatCompletionNewParams{
-			// Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
-			Model: "anthropic/claude-haiku-4.5",
+			Model: model,
 			Messages: []openai.ChatCompletionMessageParamUnion{
 				{
 					OfUser: &openai.ChatCompletionUserMessageParam{

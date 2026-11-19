@@ -35,14 +35,18 @@ int main(int argc, char *argv[]) {
     const char *api_key = getenv("OPENROUTER_API_KEY");
     const char *base_url = getenv("OPENROUTER_BASE_URL");
     if (!base_url || !*base_url) base_url = "https://openrouter.ai/api/v1";
+
+    // Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+    const char *model = getenv("OPENROUTER_MODEL");
+    if (!model || !*model) model = "anthropic/claude-haiku-4.5";
+
     if (!api_key || !*api_key) {
         fprintf(stderr, "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.\n");
         return 1;
     }
 
     cJSON *req = cJSON_CreateObject();
-    // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
-    cJSON_AddStringToObject(req, "model", "anthropic/claude-haiku-4.5");
+    cJSON_AddStringToObject(req, "model", model);
     cJSON *messages = cJSON_AddArrayToObject(req, "messages");
     cJSON *msg = cJSON_CreateObject();
     cJSON_AddStringToObject(msg, "role", "user");

@@ -19,13 +19,15 @@ pub fn main(init: std.process.Init) !void {
     const api_key = init.environ_map.get("OPENROUTER_API_KEY") orelse @panic("OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.");
     const base_url = init.environ_map.get("OPENROUTER_BASE_URL") orelse "https://openrouter.ai/api/v1";
 
+    // Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+    const model = init.environ_map.get("OPENROUTER_MODEL") orelse "anthropic/claude-haiku-4.5";
+
     // Build request body
     var body_out: std.Io.Writer.Allocating = .init(allocator);
     defer body_out.deinit();
     var jw: std.json.Stringify = .{ .writer = &body_out.writer };
     try jw.write(.{
-        // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
-        .model = "anthropic/claude-haiku-4.5",
+        .model = model,
         .messages = &[_]struct { role: []const u8, content: []const u8 }{
             .{ .role = "user", .content = prompt_str },
         },

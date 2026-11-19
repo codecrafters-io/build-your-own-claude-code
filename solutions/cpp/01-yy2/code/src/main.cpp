@@ -28,14 +28,17 @@ int main(int argc, char* argv[]) {
     std::string api_key = api_key_env ? api_key_env : "";
     std::string base_url = base_url_env ? base_url_env : "https://openrouter.ai/api/v1";
 
+    // Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+    const char* model_env = std::getenv("OPENROUTER_MODEL");
+    std::string model = model_env ? model_env : "anthropic/claude-haiku-4.5";
+
     if (api_key.empty()) {
         std::cerr << "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key." << std::endl;
         return 1;
     }
 
     json request_body = {
-        // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
-        {"model", "anthropic/claude-haiku-4.5"},
+        {"model", model},
         {"messages", json::array({
             {{"role", "user"}, {"content", prompt}}
         })}
