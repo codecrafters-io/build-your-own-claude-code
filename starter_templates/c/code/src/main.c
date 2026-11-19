@@ -36,12 +36,12 @@ int main(int argc, char *argv[]) {
     const char *base_url = getenv("OPENROUTER_BASE_URL");
     if (!base_url || !*base_url) base_url = "https://openrouter.ai/api/v1";
 
-    // Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+    // CodeCrafters sets OPENROUTER_MODEL to anthropic/claude-haiku-4.5 when it runs your tests. Locally, you can set it to any model.
     const char *model = getenv("OPENROUTER_MODEL");
     if (!model || !*model) model = "anthropic/claude-haiku-4.5";
 
     if (!api_key || !*api_key) {
-        fprintf(stderr, "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.\n");
+        fprintf(stderr, "OPENROUTER_API_KEY is not set. CodeCrafters sets it when you run `codecrafters test` or `codecrafters submit`. To run your program directly, set it to your own OpenRouter key.\n");
         return 1;
     }
 

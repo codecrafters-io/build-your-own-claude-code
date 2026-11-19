@@ -19,12 +19,12 @@ if (string.IsNullOrEmpty(prompt))
 var apiKey = Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
 var baseUrl = Environment.GetEnvironmentVariable("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1";
 
-// Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+// CodeCrafters sets OPENROUTER_MODEL to anthropic/claude-haiku-4.5 when it runs your tests. Locally, you can set it to any model.
 var model = Environment.GetEnvironmentVariable("OPENROUTER_MODEL") ?? "anthropic/claude-haiku-4.5";
 
 if (string.IsNullOrEmpty(apiKey))
 {
-    throw new Exception("OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.");
+    throw new Exception("OPENROUTER_API_KEY is not set. CodeCrafters sets it when you run `codecrafters test` or `codecrafters submit`. To run your program directly, set it to your own OpenRouter key.");
 }
 
 var client = new ChatClient(

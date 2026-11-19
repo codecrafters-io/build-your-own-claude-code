@@ -1,5 +1,5 @@
 @@ -28,35 +28,31 @@
-             "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key."
+             "OPENROUTER_API_KEY is not set. CodeCrafters sets it when you run `codecrafters test` or `codecrafters submit`. To run your program directly, set it to your own OpenRouter key."
          );
          process::exit(1);
      });

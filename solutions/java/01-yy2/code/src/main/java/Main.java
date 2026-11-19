@@ -20,7 +20,7 @@ public class Main {
             baseUrl = "https://openrouter.ai/api/v1";
         }
 
-        // Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+        // CodeCrafters sets OPENROUTER_MODEL to anthropic/claude-haiku-4.5 when it runs your tests. Locally, you can set it to any model.
         String model = System.getenv("OPENROUTER_MODEL");
         if (model == null || model.isEmpty()) {
             model = "anthropic/claude-haiku-4.5";
@@ -28,7 +28,7 @@ public class Main {
 
         if (apiKey == null || apiKey.isEmpty()) {
             throw new RuntimeException(
-                    "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.");
+                    "OPENROUTER_API_KEY is not set. CodeCrafters sets it when you run `codecrafters test` or `codecrafters submit`. To run your program directly, set it to your own OpenRouter key.");
         }
 
         OpenAIClient client = OpenAIOkHttpClient.builder()

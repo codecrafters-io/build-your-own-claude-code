@@ -26,7 +26,7 @@ Note: This section is for stages 2 and beyond.
    Rust project, so it might be slow the first time you run it. Subsequent runs
    will be fast.{{/ language_is_rust}}
 1. Local runs need your own [OpenRouter API key](https://openrouter.ai/keys) in
-   the `OPENROUTER_API_KEY` environment variable. Tests set this for you, so
-   you don't need a key to submit.
+   the `OPENROUTER_API_KEY` environment variable. CodeCrafters sets
+   this when you submit, so you don't need a key to pass stages.
 1. Run `codecrafters submit` to submit your solution
    to CodeCrafters. Test output will be streamed to your terminal.

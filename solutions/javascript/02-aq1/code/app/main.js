@@ -7,12 +7,12 @@ async function main() {
   const apiKey = process.env.OPENROUTER_API_KEY;
   const baseURL =
     process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
-  // Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+  // CodeCrafters sets OPENROUTER_MODEL to anthropic/claude-haiku-4.5 when it runs your tests. Locally, you can set it to any model.
   const model = process.env.OPENROUTER_MODEL ?? "anthropic/claude-haiku-4.5";
 
   if (!apiKey) {
     throw new Error(
-      "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.",
+      "OPENROUTER_API_KEY is not set. CodeCrafters sets it when you run `codecrafters test` or `codecrafters submit`. To run your program directly, set it to your own OpenRouter key.",
     );
   }
   if (flag !== "-p" || !prompt) {

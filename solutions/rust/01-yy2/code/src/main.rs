@@ -19,13 +19,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let base_url = env::var("OPENROUTER_BASE_URL")
         .unwrap_or_else(|_| "https://openrouter.ai/api/v1".to_string());
 
-    // Tests set OPENROUTER_MODEL to anthropic/claude-haiku-4.5. Locally, you can set it to any model.
+    // CodeCrafters sets OPENROUTER_MODEL to anthropic/claude-haiku-4.5 when it runs your tests. Locally, you can set it to any model.
     let model =
         env::var("OPENROUTER_MODEL").unwrap_or_else(|_| "anthropic/claude-haiku-4.5".to_string());
 
     let api_key = env::var("OPENROUTER_API_KEY").unwrap_or_else(|_| {
         eprintln!(
-            "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key."
+            "OPENROUTER_API_KEY is not set. CodeCrafters sets it when you run `codecrafters test` or `codecrafters submit`. To run your program directly, set it to your own OpenRouter key."
         );
         process::exit(1);
     });
