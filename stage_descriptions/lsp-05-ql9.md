@@ -1,4 +1,5 @@
-In this stage, you'll report language-server diagnostics to the model so it can repair an API migration.
+In this stage, you'll report language-server diagnostics to the model so it can
+repair an API migration.
 
 ### Why diagnostics?
 
@@ -9,9 +10,13 @@ in files it hasn't edited.
 
 ### Expected feedback
 
-Before each model request, any newly available, current diagnostics must reach
-the model through the latest tool result. Each diagnostic needs its relative
-file path, message, and one-based start line and character. For example:
+Before each model request, read the newly available diagnostic reports. Append
+any new, current issues to the latest tool message before sending the request.
+That message can be the result of a Write. Keep its existing success text and
+add the diagnostic feedback after it.
+
+Each diagnostic needs its relative file path, message, and one-based start line
+and character. For example, the appended feedback can look like this:
 
 ```text
 <new-diagnostics>The following new diagnostic issues were detected:
@@ -20,39 +25,46 @@ checkout.py:
   [Line 5:12] Type Price is not assignable to return type int</new-diagnostics>
 ```
 
-The wording and grouping can differ. Write keeps its existing success result;
-diagnostics arrive as additional feedback on a later turn. Reports for any file
-count, including files that the last Write didn't change.
+The wording and grouping can differ. Write still saves and synchronizes the file
+without waiting for analysis. The agent collects feedback when preparing the
+next model request. Reports for any file count, including files that the last
+Write didn't change.
 
 ### Current and new reports
 
 Only `textDocument/publishDiagnostics` notifications carry diagnostic reports.
-Their version determines whether the contents are current:
+Compare their version with the last version sent for that file when you read the
+queue:
 
-| Report | Required behavior |
-| --- | --- |
-| Version matches the last version sent for that file | Accept the report |
+| Report                                                   | Required behavior |
+| -------------------------------------------------------- | ----------------- |
+| Version matches the last version sent for that file      | Accept the report |
 | Version differs from the last version sent for that file | Ignore the report |
-| No version supplied | Accept the report |
+| No version supplied                                      | Accept the report |
 
 The latest current report replaces the previous report for that file. An empty
-`diagnostics` array clears its earlier issues. Only issues absent from those last
-shown for that file should be appended to a tool result. Unchanged issues must
-not be repeated on every turn.
+`diagnostics` array clears its earlier issues. Only issues absent from those
+last shown for that file should be appended to a tool result. Compare issues by
+their file, start position, and message. An unchanged issue stays suppressed
+until a report clears or removes it. If it appears again after that, it is new
+feedback.
 
 ### Feedback during a migration
 
-The tester asks the model to migrate the [invoice project][example] using your
-agent's tools. The required behavior is:
+The tester asks the model to migrate the invoice project using your agent's
+tools. The new return type, `Price`, is a Python `TypedDict`, which declares the
+keys and value types of a dictionary. It has one field, `cents`, whose value is
+an integer. The required behavior is:
 
-| Function | Before migration | After migration |
-| --- | --- | --- |
-| `pricing.total(250, 2)` | Integer `500` | A `Price` TypedDict with an integer `cents` field: `{"cents": 500}` |
-| `checkout_total()` | Integer `500` | Integer `500` |
-| `report_total()` | Integer `600` | Integer `600` |
+| Function                | Before migration | After migration                                                     |
+| ----------------------- | ---------------- | ------------------------------------------------------------------- |
+| `pricing.total(250, 2)` | Integer `500`    | A `Price` TypedDict with an integer `cents` field: `{"cents": 500}` |
+| `checkout_total()`      | Integer `500`    | Integer `500`                                                       |
+| `report_total()`        | Integer `600`    | Integer `600`                                                       |
 
-Tests and the unrelated `preview.total` must stay unchanged. The model chooses
-its edits and uses your agent's diagnostic feedback to repair any type errors.
+Tests and the unrelated `preview.py` and `discounts.py` files must stay
+unchanged. The model chooses its edits and uses your agent's diagnostic feedback
+to repair any type errors.
 
 For example, changing `pricing.total` can make this unchanged caller invalid:
 
@@ -68,11 +80,11 @@ server can report that mismatch in `checkout.py` even when the last edit was to
 ### Read the server's reports
 
 The server sends diagnostics asynchronously in `textDocument/publishDiagnostics`
-notifications. They are not the response to `didChange`. Your LSP client queues
-them while your agent executes other calls.
+notifications. They are not the response to `didChange`. The supplied helper
+keeps them in a queue that your client can read while the agent runs.
 
-The client's `notifications` action reads this queue using a cursor, starting
-at `0`:
+The client's `notifications` action reads this queue using a cursor, starting at
+`0`:
 
 ```json
 { "after": 0, "timeoutMs": 0 }
@@ -85,7 +97,7 @@ above, a response can contain:
 
 ```json
 {
-  "cursor": 4,
+  "cursor": 1,
   "notifications": [
     {
       "method": "textDocument/publishDiagnostics",
@@ -118,7 +130,8 @@ repairing its edits.
 
 ### Tests
 
-The tester will create the [invoice project][example] with `test_invoice.py` and execute your program like this:
+The tester will create the invoice project with [test_invoice.py][tests] and
+execute your program like this:
 
 ```bash
 $ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an integer cents field. Update checkout.py and reports.py so their results stay unchanged. Before any Write edits, use LSP goToDefinition on checkout.py at line 5, character 12, and LSP findReferences on the returned pricing.total definition. After all Write edits, repeat LSP findReferences at the updated pricing.total definition. That query is required even if the project tests pass. Fix the type errors your tools report. Leave tests and unrelated files unchanged. Run python3 -m unittest -v test_invoice.py and report the result."
@@ -127,21 +140,32 @@ $ ./your_program.sh -p "Change pricing.total to return a Price TypedDict with an
 
 The tester will verify that:
 
-- Every current diagnostic the server published, for any file, reaches the model with its file, message, and 1-based line and character
+- New issues from the latest current reports read before each model request
+  reach the model with their file, message, and 1-based line and character
 - No diagnostic from a report for an older version reaches the model
 - Both lookups run, in either order, before the first Write
-- A references lookup runs after the last Write, and its result matches the edited files
-- The Bash output shows `Ran 5 tests` and `OK`, `checkout_total()` returns `500`, and `report_total()` returns `600`
-- `preview.py` and `test_invoice.py` are unchanged
+- A references lookup runs after the last Write, and its result matches the
+  edited files
+- The Bash output shows `Ran 5 tests` and `OK`, `checkout_total()` returns
+  `500`, and `report_total()` returns `600`
+- `preview.py`, `discounts.py`, and `test_invoice.py` are unchanged
 - Your program exits with code `0`
 
-The tester will also run this prompt against a server that sends stale reports and current reports without a `version`. Its `pricing.py` has a comment line above `def total`, so the definition is not on line 1.
+The tester will also run this prompt against a server that sends stale reports
+and current reports without a `version`. Its `pricing.py` has a comment line
+above `def total`, so the definition is not on line 1.
 
 ### Notes
 
-- Await asynchronous `notifications` calls before sending the next model request.
-- Write's own result stays as it was. Diagnostics reach the model through a later tool result instead.
-- A report can arrive after the model request that followed its change. Your agent reads it before the next request.
-- The model chooses its own edits, so a run may or may not hit a type error. You don't need to introduce errors yourself.
+- Await asynchronous `notifications` calls before sending the next model
+  request.
+- A report can arrive after the model request that followed its change. Your
+  agent reads it before the next request.
+- The supplied server publishes diagnostics after document activity, so the
+  first model request has no feedback to append. Versioned reports in these
+  tests describe documents your agent has opened.
+- The model chooses its own edits, so a run may or may not hit a type error. You
+  don't need to introduce errors yourself.
 
-[example]: https://github.com/codecrafters-io/build-your-own-claude-code/tree/main/extension_designs/lsp_exercise
+[tests]:
+  https://github.com/codecrafters-io/build-your-own-claude-code/blob/main/extension_designs/lsp_exercise/test_invoice.py
