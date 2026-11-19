@@ -20,6 +20,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // CodeCrafters sets OPENROUTER_API_KEY and OPENROUTER_BASE_URL when it runs your tests.
+    // To run your program locally, set OPENROUTER_API_KEY to your own OpenRouter key.
     const char* api_key_env = std::getenv("OPENROUTER_API_KEY");
     const char* base_url_env = std::getenv("OPENROUTER_BASE_URL");
 
@@ -27,11 +29,12 @@ int main(int argc, char* argv[]) {
     std::string base_url = base_url_env ? base_url_env : "https://openrouter.ai/api/v1";
 
     if (api_key.empty()) {
-        std::cerr << "OPENROUTER_API_KEY is not set" << std::endl;
+        std::cerr << "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key." << std::endl;
         return 1;
     }
 
     json request_body = {
+        // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
         {"model", "anthropic/claude-haiku-4.5"},
         {"messages", json::array({
             {{"role", "user"}, {"content", prompt}}

@@ -30,15 +30,18 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // CodeCrafters sets OPENROUTER_API_KEY and OPENROUTER_BASE_URL when it runs your tests.
+    // To run your program locally, set OPENROUTER_API_KEY to your own OpenRouter key.
     const char *api_key = getenv("OPENROUTER_API_KEY");
     const char *base_url = getenv("OPENROUTER_BASE_URL");
     if (!base_url || !*base_url) base_url = "https://openrouter.ai/api/v1";
     if (!api_key || !*api_key) {
-        fprintf(stderr, "OPENROUTER_API_KEY is not set\n");
+        fprintf(stderr, "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.\n");
         return 1;
     }
 
     cJSON *req = cJSON_CreateObject();
+    // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
     cJSON_AddStringToObject(req, "model", "anthropic/claude-haiku-4.5");
     cJSON *messages = cJSON_AddArrayToObject(req, "messages");
     cJSON *msg = cJSON_CreateObject();

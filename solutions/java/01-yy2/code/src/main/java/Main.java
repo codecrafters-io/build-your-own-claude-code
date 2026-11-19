@@ -12,6 +12,8 @@ public class Main {
 
         String prompt = args[1];
 
+        // CodeCrafters sets OPENROUTER_API_KEY and OPENROUTER_BASE_URL when it runs your tests.
+        // To run your program locally, set OPENROUTER_API_KEY to your own OpenRouter key.
         String apiKey = System.getenv("OPENROUTER_API_KEY");
         String baseUrl = System.getenv("OPENROUTER_BASE_URL");
         if (baseUrl == null || baseUrl.isEmpty()) {
@@ -19,7 +21,8 @@ public class Main {
         }
 
         if (apiKey == null || apiKey.isEmpty()) {
-            throw new RuntimeException("OPENROUTER_API_KEY is not set");
+            throw new RuntimeException(
+                    "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.");
         }
 
         OpenAIClient client = OpenAIOkHttpClient.builder()
@@ -29,6 +32,7 @@ public class Main {
 
         ChatCompletion response = client.chat().completions().create(
                 ChatCompletionCreateParams.builder()
+                        // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
                         .model("anthropic/claude-haiku-4.5")
                         .addUserMessage(prompt)
                         .build()

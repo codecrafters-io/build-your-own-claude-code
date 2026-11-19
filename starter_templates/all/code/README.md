@@ -25,5 +25,8 @@ Note: This section is for stages 2 and beyond.
    `{{ user_editable_file }}`.{{# language_is_rust }} This command compiles your
    Rust project, so it might be slow the first time you run it. Subsequent runs
    will be fast.{{/ language_is_rust}}
+1. Local runs need your own [OpenRouter API key](https://openrouter.ai/keys) in
+   the `OPENROUTER_API_KEY` environment variable. Tests set this for you, so
+   you don't need a key to submit.
 1. Run `codecrafters submit` to submit your solution
    to CodeCrafters. Test output will be streamed to your terminal.

@@ -1,6 +1,5 @@
-@@ -20,35 +20,31 @@
-     let api_key = env::var("OPENROUTER_API_KEY").unwrap_or_else(|_| {
-         eprintln!("OPENROUTER_API_KEY is not set");
+@@ -25,35 +25,31 @@
+         );
          process::exit(1);
      });
 
@@ -20,6 +19,7 @@
                      "content": args.prompt
                  }
              ],
+             // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
              "model": "anthropic/claude-haiku-4.5",
          }))
          .await?;

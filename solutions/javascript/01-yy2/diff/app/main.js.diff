@@ -1,10 +1,9 @@
-@@ -5,33 +5,29 @@
-   const apiKey = process.env.OPENROUTER_API_KEY;
-   const baseURL =
-     process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
+@@ -10,33 +10,29 @@
 
    if (!apiKey) {
-     throw new Error("OPENROUTER_API_KEY is not set");
+     throw new Error(
+       "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.",
+     );
    }
    if (flag !== "-p" || !prompt) {
      throw new Error("error: -p flag is required");
@@ -16,6 +15,7 @@
    });
 
    const response = await client.chat.completions.create({
+     // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
      model: "anthropic/claude-haiku-4.5",
      messages: [{ role: "user", content: prompt }],
    });

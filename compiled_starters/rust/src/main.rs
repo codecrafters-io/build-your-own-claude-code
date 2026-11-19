@@ -14,11 +14,15 @@ struct Args {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
+    // CodeCrafters sets OPENROUTER_API_KEY and OPENROUTER_BASE_URL when it runs your tests.
+    // To run your program locally, set OPENROUTER_API_KEY to your own OpenRouter key.
     let base_url = env::var("OPENROUTER_BASE_URL")
         .unwrap_or_else(|_| "https://openrouter.ai/api/v1".to_string());
 
     let api_key = env::var("OPENROUTER_API_KEY").unwrap_or_else(|_| {
-        eprintln!("OPENROUTER_API_KEY is not set");
+        eprintln!(
+            "OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key."
+        );
         process::exit(1);
     });
 
@@ -38,6 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "content": args.prompt
                 }
             ],
+            // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
             "model": "anthropic/claude-haiku-4.5",
         }))
         .await?;

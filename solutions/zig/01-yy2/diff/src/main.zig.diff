@@ -1,4 +1,4 @@
-@@ -45,32 +45,28 @@
+@@ -48,32 +48,28 @@
 
      var response_out: std.Io.Writer.Allocating = .init(allocator);
      defer response_out.deinit();

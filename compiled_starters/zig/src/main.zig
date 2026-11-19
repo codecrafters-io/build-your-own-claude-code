@@ -14,7 +14,9 @@ pub fn main(init: std.process.Init) !void {
         @panic("Usage: main -p <prompt>");
     }
 
-    const api_key = init.environ_map.get("OPENROUTER_API_KEY") orelse @panic("OPENROUTER_API_KEY is not set");
+    // CodeCrafters sets OPENROUTER_API_KEY and OPENROUTER_BASE_URL when it runs your tests.
+    // To run your program locally, set OPENROUTER_API_KEY to your own OpenRouter key.
+    const api_key = init.environ_map.get("OPENROUTER_API_KEY") orelse @panic("OPENROUTER_API_KEY is not set. Tests set it for you. To run locally, set it to your own OpenRouter key.");
     const base_url = init.environ_map.get("OPENROUTER_BASE_URL") orelse "https://openrouter.ai/api/v1";
 
     // Build request body
@@ -22,6 +24,7 @@ pub fn main(init: std.process.Init) !void {
     defer body_out.deinit();
     var jw: std.json.Stringify = .{ .writer = &body_out.writer };
     try jw.write(.{
+        // Tests only accept anthropic/claude-haiku models. Locally, you can use any model.
         .model = "anthropic/claude-haiku-4.5",
         .messages = &[_]struct { role: []const u8, content: []const u8 }{
             .{ .role = "user", .content = prompt_str },
