@@ -1,10 +1,10 @@
-@@ -30,31 +30,27 @@
+@@ -38,31 +38,27 @@
  	}
 
  	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
  	resp, err := client.Chat.Completions.New(context.Background(),
  		openai.ChatCompletionNewParams{
- 			Model: "anthropic/claude-haiku-4.5",
+ 			Model: model,
  			Messages: []openai.ChatCompletionMessageParamUnion{
  				{
  					OfUser: &openai.ChatCompletionUserMessageParam{

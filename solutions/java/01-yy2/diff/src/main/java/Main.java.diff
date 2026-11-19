@@ -1,11 +1,11 @@
-@@ -16,32 +16,28 @@
-         String baseUrl = System.getenv("OPENROUTER_BASE_URL");
-         if (baseUrl == null || baseUrl.isEmpty()) {
-             baseUrl = "https://openrouter.ai/api/v1";
+@@ -25,32 +25,28 @@
+         if (model == null || model.isEmpty()) {
+             model = "anthropic/claude-haiku-4.5";
          }
 
          if (apiKey == null || apiKey.isEmpty()) {
-             throw new RuntimeException("OPENROUTER_API_KEY is not set");
+             throw new RuntimeException(
+                     "OPENROUTER_API_KEY is not set. CodeCrafters sets it when you run `codecrafters test` or `codecrafters submit`. To run your program directly, set it to your own OpenRouter key.");
          }
 
          OpenAIClient client = OpenAIOkHttpClient.builder()
@@ -15,7 +15,7 @@
 
          ChatCompletion response = client.chat().completions().create(
                  ChatCompletionCreateParams.builder()
-                         .model("anthropic/claude-haiku-4.5")
+                         .model(model)
                          .addUserMessage(prompt)
                          .build()
          );
