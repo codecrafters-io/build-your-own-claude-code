@@ -19,20 +19,28 @@ func main() {
 		panic("Prompt must not be empty")
 	}
 
+	// CodeCrafters sets OPENROUTER_API_KEY and OPENROUTER_BASE_URL when it runs your tests.
+	// To run your program locally, set OPENROUTER_API_KEY to your own OpenRouter key.
 	apiKey := os.Getenv("OPENROUTER_API_KEY")
 	baseUrl := os.Getenv("OPENROUTER_BASE_URL")
 	if baseUrl == "" {
 		baseUrl = "https://openrouter.ai/api/v1"
 	}
 
+	// CodeCrafters sets OPENROUTER_MODEL to anthropic/claude-haiku-4.5 when it runs your tests. Locally, you can set it to any model.
+	model := os.Getenv("OPENROUTER_MODEL")
+	if model == "" {
+		model = "anthropic/claude-haiku-4.5"
+	}
+
 	if apiKey == "" {
-		panic("Env variable OPENROUTER_API_KEY not found")
+		panic("OPENROUTER_API_KEY is not set. CodeCrafters sets it when you run `codecrafters test` or `codecrafters submit`. To run your program directly, set it to your own OpenRouter key.")
 	}
 
 	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
 	resp, err := client.Chat.Completions.New(context.Background(),
 		openai.ChatCompletionNewParams{
-			Model: "anthropic/claude-haiku-4.5",
+			Model: model,
 			Messages: []openai.ChatCompletionMessageParamUnion{
 				{
 					OfUser: &openai.ChatCompletionUserMessageParam{

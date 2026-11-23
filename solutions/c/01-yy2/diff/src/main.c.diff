@@ -1,4 +1,4 @@
-@@ -77,34 +77,30 @@
+@@ -84,34 +84,30 @@
 
      if (res != CURLE_OK) {
          fprintf(stderr, "curl error: %s\n", curl_easy_strerror(res));
