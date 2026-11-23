@@ -8,11 +8,13 @@ When CodeCrafters runs your tests, it sets three environment variables for your 
 - `OPENROUTER_BASE_URL`: The URL to send the request to
 - `OPENROUTER_MODEL`: The model to request (`anthropic/claude-haiku-4.5`)
 
-The starter code already reads all three, so you don't need an OpenRouter account to pass any stage. The tests don't set any other API key (like `OPENAI_API_KEY`), and they reject requests for any other model.
+The starter code already reads all three, so you don't need your own API key to pass any stage. The tests don't set any other API key (like `OPENAI_API_KEY`), and they only accept Claude Haiku models.
 
 ### Running locally
 
-These variables aren't set on your machine, so a local run fails with `OPENROUTER_API_KEY is not set`. To run your program locally, create an [OpenRouter API key](https://openrouter.ai/keys), then set the key and a model in your terminal:
+Running your program on your own machine is optional. These variables aren't set there, so a local run fails with `OPENROUTER_API_KEY is not set`.
+
+To run locally, create an API key on [OpenRouter](https://openrouter.ai/keys), the service that provides the LLM. Requests made with your own key use your OpenRouter credits, so add credits or pick a free model (their names end in `:free`). Then set the key and a model in your terminal, and pass a prompt with `-p`:
 
 ```bash
 $ export OPENROUTER_API_KEY="<your key>"
@@ -21,4 +23,4 @@ $ ./your_program.sh -p "What is 2 + 2?"
 4
 ```
 
-Locally, you can set `OPENROUTER_MODEL` to any model your key can use.
+Locally, `OPENROUTER_MODEL` can be any model on OpenRouter. The tests always use Claude Haiku.
