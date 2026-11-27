@@ -1,6 +1,6 @@
 /* Only needed for the LSP extension.
  * You can ignore this file until you reach that extension. */
-/* Course-supplied transport. The returned JSON string belongs to the caller. */
+/* Course-supplied client for the language server the tester starts. */
 #ifndef CODECRAFTERS_LSP_CLIENT_H
 #define CODECRAFTERS_LSP_CLIENT_H
 #include <curl/curl.h>
@@ -10,11 +10,38 @@
 #include <string.h>
 
 struct lsp_buffer { char *data; size_t size; };
-typedef struct { cJSON *extension_to_language; } LSPClient;
+/**
+ * @brief Sends your agent's messages to the language server.
+ *
+ * The client doesn't track open documents or versions; that state belongs in
+ * your agent. Payloads and responses are JSON strings; parse responses with
+ * cJSON.
+ *
+ * @code
+ * LSPClient lsp;
+ * int status = lsp_from_environment(&lsp);
+ * if (status == 1) {
+ *     const char *language = cJSON_GetObjectItem(lsp.extension_to_language, ".py")->valuestring; // "python"
+ *     char *result = lsp_call("request", request_json);
+ *     if (!result) fprintf(stderr, "%s\n", lsp_last_error());
+ *     free(result);
+ *     lsp_deinit(&lsp);
+ * }
+ * @endcode
+ */
+typedef struct {
+    /** Maps file extensions, including the dot, to LSP language IDs, such as
+     *  {".py": "python"}. Owned by the client and freed by lsp_deinit. */
+    cJSON *extension_to_language;
+} LSPClient;
 static char *lsp_error_data = NULL;
 static const char *lsp_error_message = NULL;
 
-/* Error text after NULL; borrowed until the next lsp_call. NULL after success. */
+/**
+ * @brief The error text after lsp_call or lsp_init failed.
+ * @return Borrowed text, valid until the next lsp_call or lsp_deinit, or NULL
+ *     after a successful call.
+ */
 static const char *lsp_last_error(void) {
     return lsp_error_message;
 }
@@ -31,6 +58,27 @@ static size_t lsp_append(void *data, size_t size, size_t count, void *context) {
     return bytes;
 }
 
+/**
+ * @brief Sends one action to the language server.
+ *
+ * Actions and their payloads:
+ *   - "configuration": {}. Returns {"extensionToLanguage": {".py": "python"}}.
+ *   - "notify": {"method": ..., "params": {...}}, an LSP notification.
+ *     Returns null.
+ *   - "request": {"method": ..., "params": {...}}, an LSP request. Returns the
+ *     server's result, which may be null, an object, or an array.
+ *   - "notifications": {"after": cursor, "timeoutMs": ms}. Returns
+ *     {"cursor": n, "notifications": [...]}: the server's notifications after
+ *     the cursor, each with "method" and "params". Waits up to ms (0 to 5000)
+ *     when none are queued yet. Pass the returned cursor as "after" next time.
+ *
+ * @param action "configuration", "notify", "request", or "notifications".
+ * @param json The action's payload as a JSON string, as above.
+ * @return The response as a JSON string. The caller owns it and frees it with
+ *     free(). Returns NULL when the language server returns an error, times
+ *     out (5 seconds for a request), or exits; lsp_last_error() then holds the
+ *     transport's JSON, such as {"error":"language server exited before responding to textDocument/definition"}.
+ */
 static char *lsp_call(const char *action, const char *json) {
     free(lsp_error_data);
     lsp_error_data = NULL;
@@ -75,6 +123,10 @@ static char *lsp_call(const char *action, const char *json) {
     return buffer.data;
 }
 
+/**
+ * @brief Connects and reads the extension-to-language mapping.
+ * @return 1 on success, or 0 on failure; lsp_last_error() then says why.
+ */
 static int lsp_init(LSPClient *client) {
     client->extension_to_language = NULL;
     char *json = lsp_call("configuration", "{}");
@@ -93,13 +145,19 @@ static int lsp_init(LSPClient *client) {
     return 1;
 }
 
-/* Returns 1 when connected, 0 when unconfigured, and -1 on initialization error. */
+/**
+ * @brief Connects to the language server the tester configured.
+ * @return 1 when connected, 0 when no language server is configured, or -1 on
+ *     an initialization error; lsp_last_error() then says why. Call lsp_deinit
+ *     when done.
+ */
 static int lsp_from_environment(LSPClient *client) {
     client->extension_to_language = NULL;
     if (!getenv("CODECRAFTERS_LSP_URL")) return 0;
     return lsp_init(client) ? 1 : -1;
 }
 
+/** @brief Frees the language mapping and any saved error text. */
 static void lsp_deinit(LSPClient *client) {
     cJSON_Delete(client->extension_to_language);
     client->extension_to_language = NULL;
